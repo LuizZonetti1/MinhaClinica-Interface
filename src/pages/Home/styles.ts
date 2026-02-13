@@ -15,7 +15,7 @@ export const HeroContainer = Styled.section`
     position: relative;
     width: 100%;
     min-height: 100vh;
-    background: linear-gradient(137.44deg, ${theme.colors.primary} 0%, ${theme.colors.primaryActive} 100%);
+    background: linear-gradient(180deg, #3B82F6 0%, #2563EB 100%);
     overflow: hidden;
 `;
 
@@ -155,32 +155,32 @@ export const HeroSection = Styled.div`
     padding: 64px 32px;
 `;
 
-export const HeroTitle = Styled.h1`
+export const HeroTitle = Styled.h2`
     font-family: 'Roboto', sans-serif;
     font-weight: 700;
-    font-size: 56px;
-    line-height: 61.6px;
+    font-size: 60px;
+    line-height: 72px;
     text-align: center;
     color: ${theme.colors.text.inverse};
     margin: 0 0 24px 0;
-    max-width: 865px;
+    max-width: 900px;
 `;
 
 export const HeroDescription = Styled.p`
     font-family: 'Roboto', sans-serif;
     font-weight: 400;
     font-size: 20px;
-    line-height: 32px;
+    line-height: 30px;
     text-align: center;
     color: ${theme.colors.text.inverse};
-    opacity: 0.95;
-    margin: 0 0 48px 0;
-    max-width: 700px;
+    opacity: 0.9;
+    margin: 0 0 40px 0;
+    max-width: 750px;
 `;
 
 export const CTAButtons = Styled.div`
     display: flex;
-    gap: 24px;
+    gap: 16px;
     align-items: center;
 `;
 
@@ -188,30 +188,30 @@ export const ButtonPrimary = Styled.button`
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    height: 63px;
+    gap: 10px;
+    height: 56px;
     padding: 0 32px;
     background-color: ${theme.colors.surface};
     border: none;
     border-radius: 8px;
-    box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.1), 0px 4px 6px rgba(0, 0, 0, 0.05);
-    color: ${theme.colors.primaryHover};
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+    color: #2563EB;
     font-family: 'Roboto', sans-serif;
     font-weight: 600;
-    font-size: 18px;
-    line-height: 27px;
+    font-size: 17px;
+    line-height: 24px;
     cursor: pointer;
     transition: all 0.2s;
 
     &:hover {
-        background-color: ${theme.colors.surfaceHover};
+        background-color: #f8fafc;
         transform: translateY(-2px);
-        box-shadow: 0px 15px 20px rgba(0, 0, 0, 0.15), 0px 6px 8px rgba(0, 0, 0, 0.08);
+        box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
     }
 
     svg {
-        width: 24px;
-        height: 24px;
+        width: 20px;
+        height: 20px;
     }
 `;
 
@@ -219,30 +219,28 @@ export const ButtonSecondary = Styled.button`
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    height: 63px;
+    gap: 10px;
+    height: 56px;
     padding: 0 32px;
     background-color: transparent;
     border: 2px solid ${theme.colors.surface};
     border-radius: 8px;
-    box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.1), 0px 4px 6px rgba(0, 0, 0, 0.05);
     color: ${theme.colors.text.inverse};
     font-family: 'Roboto', sans-serif;
     font-weight: 600;
-    font-size: 18px;
-    line-height: 27px;
+    font-size: 17px;
+    line-height: 24px;
     cursor: pointer;
     transition: all 0.2s;
 
     &:hover {
         background-color: rgba(255, 255, 255, 0.1);
         transform: translateY(-2px);
-        box-shadow: 0px 15px 20px rgba(0, 0, 0, 0.15), 0px 6px 8px rgba(0, 0, 0, 0.08);
     }
 
     svg {
-        width: 24px;
-        height: 24px;
+        width: 20px;
+        height: 20px;
     }
 `;
 

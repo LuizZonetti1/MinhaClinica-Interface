@@ -242,12 +242,12 @@ const Home = () => {
 
           <CTAButtons>
             <ButtonPrimary>
-              <Building2 size={24} />
+              <Building2 size={20} />
               Cadastrar Minha Clínica
             </ButtonPrimary>
 
             <ButtonSecondary>
-              <Heart size={24} />
+              <Heart size={20} />
               Sou Paciente
             </ButtonSecondary>
           </CTAButtons>
@@ -350,12 +350,12 @@ const Home = () => {
 
         <CTAButtons>
           <ButtonPrimary>
-            <Building2 size={24} />
+            <Building2 size={20} />
             Cadastrar Minha Clínica Agora
           </ButtonPrimary>
 
           <ButtonSecondary>
-            <LogIn size={24} />
+            <LogIn size={20} />
             Já tenho uma conta
           </ButtonSecondary>
         </CTAButtons>
