@@ -1,6 +1,6 @@
 import { Phone } from "lucide-react";
 import { Input } from "../../../components/Input";
-import { EmergencyBox, EmergencyTitle, FieldGroup, Row, Select } from "./styles";
+import { EmergencyBox, EmergencyTitle, FieldGroup, Label, Row, Select } from "./styles";
 
 interface MedicalInfoTabProps {
   formData: any;
@@ -10,12 +10,8 @@ interface MedicalInfoTabProps {
 export const MedicalInfoTab = ({ formData, onChange }: MedicalInfoTabProps) => {
   return (
     <FieldGroup>
-      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-        <label
-          style={{ fontFamily: "Roboto", fontSize: "14px", fontWeight: 500, color: "#4B5563" }}
-        >
-          Tipo Sanguíneo
-        </label>
+      <FieldGroup>
+        <Label>Tipo Sanguíneo</Label>
         <Select value={formData.bloodType} onChange={(e) => onChange("bloodType", e.target.value)}>
           <option value="">Selecione</option>
           <option value="A+">A+</option>
@@ -27,7 +23,7 @@ export const MedicalInfoTab = ({ formData, onChange }: MedicalInfoTabProps) => {
           <option value="O+">O+</option>
           <option value="O-">O-</option>
         </Select>
-      </div>
+      </FieldGroup>
 
       <Input
         label="Alergias conhecidas"

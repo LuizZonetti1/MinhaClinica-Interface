@@ -1,6 +1,6 @@
 import { MapPin } from "lucide-react";
 import { Input } from "../../../components/Input";
-import { FieldGroup, Row, Select } from "./styles";
+import { FieldGroup, Label, Row, Select } from "./styles";
 
 interface AddressTabProps {
   formData: any;
@@ -68,12 +68,8 @@ export const AddressTab = ({ formData, onChange }: AddressTabProps) => {
           fullWidth
         />
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          <label
-            style={{ fontFamily: "Roboto", fontSize: "14px", fontWeight: 500, color: "#4B5563" }}
-          >
-            Estado (UF)
-          </label>
+        <FieldGroup>
+          <Label>Estado (UF)</Label>
           <Select value={formData.state} onChange={(e) => onChange("state", e.target.value)}>
             <option value="">Selecione</option>
             <option value="AC">AC</option>
@@ -104,7 +100,7 @@ export const AddressTab = ({ formData, onChange }: AddressTabProps) => {
             <option value="SE">SE</option>
             <option value="TO">TO</option>
           </Select>
-        </div>
+        </FieldGroup>
       </Row>
     </FieldGroup>
   );

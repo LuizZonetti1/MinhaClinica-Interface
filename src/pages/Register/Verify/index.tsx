@@ -1,22 +1,22 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
-import { Mail, Check, Info } from 'lucide-react';
-import { AuthLayout } from '../../../components/AuthLayout';
-import { Card } from '../../../components/Card';
-import { Logo } from '../../../components/Logo';
-import { Button } from '../../../components/Button';
-import { Stepper } from '../../../components/Stepper';
-import { 
-  Container, 
-  Title, 
-  Description, 
-  EmailIcon, 
-  InfoBox, 
-  InfoText, 
-  InfoLink, 
+import { Check, Info, Mail } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import { AuthLayout } from "../../../components/AuthLayout";
+import { Button } from "../../../components/Button";
+import { Card } from "../../../components/Card";
+import { Logo } from "../../../components/Logo";
+import { Stepper } from "../../../components/Stepper";
+import {
+  Container,
+  Description,
+  EmailIcon,
+  InfoBox,
+  InfoLink,
+  InfoText,
   ResendButton,
-  ResendText 
-} from './styles';
+  ResendText,
+  Title,
+} from "./styles";
 
 const RegisterVerify = () => {
   const navigate = useNavigate();
@@ -33,20 +33,20 @@ const RegisterVerify = () => {
   }, [countdown]);
 
   const handleResend = () => {
-    console.log('Resending verification email...');
+    console.log("Resending verification email...");
     setCountdown(56);
     setCanResend(false);
   };
 
   const handleContinue = () => {
     // Simulate email verification
-    navigate('/register/complete');
+    navigate("/register/complete");
   };
 
   const steps = [
-    { label: 'Início', status: 'completed' as const },
-    { label: 'Verificação', status: 'active' as const },
-    { label: 'Completar', status: 'inactive' as const },
+    { label: "Início", status: "completed" as const },
+    { label: "Verificação", status: "active" as const },
+    { label: "Completar", status: "inactive" as const },
   ];
 
   return (
@@ -54,7 +54,7 @@ const RegisterVerify = () => {
       <Card padding="small">
         <Container>
           <Logo variant="auth" showSubtitle={false} />
-          
+
           <Stepper steps={steps} />
 
           <EmailIcon>
@@ -75,26 +75,17 @@ const RegisterVerify = () => {
               <InfoText>
                 Não recebeu o email? Verifique sua pasta de spam ou reenvie o link.
               </InfoText>
-              {!canResend && (
-                <InfoLink>Você poderá reenviar em {countdown}s</InfoLink>
-              )}
+              {!canResend && <InfoLink>Você poderá reenviar em {countdown}s</InfoLink>}
             </div>
           </InfoBox>
 
           {canResend ? (
-            <ResendButton onClick={handleResend}>
-              Reenviar email de verificação
-            </ResendButton>
+            <ResendButton onClick={handleResend}>Reenviar email de verificação</ResendButton>
           ) : (
             <ResendText>Aguarde {countdown}s para reenviar</ResendText>
           )}
 
-          <Button 
-            onClick={handleContinue} 
-            variant="primary" 
-            size="medium" 
-            fullWidth
-          >
+          <Button onClick={handleContinue} variant="primary" size="medium" fullWidth>
             Já verifiquei - Continuar
           </Button>
         </Container>

@@ -1,6 +1,6 @@
-import styled, { css } from 'styled-components';
-import { theme } from '../../themes/themes';
-import type { ButtonVariant, ButtonSize } from './index';
+import styled, { css } from "styled-components";
+import { theme } from "../../themes/themes";
+import type { ButtonSize, ButtonVariant } from "./index";
 
 interface StyledButtonProps {
   $variant: ButtonVariant;
@@ -127,10 +127,10 @@ export const StyledButton = styled.button<StyledButtonProps>`
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  width: ${props => (props.$fullWidth ? '100%' : 'auto')};
+  width: ${(props) => (props.$fullWidth ? "100%" : "auto")};
 
-  ${props => sizeStyles[props.$size]}
-  ${props => variantStyles[props.$variant]}
+  ${(props) => sizeStyles[props.$size]}
+  ${(props) => variantStyles[props.$variant]}
 
   &:disabled {
     opacity: 0.5;
