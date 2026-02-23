@@ -25,7 +25,11 @@ export const TabsList = styled.div`
   }
 `;
 
-export const TabButton = styled.button<{ $active: boolean }>`
+export const TabButton = styled.button<{
+  $active: boolean;
+  $disabled?: boolean;
+  $completed?: boolean;
+}>`
   flex: 1;
   display: flex;
   align-items: center;
@@ -34,12 +38,25 @@ export const TabButton = styled.button<{ $active: boolean }>`
   padding: ${theme.spacing.md} ${theme.spacing.sm};
   background: none;
   border: none;
-  border-bottom: 2px solid ${props => (props.$active ? theme.colors.primary : 'transparent')};
+  border-bottom: 2px solid ${props =>
+    props.$active
+      ? theme.colors.primary
+      : props.$completed
+        ? theme.colors.success ?? '#22c55e'
+        : 'transparent'};
   font-family: 'Roboto', sans-serif;
   font-size: 13px;
   font-weight: ${props => (props.$active ? '600' : '400')};
-  color: ${props => (props.$active ? theme.colors.primary : theme.colors.text.muted)};
-  cursor: pointer;
+  color: ${props =>
+    props.$disabled
+      ? theme.colors.text.muted
+      : props.$completed
+        ? theme.colors.success ?? '#22c55e'
+        : props.$active
+          ? theme.colors.primary
+          : theme.colors.text.muted};
+  cursor: ${props => (props.$disabled ? 'not-allowed' : 'pointer')};
+  opacity: ${props => (props.$disabled ? '0.5' : '1')};
   transition: all 0.2s;
   white-space: nowrap;
   min-width: 0;
@@ -57,8 +74,13 @@ export const TabButton = styled.button<{ $active: boolean }>`
   }
 
   &:hover {
-    color: ${theme.colors.primary};
-    background-color: ${theme.colors.surfaceMuted};
+    color: ${props =>
+    props.$disabled
+      ? theme.colors.text.muted
+      : props.$completed
+        ? theme.colors.success ?? '#22c55e'
+        : theme.colors.primary};
+    background-color: ${props => (props.$disabled ? 'transparent' : theme.colors.surfaceMuted)};
   }
 `;
 

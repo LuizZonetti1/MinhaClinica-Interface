@@ -1,9 +1,12 @@
+import { Check, Lock } from "lucide-react";
 import { Container, TabButton, TabContent, TabsList } from "./styles";
 
 interface Tab {
   id: string;
   label: string;
   icon?: React.ReactNode;
+  disabled?: boolean;
+  completed?: boolean;
 }
 
 interface TabsProps {
@@ -21,10 +24,23 @@ export const Tabs = ({ tabs, activeTab, onTabChange, children }: TabsProps) => {
           <TabButton
             key={tab.id}
             $active={activeTab === tab.id}
-            onClick={() => onTabChange(tab.id)}
+            $disabled={tab.disabled}
+            $completed={tab.completed}
+            onClick={() => !tab.disabled && onTabChange(tab.id)}
             type="button"
+            disabled={tab.disabled}
           >
-            {tab.icon && <span className="icon">{tab.icon}</span>}
+            {tab.completed ? (
+              <span className="icon">
+                <Check />
+              </span>
+            ) : tab.disabled ? (
+              <span className="icon">
+                <Lock />
+              </span>
+            ) : (
+              tab.icon && <span className="icon">{tab.icon}</span>
+            )}
             {tab.label}
           </TabButton>
         ))}
