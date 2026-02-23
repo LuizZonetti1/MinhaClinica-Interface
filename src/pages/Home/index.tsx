@@ -1,68 +1,67 @@
-import type { JSX } from "react";
+import type { LucideIcon } from "lucide-react";
 import {
-  Container,
-  HeroContainer,
-  Nav,
-  LogoContainer,
-  IconContainer,
-  Icon,
-  TextContainer,
-  LogoTitle,
-  LogoSubtitle,
-  HeaderButtons,
+  BarChart3,
+  Building2,
+  Calendar,
+  CheckCircle,
+  Clock,
+  FileText,
+  Heart,
+  Laptop,
+  LogIn,
+  Mail,
+  Shield,
+  Sparkles,
+  Stethoscope,
+  UserPlus,
+  Users,
+} from "lucide-react";
+import {
   ButtonLogin,
-  ButtonRegister,
-  HeroSection,
-  HeroTitle,
-  HeroDescription,
-  CTAButtons,
   ButtonPrimary,
+  ButtonRegister,
   ButtonSecondary,
-  FeaturesSection,
-  SectionHeader,
-  SectionTitle,
-  SectionDescription,
-  FeaturesGrid,
-  FeatureCard,
-  FeatureTitle,
-  FeatureDescription,
-  StepsSection,
-  StepsGrid,
-  PatientStepsGrid,
-  StepCard,
-  StepTitle,
-  StepDescription,
+  Container,
+  CTAButtons,
+  CTADescription,
   CTASection,
   CTATitle,
-  CTADescription,
+  FeatureCard,
+  FeatureDescription,
+  FeaturesGrid,
+  FeaturesSection,
+  FeatureTitle,
   Footer,
-  FooterContent,
+  FooterBottom,
   FooterColumn,
+  FooterContent,
+  FooterDivider,
+  FooterLink,
   FooterLogo,
   FooterText,
   FooterTitle,
-  FooterLink,
-  FooterDivider,
-  FooterBottom,
+  HeaderButtons,
+  HeroContainer,
+  HeroDescription,
+  HeroSection,
+  HeroTitle,
+  Icon,
+  IconContainer,
+  LogoContainer,
+  LogoSubtitle,
+  LogoTitle,
+  Nav,
+  PatientStepsGrid,
+  SectionDescription,
+  SectionHeader,
+  SectionTitle,
+  StepCard,
+  StepDescription,
+  StepsGrid,
+  StepsSection,
+  StepTitle,
+  TextContainer,
 } from "./styles";
-import {
-  Stethoscope,
-  LogIn,
-  Building2,
-  Heart,
-  Calendar,
-  Users,
-  BarChart3,
-  Shield,
-  Clock,
-  Sparkles,
-  FileText,
-  Mail,
-  UserPlus,
-  CheckCircle,
-  Laptop,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 
 // Types
 interface Feature {
@@ -235,9 +234,8 @@ const Home = () => {
         <HeroSection>
           <HeroTitle>Transforme a gestão da sua clínica</HeroTitle>
           <HeroDescription>
-            Plataforma completa para gerenciar agendamentos, pacientes e equipe
-            médica. Simplifique processos, economize tempo e ofereça uma melhor
-            experiência aos seus pacientes.
+            Plataforma completa para gerenciar agendamentos, pacientes e equipe médica. Simplifique
+            processos, economize tempo e ofereça uma melhor experiência aos seus pacientes.
           </HeroDescription>
 
           <CTAButtons>
@@ -264,10 +262,10 @@ const Home = () => {
         </SectionHeader>
 
         <FeaturesGrid>
-          {FEATURES.map((feature, index) => {
+          {FEATURES.map((feature) => {
             const IconComponent = feature.icon;
             return (
-              <FeatureCard key={index} bgColor={feature.bgColor}>
+              <FeatureCard key={feature.title} bgColor={feature.bgColor}>
                 <div className="icon-container">
                   <IconComponent size={32} color={feature.iconColor} />
                 </div>
@@ -291,10 +289,10 @@ const Home = () => {
         </SectionHeader>
 
         <StepsGrid>
-          {CLINIC_STEPS.map((step, index) => {
+          {CLINIC_STEPS.map((step) => {
             const IconComponent = step.icon;
             return (
-              <StepCard key={index}>
+              <StepCard key={step.number}>
                 <div className="step-number">{step.number}</div>
                 <div className="icon-container">
                   <IconComponent size={28} color={step.iconColor} />
@@ -313,21 +311,16 @@ const Home = () => {
       <FeaturesSection>
         <SectionHeader>
           <SectionTitle>Como funciona para pacientes?</SectionTitle>
-          <SectionDescription>
-            Acesso rápido e fácil ao portal do paciente
-          </SectionDescription>
+          <SectionDescription>Acesso rápido e fácil ao portal do paciente</SectionDescription>
         </SectionHeader>
 
         <PatientStepsGrid>
-          {PATIENT_STEPS.map((step, index) => {
+          {PATIENT_STEPS.map((step) => {
             const IconComponent = step.icon;
             return (
-              <StepCard key={index}>
+              <StepCard key={step.number}>
                 <div className="step-number">{step.number}</div>
-                <div
-                  className="icon-container"
-                  style={{ backgroundColor: step.bgColor }}
-                >
+                <div className="icon-container" style={{ backgroundColor: step.bgColor }}>
                   <IconComponent size={28} color={step.iconColor} />
                 </div>
                 <div>
@@ -344,8 +337,8 @@ const Home = () => {
       <CTASection>
         <CTATitle>Pronto para começar?</CTATitle>
         <CTADescription>
-          Junte-se a centenas de clínicas que já transformaram sua gestão com Minha
-          Clínica. Cadastre-se gratuitamente hoje mesmo!
+          Junte-se a centenas de clínicas que já transformaram sua gestão com Minha Clínica.
+          Cadastre-se gratuitamente hoje mesmo!
         </CTADescription>
 
         <CTAButtons>
@@ -372,9 +365,8 @@ const Home = () => {
               <h3>Minha Clínica</h3>
             </FooterLogo>
             <FooterText>
-              Solução completa para gestão de clínicas e consultórios médicos.
-              Simplifique sua rotina e foque no que realmente importa: cuidar dos
-              seus pacientes.
+              Solução completa para gestão de clínicas e consultórios médicos. Simplifique sua
+              rotina e foque no que realmente importa: cuidar dos seus pacientes.
             </FooterText>
           </FooterColumn>
 
