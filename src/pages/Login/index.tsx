@@ -1,21 +1,33 @@
-import { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { AuthLayout } from '../../components/AuthLayout';
-import { Card } from '../../components/Card';
-import { Logo } from '../../components/Logo';
-import { Input } from '../../components/Input';
-import { Button } from '../../components/Button';
-import { Container, Title, Subtitle, Form, RememberRow, Checkbox, CheckboxLabel, ForgotLink, Footer, FooterText, FooterLink } from './styles';
+import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import { useState } from "react";
+import { AuthLayout } from "../../components/AuthLayout";
+import { Button } from "../../components/Button";
+import { Card } from "../../components/Card";
+import { Input } from "../../components/Input";
+import { Logo } from "../../components/Logo";
+import {
+  Checkbox,
+  CheckboxLabel,
+  Container,
+  Footer,
+  FooterLink,
+  FooterText,
+  ForgotLink,
+  Form,
+  RememberRow,
+  Subtitle,
+  Title,
+} from "./styles";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login:', { email, password, rememberMe });
+    console.log("Login:", { email, password, rememberMe });
     // TODO: Implement authentication logic
   };
 
@@ -39,7 +51,7 @@ const Login = () => {
             />
 
             <Input
-              type={showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               placeholder="Senha"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -52,15 +64,15 @@ const Login = () => {
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               style={{
-                position: 'absolute',
-                right: '16px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                display: 'flex',
-                color: '#9CA3AF'
+                position: "absolute",
+                right: "16px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                color: "#9CA3AF",
               }}
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}

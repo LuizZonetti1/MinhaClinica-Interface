@@ -14,7 +14,7 @@ export const Stepper = ({ steps }: StepperProps) => {
   return (
     <Container>
       {steps.map((step, index) => (
-        <div key={index} style={{ display: "flex", alignItems: "flex-start" }}>
+        <div key={step.label} style={{ display: "flex", alignItems: "flex-start" }}>
           <StepItem>
             <StepCircle $status={step.status}>
               {step.status === "completed" ? (

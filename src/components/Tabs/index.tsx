@@ -1,4 +1,4 @@
-import { Container, TabsList, TabButton, TabContent } from './styles';
+import { Container, TabButton, TabContent, TabsList } from "./styles";
 
 interface Tab {
   id: string;
@@ -17,7 +17,7 @@ export const Tabs = ({ tabs, activeTab, onTabChange, children }: TabsProps) => {
   return (
     <Container>
       <TabsList>
-        {tabs.map(tab => (
+        {tabs.map((tab) => (
           <TabButton
             key={tab.id}
             $active={activeTab === tab.id}

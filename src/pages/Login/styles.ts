@@ -1,6 +1,6 @@
-import styled from 'styled-components';
-import { Link } from 'react-router';
-import { theme } from '../../themes/themes';
+import { Link } from "react-router";
+import styled from "styled-components";
+import { theme } from "../../themes/themes";
 
 export const Container = styled.div`
   display: flex;
