@@ -41,7 +41,7 @@ export interface RegisterCompletePayload {
     cpf: string;
     phone: string;
     password: string;
-    birthDate: string; // YYYY-MM-DD
+    dateOfBirth: string; // YYYY-MM-DD
     gender: "masculino" | "feminino" | "outro";
     address: {
         cep: string;

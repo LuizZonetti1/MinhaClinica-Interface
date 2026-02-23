@@ -7,6 +7,12 @@ interface AddressTabProps {
   onChange: (field: string, value: string) => void;
 }
 
+const maskCEP = (value: string) =>
+  value
+    .replace(/\D/g, "")
+    .slice(0, 8)
+    .replace(/(\d{5})(\d{1,3})$/, "$1-$2");
+
 export const AddressTab = ({ formData, onChange }: AddressTabProps) => {
   return (
     <FieldGroup>
@@ -15,7 +21,7 @@ export const AddressTab = ({ formData, onChange }: AddressTabProps) => {
         type="text"
         placeholder="00000-000"
         value={formData.cep}
-        onChange={(e) => onChange("cep", e.target.value)}
+        onChange={(e) => onChange("cep", maskCEP(e.target.value))}
         icon={<MapPin />}
         fullWidth
       />

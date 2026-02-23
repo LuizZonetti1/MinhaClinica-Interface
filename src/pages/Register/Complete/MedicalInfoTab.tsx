@@ -7,6 +7,13 @@ interface MedicalInfoTabProps {
   onChange: (field: string, value: string) => void;
 }
 
+const maskPhone = (value: string) =>
+  value
+    .replace(/\D/g, "")
+    .slice(0, 11)
+    .replace(/(\d{2})(\d)/, "($1) $2")
+    .replace(/(\d{5})(\d{1,4})$/, "$1-$2");
+
 export const MedicalInfoTab = ({ formData, onChange }: MedicalInfoTabProps) => {
   return (
     <FieldGroup>
@@ -69,7 +76,7 @@ export const MedicalInfoTab = ({ formData, onChange }: MedicalInfoTabProps) => {
             type="tel"
             placeholder="(00) 00000-0000"
             value={formData.emergencyPhone}
-            onChange={(e) => onChange("emergencyPhone", e.target.value)}
+            onChange={(e) => onChange("emergencyPhone", maskPhone(e.target.value))}
             icon={<Phone />}
             fullWidth
           />

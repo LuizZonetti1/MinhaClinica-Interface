@@ -117,7 +117,7 @@ const RegisterComplete = () => {
         cpf: formData.cpf,
         phone: formData.phone,
         password: formData.password,
-        birthDate: formData.birthDate,
+        dateOfBirth: formData.birthDate,
         gender: formData.gender as "masculino" | "feminino" | "outro",
         address: {
           cep: formData.cep,

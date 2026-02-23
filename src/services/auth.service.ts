@@ -73,6 +73,7 @@ export const resendVerification = async (
 export const registerComplete = async (
     payload: RegisterCompletePayload,
 ): Promise<RegisterCompleteResponse> => {
+    console.log("[registerComplete] payload enviado:", JSON.stringify(payload, null, 2));
     const { data } = await api.post<RegisterCompleteResponse>(
         "/auth/register/complete",
         payload,

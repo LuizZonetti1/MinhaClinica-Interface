@@ -7,6 +7,21 @@ interface PersonalDataTabProps {
   onChange: (field: string, value: string) => void;
 }
 
+const maskCPF = (value: string) =>
+  value
+    .replace(/\D/g, "")
+    .slice(0, 11)
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+
+const maskPhone = (value: string) =>
+  value
+    .replace(/\D/g, "")
+    .slice(0, 11)
+    .replace(/(\d{2})(\d)/, "($1) $2")
+    .replace(/(\d{5})(\d{1,4})$/, "$1-$2");
+
 export const PersonalDataTab = ({ formData, onChange }: PersonalDataTabProps) => {
   return (
     <FieldGroup>
@@ -16,7 +31,7 @@ export const PersonalDataTab = ({ formData, onChange }: PersonalDataTabProps) =>
           type="text"
           placeholder="000.000.000-00"
           value={formData.cpf}
-          onChange={(e) => onChange("cpf", e.target.value)}
+          onChange={(e) => onChange("cpf", maskCPF(e.target.value))}
           icon={<User />}
           fullWidth
           required
@@ -27,7 +42,7 @@ export const PersonalDataTab = ({ formData, onChange }: PersonalDataTabProps) =>
           type="tel"
           placeholder="(00) 00000-0000"
           value={formData.phone}
-          onChange={(e) => onChange("phone", e.target.value)}
+          onChange={(e) => onChange("phone", maskPhone(e.target.value))}
           icon={<Phone />}
           fullWidth
           required
