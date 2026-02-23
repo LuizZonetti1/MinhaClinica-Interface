@@ -1,21 +1,19 @@
-import type { LucideIcon } from "lucide-react";
-import {
-  BarChart3,
-  Building2,
-  Calendar,
-  CheckCircle,
-  Clock,
-  FileText,
-  Heart,
-  Laptop,
-  LogIn,
-  Mail,
-  Shield,
-  Sparkles,
-  Stethoscope,
-  UserPlus,
-  Users,
-} from "lucide-react";
+import type { LucideIcon } from 'lucide-react';
+import { BarChart3 } from 'lucide-react';
+import { Building2 } from 'lucide-react';
+import { Calendar } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
+import { Clock } from 'lucide-react';
+import { FileText } from 'lucide-react';
+import { Heart } from 'lucide-react';
+import { Laptop } from 'lucide-react';
+import { LogIn } from 'lucide-react';
+import { Mail } from 'lucide-react';
+import { Shield } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
+import { Stethoscope } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
+import { Users } from 'lucide-react';
 import {
   ButtonLogin,
   ButtonPrimary,
@@ -265,7 +263,7 @@ const Home = () => {
           {FEATURES.map((feature) => {
             const IconComponent = feature.icon;
             return (
-              <FeatureCard key={feature.title} bgColor={feature.bgColor}>
+              <FeatureCard key={feature.title} $bgColor={feature.bgColor}>
                 <div className="icon-container">
                   <IconComponent size={32} color={feature.iconColor} />
                 </div>
