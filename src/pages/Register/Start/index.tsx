@@ -7,18 +7,31 @@ import { Card } from "../../../components/Card";
 import { Input } from "../../../components/Input";
 import { Logo } from "../../../components/Logo";
 import { Stepper } from "../../../components/Stepper";
+import { registerStart } from "../../../services/auth.service";
+import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { Container, Footer, FooterLink, FooterText, Form, Title } from "./styles";
 
 const RegisterStart = () => {
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Register Start:", { name, email });
-    // TODO: Send verification email
-    navigate("/register/verify");
+    setError("");
+    setLoading(true);
+    try {
+      await registerStart({ name, email });
+      // Salva o e-mail para usar na tela de verificação (localStorage persiste entre abas)
+      localStorage.setItem("@minhaclinica:register_email", email);
+      navigate("/registro/verificar");
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, "Erro ao iniciar cadastro. Tente novamente."));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const steps = [
@@ -60,6 +73,8 @@ const RegisterStart = () => {
               required
             />
 
+            {error && <p style={{ color: "red", fontSize: 13, margin: 0 }}>{error}</p>}
+
             <Button
               type="submit"
               variant="primary"
@@ -67,8 +82,9 @@ const RegisterStart = () => {
               fullWidth
               icon={<ArrowRight />}
               iconPosition="right"
+              disabled={loading}
             >
-              Continuar
+              {loading ? "Enviando..." : "Continuar"}
             </Button>
           </Form>
 

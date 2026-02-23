@@ -1,4 +1,4 @@
-import { Check, Heart, MapPin, User } from "lucide-react";
+import { ArrowRight, Check, Heart, MapPin, User } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { AuthLayout } from "../../../components/AuthLayout";
@@ -7,14 +7,23 @@ import { Card } from "../../../components/Card";
 import { Logo } from "../../../components/Logo";
 import { Stepper } from "../../../components/Stepper";
 import { Tabs } from "../../../components/Tabs";
+import { registerComplete } from "../../../services/auth.service";
+import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { AddressTab } from "./AddressTab";
 import { MedicalInfoTab } from "./MedicalInfoTab";
 import { PersonalDataTab } from "./PersonalDataTab";
 import { Container, Title } from "./styles";
 
+type TabId = "personal" | "address" | "medical";
+
+const TAB_ORDER: TabId[] = ["personal", "address", "medical"];
+
 const RegisterComplete = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("personal");
+  const [activeTab, setActiveTab] = useState<TabId>("personal");
+  const [completedTabs, setCompletedTabs] = useState<Set<TabId>>(new Set());
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
     // Personal Data
@@ -47,11 +56,94 @@ const RegisterComplete = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // --- Validações por aba ---
+  const isPersonalValid = () =>
+    Boolean(
+      formData.cpf.trim() &&
+        formData.phone.trim() &&
+        formData.password.trim() &&
+        formData.confirmPassword.trim() &&
+        formData.birthDate.trim() &&
+        formData.gender.trim(),
+    );
+
+  const isAddressValid = () =>
+    Boolean(
+      formData.cep.trim() &&
+        formData.street.trim() &&
+        formData.number.trim() &&
+        formData.neighborhood.trim() &&
+        formData.city.trim() &&
+        formData.state.trim(),
+    );
+
+  const isMedicalValid = () =>
+    Boolean(
+      formData.bloodType.trim() &&
+        formData.allergies.trim() &&
+        formData.medications.trim() &&
+        formData.conditions.trim() &&
+        formData.emergencyName.trim() &&
+        formData.emergencyPhone.trim(),
+    );
+
+  const isCurrentTabValid = () => {
+    if (activeTab === "personal") return isPersonalValid();
+    if (activeTab === "address") return isAddressValid();
+    if (activeTab === "medical") return isMedicalValid();
+    return false;
+  };
+
+  const isLastTab = activeTab === "medical";
+
+  const handleContinue = () => {
+    if (!isCurrentTabValid()) return;
+
+    const currentIndex = TAB_ORDER.indexOf(activeTab);
+    setCompletedTabs((prev) => new Set(prev).add(activeTab));
+
+    if (!isLastTab) {
+      setActiveTab(TAB_ORDER[currentIndex + 1]);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Complete Registration:", formData);
-    // TODO: Submit registration data
-    navigate("/dashboard");
+    if (!isCurrentTabValid()) return;
+    setError("");
+    setLoading(true);
+    try {
+      await registerComplete({
+        cpf: formData.cpf,
+        phone: formData.phone,
+        password: formData.password,
+        birthDate: formData.birthDate,
+        gender: formData.gender as "masculino" | "feminino" | "outro",
+        address: {
+          cep: formData.cep,
+          street: formData.street,
+          number: formData.number,
+          complement: formData.complement,
+          neighborhood: formData.neighborhood,
+          city: formData.city,
+          state: formData.state,
+        },
+        medicalInfo: {
+          bloodType: formData.bloodType,
+          allergies: formData.allergies,
+          medications: formData.medications,
+          conditions: formData.conditions,
+          emergencyName: formData.emergencyName,
+          emergencyPhone: formData.emergencyPhone,
+        },
+      });
+      localStorage.removeItem("@minhaclinica:register_email");
+      navigate("/dashboard");
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, "Erro ao concluir cadastro. Tente novamente."));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const steps = [
@@ -61,9 +153,27 @@ const RegisterComplete = () => {
   ];
 
   const tabs = [
-    { id: "personal", label: "Dados Pessoais", icon: <User /> },
-    { id: "address", label: "Endereço", icon: <MapPin /> },
-    { id: "medical", label: "Info Médicas", icon: <Heart /> },
+    {
+      id: "personal",
+      label: "Dados Pessoais",
+      icon: <User />,
+      disabled: false,
+      completed: completedTabs.has("personal"),
+    },
+    {
+      id: "address",
+      label: "Endereço",
+      icon: <MapPin />,
+      disabled: !completedTabs.has("personal"),
+      completed: completedTabs.has("address"),
+    },
+    {
+      id: "medical",
+      label: "Info Médicas",
+      icon: <Heart />,
+      disabled: !completedTabs.has("address"),
+      completed: completedTabs.has("medical"),
+    },
   ];
 
   return (
@@ -76,7 +186,11 @@ const RegisterComplete = () => {
           <Stepper steps={steps} />
 
           <form onSubmit={handleSubmit} style={{ width: "100%" }}>
-            <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab}>
+            <Tabs
+              tabs={tabs}
+              activeTab={activeTab}
+              onTabChange={(tabId) => setActiveTab(tabId as TabId)}
+            >
               {activeTab === "personal" && (
                 <PersonalDataTab formData={formData} onChange={handleChange} />
               )}
@@ -88,16 +202,35 @@ const RegisterComplete = () => {
               )}
             </Tabs>
 
-            <Button
-              type="submit"
-              variant="primary"
-              size="medium"
-              fullWidth
-              icon={<Check />}
-              iconPosition="left"
-            >
-              Concluir Cadastro
-            </Button>
+            {isLastTab ? (
+              <>
+                {error && <p style={{ color: "red", fontSize: 13, margin: "0 0 8px" }}>{error}</p>}
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="medium"
+                  fullWidth
+                  icon={<Check />}
+                  iconPosition="left"
+                  disabled={!isCurrentTabValid() || loading}
+                >
+                  {loading ? "Enviando..." : "Concluir Cadastro"}
+                </Button>
+              </>
+            ) : (
+              <Button
+                type="button"
+                variant="primary"
+                size="medium"
+                fullWidth
+                icon={<ArrowRight />}
+                iconPosition="right"
+                onClick={handleContinue}
+                disabled={!isCurrentTabValid()}
+              >
+                Continuar
+              </Button>
+            )}
           </form>
         </Container>
       </Card>
