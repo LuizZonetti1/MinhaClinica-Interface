@@ -16,6 +16,7 @@ import {
   UserPlus,
   Users,
 } from "lucide-react";
+import { useNavigate } from "react-router";
 import {
   ButtonLogin,
   ButtonPrimary,
@@ -201,6 +202,16 @@ const PATIENT_STEPS: ReadonlyArray<Step> = [
 ];
 
 const Home = () => {
+  const navigate = useNavigate();
+
+  const handleLoginClick = () => {
+    navigate("/login");
+  };
+
+  const handleRegisterPacientClick = () => {
+    navigate("/paciente/acesso");
+  };
+
   return (
     <Container>
       {/* Hero Section */}
@@ -219,7 +230,7 @@ const Home = () => {
           </LogoContainer>
 
           <HeaderButtons>
-            <ButtonLogin>
+            <ButtonLogin onClick={handleLoginClick}>
               <LogIn size={18} />
               Entrar
             </ButtonLogin>
@@ -244,7 +255,7 @@ const Home = () => {
               Cadastrar Minha Clínica
             </ButtonPrimary>
 
-            <ButtonSecondary>
+            <ButtonSecondary onClick={handleRegisterPacientClick}>
               <Heart size={20} />
               Sou Paciente
             </ButtonSecondary>
@@ -347,7 +358,7 @@ const Home = () => {
             Cadastrar Minha Clínica Agora
           </ButtonPrimary>
 
-          <ButtonSecondary>
+          <ButtonSecondary onClick={handleLoginClick}>
             <LogIn size={20} />
             Já tenho uma conta
           </ButtonSecondary>
