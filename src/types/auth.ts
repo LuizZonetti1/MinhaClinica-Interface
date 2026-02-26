@@ -1,4 +1,5 @@
-// ─── Login ────────────────────────────────────────────────────────────────────
+import type { Gender } from "./enums";
+
 export interface LoginPayload {
     email: string;
     password: string;
@@ -14,7 +15,6 @@ export interface LoginResponse {
     };
 }
 
-// ─── Etapa 1: Início ──────────────────────────────────────────────────────────
 export interface RegisterStartPayload {
     name: string;
     email: string;
@@ -24,7 +24,6 @@ export interface RegisterStartResponse {
     message: string;
 }
 
-// ─── Etapa 2: Verificação ─────────────────────────────────────────────────────
 // token é passado como path param: GET /api/auth/verify-email/:token
 export interface VerifyEmailResponse {
     tempToken: string; // JWT temporário para usar na etapa Complete
@@ -42,7 +41,7 @@ export interface RegisterCompletePayload {
     phone: string;
     password: string;
     dateOfBirth: string; // YYYY-MM-DD
-    gender: "masculino" | "feminino" | "outro";
+    gender: Gender;
     address: {
         cep: string;
         street: string;

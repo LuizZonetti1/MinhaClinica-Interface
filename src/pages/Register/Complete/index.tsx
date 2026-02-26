@@ -118,7 +118,7 @@ const RegisterComplete = () => {
         phone: formData.phone,
         password: formData.password,
         dateOfBirth: formData.birthDate,
-        gender: formData.gender as "masculino" | "feminino" | "outro",
+        gender: formData.gender,
         address: {
           cep: formData.cep,
           street: formData.street,
