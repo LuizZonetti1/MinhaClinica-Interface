@@ -1,4 +1,4 @@
-import type { Gender } from "./enums";
+import type { Gender, UserRole } from "./enums";
 
 export interface LoginPayload {
     email: string;
@@ -11,7 +11,7 @@ export interface LoginResponse {
         id: string;
         name: string;
         email: string;
-        role: string;
+        role: UserRole;
     };
 }
 
@@ -22,6 +22,9 @@ export interface RegisterStartPayload {
 
 export interface RegisterStartResponse {
     message: string;
+    email?: string;
+    tempToken?: string;
+    redirectToComplete?: boolean;
 }
 
 // token é passado como path param: GET /api/auth/verify-email/:token
@@ -56,8 +59,8 @@ export interface RegisterCompletePayload {
         allergies: string;
         medications: string;
         conditions: string;
-        emergencyName: string;
-        emergencyPhone: string;
+        emergencyName?: string;
+        emergencyPhone?: string;
     };
 }
 
