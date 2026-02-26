@@ -23,10 +23,18 @@ const RegisterStart = () => {
     setError("");
     setLoading(true);
     try {
-      await registerStart({ name, email });
-      // Salva o e-mail para usar na tela de verificação (localStorage persiste entre abas)
+      const response = await registerStart({ name, email });
+      // Salva o e-mail para usar nas próximas etapas
       localStorage.setItem("@minhaclinica:register_email", email);
-      navigate("/registro/verificar");
+
+      if (response.redirectToComplete && response.tempToken) {
+        // Caso 3: email já verificado mas cadastro não finalizado — pula etapa 2
+        localStorage.setItem("@minhaclinica:token", response.tempToken);
+        navigate("/registro/completo");
+      } else {
+        // Casos 1 e 2: fluxo normal — ir para verificação de email
+        navigate("/registro/verificar");
+      }
     } catch (err: unknown) {
       setError(getApiErrorMessage(err, "Erro ao iniciar cadastro. Tente novamente."));
     } finally {

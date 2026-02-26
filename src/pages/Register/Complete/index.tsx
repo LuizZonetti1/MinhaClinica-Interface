@@ -8,7 +8,9 @@ import { Logo } from "../../../components/Logo";
 import { Stepper } from "../../../components/Stepper";
 import { Tabs } from "../../../components/Tabs";
 import { registerComplete } from "../../../services/auth.service";
+import type { Gender } from "../../../types/enums";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
+import { stripCPF } from "../../../utils/validateCPF";
 import { AddressTab } from "./AddressTab";
 import { MedicalInfoTab } from "./MedicalInfoTab";
 import { PersonalDataTab } from "./PersonalDataTab";
@@ -82,9 +84,7 @@ const RegisterComplete = () => {
       formData.bloodType.trim() &&
         formData.allergies.trim() &&
         formData.medications.trim() &&
-        formData.conditions.trim() &&
-        formData.emergencyName.trim() &&
-        formData.emergencyPhone.trim(),
+        formData.conditions.trim(),
     );
 
   const isCurrentTabValid = () => {
@@ -114,11 +114,11 @@ const RegisterComplete = () => {
     setLoading(true);
     try {
       await registerComplete({
-        cpf: formData.cpf,
+        cpf: stripCPF(formData.cpf),
         phone: formData.phone,
         password: formData.password,
         dateOfBirth: formData.birthDate,
-        gender: formData.gender,
+        gender: formData.gender as Gender,
         address: {
           cep: formData.cep,
           street: formData.street,

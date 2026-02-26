@@ -2,8 +2,17 @@ import { Phone } from "lucide-react";
 import { Input } from "../../../components/Input";
 import { EmergencyBox, EmergencyTitle, FieldGroup, Label, Row, Select } from "./styles";
 
+interface MedicalInfoFormData {
+  bloodType: string;
+  allergies: string;
+  medications: string;
+  conditions: string;
+  emergencyName: string;
+  emergencyPhone: string;
+}
+
 interface MedicalInfoTabProps {
-  formData: any;
+  formData: MedicalInfoFormData;
   onChange: (field: string, value: string) => void;
 }
 
@@ -60,7 +69,10 @@ export const MedicalInfoTab = ({ formData, onChange }: MedicalInfoTabProps) => {
       />
 
       <EmergencyBox>
-        <EmergencyTitle>Contato de Emergência</EmergencyTitle>
+        <EmergencyTitle>
+          Contato de Emergência{" "}
+          <span style={{ fontWeight: 400, fontSize: "0.8em", opacity: 0.6 }}>(opcional)</span>
+        </EmergencyTitle>
         <Row>
           <Input
             label="Nome e parentesco"

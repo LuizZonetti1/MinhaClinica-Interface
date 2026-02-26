@@ -3,8 +3,16 @@ import { Input } from "../../../components/Input";
 import { FieldGroup, Label, RadioButton, RadioGroup, Row } from "./styles";
 
 interface PersonalDataTabProps {
-  formData: any;
+  formData: {
+    cpf: string;
+    phone: string;
+    password: string;
+    confirmPassword: string;
+    birthDate: string;
+    gender: string;
+  };
   onChange: (field: string, value: string) => void;
+  cpfError?: string;
 }
 
 const maskCPF = (value: string) =>
@@ -22,7 +30,7 @@ const maskPhone = (value: string) =>
     .replace(/(\d{2})(\d)/, "($1) $2")
     .replace(/(\d{5})(\d{1,4})$/, "$1-$2");
 
-export const PersonalDataTab = ({ formData, onChange }: PersonalDataTabProps) => {
+export const PersonalDataTab = ({ formData, onChange, cpfError }: PersonalDataTabProps) => {
   return (
     <FieldGroup>
       <Row>
@@ -35,6 +43,7 @@ export const PersonalDataTab = ({ formData, onChange }: PersonalDataTabProps) =>
           icon={<User />}
           fullWidth
           required
+          error={cpfError}
         />
 
         <Input
