@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
+import PatientAccess from "../pages/Patient/Access";
 import RegisterComplete from "../pages/Register/Complete";
 import CompleteRedirect from "../pages/Register/CompleteRedirect";
 import RegisterStart from "../pages/Register/Start";
@@ -13,11 +14,10 @@ const AppRoutes = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/paciente/acesso" element={<PatientAccess />} />
         <Route path="/registro/inicial" element={<RegisterStart />} />
         <Route path="/registro/verificar" element={<RegisterVerify />} />
-        {/* Rota gerada pelo backend no e-mail de verificação */}
         <Route path="/verify-email" element={<RegisterVerify />} />
-        {/* Rota de destino do redirect 302 feito pelo backend após verificar o token */}
         <Route path="/completar-cadastro" element={<CompleteRedirect />} />
         <Route
           path="/registro/completo"
