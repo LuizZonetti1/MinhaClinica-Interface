@@ -71,5 +71,6 @@ export interface RegisterCompleteResponse {
         id: string;
         name: string;
         email: string;
+        role: UserRole;
     };
 }
