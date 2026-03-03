@@ -10,9 +10,14 @@ import RegisterComplete from "../pages/Register/Complete";
 import CompleteRedirect from "../pages/Register/CompleteRedirect";
 import RegisterStart from "../pages/Register/Start";
 import RegisterVerify from "../pages/Register/Verify";
+import ClinicCompleteRedirect from "../pages/RegisterClinic/CompleteRedirect";
+import RegisterClinicComplete from "../pages/RegisterClinic/Complete";
+import RegisterClinicStart from "../pages/RegisterClinic/Start";
+import RegisterClinicVerify from "../pages/RegisterClinic/Verify";
 import ReceptionDashboard from "../pages/reception/deshboard";
 import { Unauthorized } from "../pages/Unauthorized";
 import { UserRole } from "../types/enums";
+import { ClinicRegisterCompleteGuard } from "./ClinicRegisterCompleteGuard";
 import { PrivateRoutes } from "./PrivateRoutes";
 import { RegisterCompleteGuard } from "./RegisterCompleteGuard";
 import { RoleGuard } from "./RoleGuard";
@@ -27,7 +32,7 @@ const AppRoutes = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/nao-autorizado" element={<Unauthorized />} />
 
-        {/* ─── Registro ───────────────────────────────────────── */}
+        {/* ─── Registro (Paciente) ─────────────────────────────── */}
         <Route path="/paciente/acesso" element={<PatientAccess />} />
         <Route path="/registro/inicial" element={<RegisterStart />} />
         <Route path="/registro/verificar" element={<RegisterVerify />} />
@@ -39,6 +44,20 @@ const AppRoutes = () => {
             <RegisterCompleteGuard>
               <RegisterComplete />
             </RegisterCompleteGuard>
+          }
+        />
+
+        {/* ─── Registro (Clínica) ──────────────────────────────── */}
+        <Route path="/clinica/registro/inicial" element={<RegisterClinicStart />} />
+        <Route path="/clinica/registro/verificar" element={<RegisterClinicVerify />} />
+        <Route path="/clinica/verify-email" element={<RegisterClinicVerify />} />
+        <Route path="/clinica/completar-cadastro" element={<ClinicCompleteRedirect />} />
+        <Route
+          path="/clinica/registro/completo"
+          element={
+            <ClinicRegisterCompleteGuard>
+              <RegisterClinicComplete />
+            </ClinicRegisterCompleteGuard>
           }
         />
 
