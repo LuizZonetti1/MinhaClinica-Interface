@@ -7,6 +7,7 @@ import { Card } from "../../../components/Card";
 import { Logo } from "../../../components/Logo";
 import { Stepper } from "../../../components/Stepper";
 import { Tabs } from "../../../components/Tabs";
+import { useAuth } from "../../../contexts";
 import { registerComplete } from "../../../services/auth.service";
 import type { Gender } from "../../../types/enums";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
@@ -22,6 +23,7 @@ const TAB_ORDER: TabId[] = ["personal", "address", "medical"];
 
 const RegisterComplete = () => {
   const navigate = useNavigate();
+  const { setUser } = useAuth();
   const [activeTab, setActiveTab] = useState<TabId>("personal");
   const [completedTabs, setCompletedTabs] = useState<Set<TabId>>(new Set());
   const [loading, setLoading] = useState(false);
@@ -113,7 +115,7 @@ const RegisterComplete = () => {
     setError("");
     setLoading(true);
     try {
-      await registerComplete({
+      const response = await registerComplete({
         cpf: stripCPF(formData.cpf),
         phone: formData.phone,
         password: formData.password,
@@ -137,8 +139,9 @@ const RegisterComplete = () => {
           emergencyPhone: formData.emergencyPhone,
         },
       });
+      setUser(response.user);
       localStorage.removeItem("@minhaclinica:register_email");
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } catch (err: unknown) {
       setError(getApiErrorMessage(err, "Erro ao concluir cadastro. Tente novamente."));
     } finally {
