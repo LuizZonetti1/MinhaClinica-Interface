@@ -40,7 +40,8 @@ const RegisterVerify = () => {
   const email = localStorage.getItem("@minhaclinica:register_email") ?? "";
 
   // Redireciona o browser para o backend, que faz a verificação e redireciona
-  // de volta para /completar-cadastro?tempToken=... no frontend
+  // de volta para /completar-cadastro?tempToken=JWT no frontend.
+  // Esta página é exclusiva do fluxo de paciente; o fluxo de clínica usa RegisterClinicVerify.
   useEffect(() => {
     if (!token) return;
     const typeParam = type ? `&type=${type}` : "";
