@@ -212,6 +212,10 @@ const Home = () => {
     navigate("/paciente/acesso");
   };
 
+  const handleRegisterClinicClick = () => {
+    navigate("/clinica/registro/inicial");
+  };
+
   return (
     <Container>
       {/* Hero Section */}
@@ -235,7 +239,7 @@ const Home = () => {
               Entrar
             </ButtonLogin>
 
-            <ButtonRegister>
+            <ButtonRegister onClick={handleRegisterClinicClick}>
               <Building2 size={18} />
               Cadastrar Clínica
             </ButtonRegister>
@@ -250,7 +254,7 @@ const Home = () => {
           </HeroDescription>
 
           <CTAButtons>
-            <ButtonPrimary>
+            <ButtonPrimary onClick={handleRegisterClinicClick}>
               <Building2 size={20} />
               Cadastrar Minha Clínica
             </ButtonPrimary>
@@ -353,7 +357,7 @@ const Home = () => {
         </CTADescription>
 
         <CTAButtons>
-          <ButtonPrimary>
+          <ButtonPrimary onClick={handleRegisterClinicClick}>
             <Building2 size={20} />
             Cadastrar Minha Clínica Agora
           </ButtonPrimary>
