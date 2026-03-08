@@ -54,12 +54,12 @@ export const InputWrapper = styled.div<{ $hasError: boolean }>`
   }
 `;
 
-export const StyledInput = styled.input<{ $hasIcon: boolean; $iconPosition: 'left' | 'right' }>`
+export const StyledInput = styled.input<{ $hasIcon: boolean; $iconPosition: 'left' | 'right'; $hasRightIcon?: boolean }>`
   flex: 1;
   height: 48px;
   padding: 0 ${theme.spacing.md};
   padding-left: ${props => (props.$hasIcon && props.$iconPosition === 'left' ? theme.spacing.sm : theme.spacing.md)};
-  padding-right: ${props => (props.$hasIcon && props.$iconPosition === 'right' ? theme.spacing.sm : theme.spacing.md)};
+  padding-right: ${props => (props.$hasRightIcon || (props.$hasIcon && props.$iconPosition === 'right') ? theme.spacing.sm : theme.spacing.md)};
   border: none;
   background: none;
   outline: none;

@@ -76,26 +76,11 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               icon={<Lock />}
               iconPosition="left"
+              rightIcon={showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              onRightIconClick={() => setShowPassword(!showPassword)}
               fullWidth
               required
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              style={{
-                position: "absolute",
-                right: "16px",
-                top: "50%",
-                transform: "translateY(-50%)",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                display: "flex",
-                color: "#9CA3AF",
-              }}
-            >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
 
             <RememberRow>
               <CheckboxLabel>
