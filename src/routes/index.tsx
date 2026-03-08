@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import { AppLayout } from "../layout/AppLayout";
 import AdminDashboard from "../pages/admin/deshboard";
+import ProfessionalsPage from "../pages/admin/Professionals";
 import ProfilePage from "../pages/admin/Profile";
 import ReportsPage from "../pages/admin/Reports";
 import SettingsPage from "../pages/admin/Settings";
@@ -13,8 +14,8 @@ import RegisterComplete from "../pages/Register/Complete";
 import CompleteRedirect from "../pages/Register/CompleteRedirect";
 import RegisterStart from "../pages/Register/Start";
 import RegisterVerify from "../pages/Register/Verify";
-import ClinicCompleteRedirect from "../pages/RegisterClinic/CompleteRedirect";
 import RegisterClinicComplete from "../pages/RegisterClinic/Complete";
+import ClinicCompleteRedirect from "../pages/RegisterClinic/CompleteRedirect";
 import RegisterClinicStart from "../pages/RegisterClinic/Start";
 import RegisterClinicVerify from "../pages/RegisterClinic/Verify";
 import ReceptionDashboard from "../pages/reception/deshboard";
@@ -94,7 +95,8 @@ const AppRoutes = () => {
           <Route element={<RoleGuard allowedRoles={[UserRole.ADMIN]} />}>
             <Route element={<AppLayout />}>
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
-              <Route path="/admin/profissional/dashboard" element={<ProfessionalDashboard />} />
+              <Route path="/admin/profissional" element={<ProfessionalsPage />} />
+              <Route path="/admin/profissional/dashboard" element={<ProfessionalsPage />} />
               <Route path="/admin/paciente/dashboard" element={<PatientDashboard />} />
               <Route path="/admin/relatorios" element={<ReportsPage />} />
               <Route path="/admin/configuracoes" element={<SettingsPage />} />

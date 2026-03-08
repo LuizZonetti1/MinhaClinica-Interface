@@ -26,7 +26,7 @@ interface NavLink {
 
 const ADMIN_NAV_LINKS: NavLink[] = [
   { label: 'Início', path: '/admin/dashboard', icon: LayoutDashboard },
-  { label: 'Profissionais', path: '/admin/profissional/dashboard', icon: Stethoscope },
+  { label: 'Profissionais', path: '/admin/profissional', icon: Stethoscope },
   { label: 'Pacientes', path: '/admin/paciente/dashboard', icon: Users },
   { label: 'Relatórios', path: '/admin/relatorios', icon: BarChart2 },
   { label: 'Configurações', path: '/admin/configuracoes', icon: Settings },

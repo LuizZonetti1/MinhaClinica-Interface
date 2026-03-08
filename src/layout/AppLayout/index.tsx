@@ -1,16 +1,36 @@
+import { ChevronRight } from 'lucide-react';
 import { Outlet, useLocation } from 'react-router';
 import styled from 'styled-components';
 import { theme } from '../../themes/themes';
 import { Sidebar } from '../Sidebar';
 
 const PAGE_TITLES: Record<string, string> = {
-  '/admin/dashboard': 'Início',
+  '/admin/dashboard': 'Inicio',
+  '/admin/profissional': 'Profissionais',
+  '/admin/profissional/dashboard': 'Profissionais',
+  '/admin/paciente/dashboard': 'Pacientes',
+  '/admin/relatorios': 'Relatorios',
+  '/admin/configuracoes': 'Configuracoes',
+  '/admin/perfil': 'Perfil',
   '/paciente/dashboard': 'Painel do Paciente',
-  '/recepcao/dashboard': 'Recepção',
+  '/recepcao/dashboard': 'Recepcao',
   '/profissional/dashboard': 'Painel do Profissional',
-  '/relatorios': 'Relatórios',
-  '/configuracoes': 'Configurações',
-  '/perfil': 'Perfil',
+};
+
+interface BreadcrumbItem {
+  parent: string;
+  current: string;
+}
+
+const PAGE_BREADCRUMBS: Record<string, BreadcrumbItem> = {
+  '/admin/profissional/dashboard': {
+    parent: 'Inicio',
+    current: 'Profissionais',
+  },
+  '/admin/profissional': {
+    parent: 'Inicio',
+    current: 'Profissionais',
+  },
 };
 
 const LayoutWrapper = styled.div`
@@ -41,11 +61,27 @@ const TopBar = styled.header`
   z-index: 10;
 `;
 
-const PageTitle = styled.span`
+const PageTitle = styled.div`
   font-family: 'Roboto', sans-serif;
   font-size: 14px;
   font-weight: 500;
   color: ${theme.colors.text.primary};
+`;
+
+const Breadcrumb = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+const BreadcrumbMuted = styled.span`
+  color: ${theme.colors.text.muted};
+  font-weight: 400;
+`;
+
+const BreadcrumbCurrent = styled.span`
+  color: ${theme.colors.text.primary};
+  font-weight: 600;
 `;
 
 const HeaderRight = styled.div`
@@ -63,7 +99,7 @@ const SearchBox = styled.div`
   border-radius: ${theme.borderRadius.sm};
   padding: 0 12px;
   height: 36px;
-  min-width: 160px;
+  min-width: 280px;
 
   img {
     width: 18px;
@@ -136,6 +172,7 @@ const MainContent = styled.main`
 export const AppLayout = () => {
   const location = useLocation();
   const title = PAGE_TITLES[location.pathname] ?? 'Dashboard';
+  const breadcrumb = PAGE_BREADCRUMBS[location.pathname];
 
   return (
     <LayoutWrapper>
@@ -143,14 +180,24 @@ export const AppLayout = () => {
 
       <ContentArea>
         <TopBar>
-          <PageTitle>{title}</PageTitle>
+          <PageTitle>
+            {breadcrumb ? (
+              <Breadcrumb>
+                <BreadcrumbMuted>{breadcrumb.parent}</BreadcrumbMuted>
+                <ChevronRight size={14} color={theme.colors.text.muted} />
+                <BreadcrumbCurrent>{breadcrumb.current}</BreadcrumbCurrent>
+              </Breadcrumb>
+            ) : (
+              title
+            )}
+          </PageTitle>
           <HeaderRight>
             <SearchBox>
               <img src="/icons/search.svg" alt="Buscar" />
               <span>Buscar...</span>
             </SearchBox>
             <BellWrapper>
-              <img src="/icons/notification.svg" alt="Notificações" />
+              <img src="/icons/notification.svg" alt="Notificacoes" />
               <NotificationBadge>2</NotificationBadge>
             </BellWrapper>
             <HeaderAvatar>
