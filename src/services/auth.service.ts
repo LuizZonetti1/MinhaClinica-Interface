@@ -14,7 +14,7 @@ import type {
 // POST /api/auth/login
 export const login = async (payload: LoginPayload): Promise<LoginResponse> => {
     const { data } = await api.post<LoginResponse>("/auth/login", payload);
-    localStorage.setItem("@minhaclinica:token", data.accessToken);
+    localStorage.setItem("@minhaclinica:token", data.token);
     return data;
 };
 

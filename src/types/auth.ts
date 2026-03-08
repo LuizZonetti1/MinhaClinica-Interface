@@ -6,12 +6,14 @@ export interface LoginPayload {
 }
 
 export interface LoginResponse {
-    accessToken: string;
+    token: string;
     user: {
         id: string;
         name: string;
         email: string;
         role: UserRole;
+        clinicId?: string;
+        clinicName?: string;
     };
 }
 

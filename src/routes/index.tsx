@@ -1,6 +1,9 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import { AppLayout } from "../layout/AppLayout";
 import AdminDashboard from "../pages/admin/deshboard";
+import ProfilePage from "../pages/admin/Profile";
+import ReportsPage from "../pages/admin/Reports";
+import SettingsPage from "../pages/admin/Settings";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import PatientAccess from "../pages/Patient/Access";
@@ -81,7 +84,7 @@ const AppRoutes = () => {
           </Route>
 
           {/* ── Profissional ── */}
-          <Route element={<RoleGuard allowedRoles={[UserRole.PROFESSIONAL, UserRole.ADMIN]} />}>
+          <Route element={<RoleGuard allowedRoles={[UserRole.PROFESSIONAL]} />}>
             <Route element={<AppLayout />}>
               <Route path="/profissional/dashboard" element={<ProfessionalDashboard />} />
             </Route>
@@ -91,6 +94,11 @@ const AppRoutes = () => {
           <Route element={<RoleGuard allowedRoles={[UserRole.ADMIN]} />}>
             <Route element={<AppLayout />}>
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/profissional/dashboard" element={<ProfessionalDashboard />} />
+              <Route path="/admin/paciente/dashboard" element={<PatientDashboard />} />
+              <Route path="/admin/relatorios" element={<ReportsPage />} />
+              <Route path="/admin/configuracoes" element={<SettingsPage />} />
+              <Route path="/admin/perfil" element={<ProfilePage />} />
             </Route>
           </Route>
         </Route>
