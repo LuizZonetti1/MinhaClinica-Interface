@@ -1,0 +1,263 @@
+import styled from "styled-components";
+import { theme } from "../../../themes/themes";
+
+export const PageWrapper = styled.div`
+  padding: 32px;
+`;
+
+export const TopRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+`;
+
+export const PageTitle = styled.h1`
+  margin: 0;
+  font-family: "Roboto", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: ${theme.colors.text.primary};
+
+  @media (max-width: ${theme.breakpoints.wide}) {
+    font-size: 22px;
+  }
+
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    font-size: 20px;
+  }
+`;
+
+export const FiltersRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+
+  @media (max-width: ${theme.breakpoints.desktop}) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+`;
+
+export const SearchField = styled.div`
+  width: 380px;
+  max-width: 100%;
+
+  @media (max-width: ${theme.breakpoints.desktop}) {
+    width: 100%;
+  }
+`;
+
+export const FilterSelect = styled.select`
+  width: 210px;
+  max-width: 100%;
+  height: 48px;
+  border-radius: ${theme.borderRadius.md};
+  border: 1.5px solid ${theme.colors.border.light};
+  background-color: ${theme.colors.surface};
+  padding: 0 14px;
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  color: ${theme.colors.text.secondary};
+  outline: none;
+
+  &:focus {
+    border-color: ${theme.colors.primary};
+  }
+
+  @media (max-width: ${theme.breakpoints.desktop}) {
+    width: 100%;
+  }
+`;
+
+export const TableCard = styled.div`
+  background-color: ${theme.colors.surface};
+  border: 1px solid ${theme.colors.border.light};
+  border-radius: ${theme.borderRadius.lg};
+  overflow: auto;
+`;
+
+export const TableElement = styled.table`
+  width: 100%;
+  min-width: 880px;
+  border-collapse: collapse;
+
+  td {
+    padding: 16px 24px;
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+    color: ${theme.colors.text.primary};
+    border-top: 1px solid ${theme.colors.border.light};
+    vertical-align: middle;
+
+    @media (max-width: ${theme.breakpoints.wide}) {
+      font-size: 14px;
+    }
+  }
+`;
+
+export const TableHeaderRow = styled.tr`
+  background-color: #f8fafc;
+`;
+
+export const TableHeaderCell = styled.th`
+  text-align: left;
+  padding: 14px 24px;
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  color: #4b5563;
+
+  @media (max-width: ${theme.breakpoints.wide}) {
+    font-size: 12px;
+  }
+`;
+
+export const TableRow = styled.tr``;
+
+export const ProfessionalCell = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 14px;
+`;
+
+export const Avatar = styled.div<{ $bgColor: string }>`
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background-color: ${({ $bgColor }) => $bgColor};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${theme.colors.text.inverse};
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+`;
+
+export const ProfessionalMeta = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+export const ProfessionalName = styled.span`
+  font-family: "Roboto", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: ${theme.colors.text.primary};
+
+  @media (max-width: ${theme.breakpoints.wide}) {
+    font-size: 15px;
+  }
+`;
+
+export const ProfessionalEmail = styled.span`
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: #6b7280;
+
+  @media (max-width: ${theme.breakpoints.wide}) {
+    font-size: 12px;
+  }
+`;
+
+export const ActionsGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+export const EmptyStateCell = styled.td`
+  text-align: center;
+  color: ${theme.colors.text.secondary};
+  padding: 24px;
+`;
+
+export const ModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 40;
+`;
+
+export const ModalCard = styled.div`
+  width: 100%;
+  max-width: 560px;
+  background-color: ${theme.colors.surface};
+  border-radius: ${theme.borderRadius.lg};
+  padding: 28px 30px;
+`;
+
+export const ModalTitle = styled.h2`
+  margin: 0 0 20px;
+  font-family: "Roboto", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: ${theme.colors.text.primary};
+`;
+
+export const ModalForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+export const ModalFieldGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: ${theme.colors.text.secondary};
+  }
+`;
+
+export const ModalSelect = styled.select`
+  width: 100%;
+  height: 48px;
+  border-radius: ${theme.borderRadius.md};
+  border: 2px solid ${theme.colors.border.light};
+  background-color: ${theme.colors.surface};
+  padding: 0 12px;
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  color: ${theme.colors.text.primary};
+  outline: none;
+
+  &:focus {
+    border-color: ${theme.colors.border.focus};
+  }
+`;
+
+export const FieldError = styled.span`
+  font-family: "Roboto", sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: ${theme.colors.error};
+`;
+
+export const ModalActions = styled.div`
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+`;
