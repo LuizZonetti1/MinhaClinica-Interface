@@ -1,10 +1,6 @@
 import { Stethoscope } from "lucide-react";
+import type { LogoProps } from "../../types/components";
 import { IconWrapper, LogoContainer, Subtitle, TextWrapper, Title } from "./styles";
-
-interface LogoProps {
-  showSubtitle?: boolean;
-  variant?: "default" | "auth";
-}
 
 export const Logo = ({ showSubtitle = true, variant = "default" }: LogoProps) => {
   return (

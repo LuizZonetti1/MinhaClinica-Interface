@@ -1,16 +1,6 @@
-import type { InputHTMLAttributes } from "react";
 import { forwardRef } from "react";
+import type { InputProps } from "../../types/components";
 import { Container, ErrorMessage, InputWrapper, Label, StyledInput } from "./styles";
-
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
-  error?: string;
-  icon?: React.ReactNode;
-  iconPosition?: "left" | "right";
-  rightIcon?: React.ReactNode;
-  onRightIconClick?: () => void;
-  fullWidth?: boolean;
-}
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   (

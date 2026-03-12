@@ -1,16 +1,7 @@
-import type { ButtonHTMLAttributes } from "react";
+import type { ButtonProps } from "../../types/components";
 import { StyledButton } from "./styles";
 
-export type ButtonVariant = "primary" | "secondary" | "outline" | "text";
-export type ButtonSize = "small" | "medium" | "large";
-
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: ButtonVariant;
-  size?: ButtonSize;
-  fullWidth?: boolean;
-  icon?: React.ReactNode;
-  iconPosition?: "left" | "right";
-}
+export type { ButtonSize, ButtonVariant } from "../../types/components";
 
 export const Button = ({
   variant = "primary",

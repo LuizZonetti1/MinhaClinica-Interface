@@ -1,35 +1,31 @@
-import { ChevronRight } from 'lucide-react';
-import { Outlet, useLocation } from 'react-router';
-import styled from 'styled-components';
-import { theme } from '../../themes/themes';
-import { Sidebar } from '../Sidebar';
+import { ChevronRight } from "lucide-react";
+import { Outlet, useLocation } from "react-router";
+import styled from "styled-components";
+import { theme } from "../../themes/themes";
+import type { BreadcrumbItem } from "../../types/layout";
+import { Sidebar } from "../Sidebar";
 
 const PAGE_TITLES: Record<string, string> = {
-  '/admin/dashboard': 'Inicio',
-  '/admin/profissional': 'Profissionais',
-  '/admin/profissional/dashboard': 'Profissionais',
-  '/admin/paciente/dashboard': 'Pacientes',
-  '/admin/relatorios': 'Relatorios',
-  '/admin/configuracoes': 'Configuracoes',
-  '/admin/perfil': 'Perfil',
-  '/paciente/dashboard': 'Painel do Paciente',
-  '/recepcao/dashboard': 'Recepcao',
-  '/profissional/dashboard': 'Painel do Profissional',
+  "/admin/dashboard": "Inicio",
+  "/admin/profissional": "Profissionais",
+  "/admin/profissional/dashboard": "Profissionais",
+  "/admin/paciente/dashboard": "Pacientes",
+  "/admin/relatorios": "Relatorios",
+  "/admin/configuracoes": "Configuracoes",
+  "/admin/perfil": "Perfil",
+  "/paciente/dashboard": "Painel do Paciente",
+  "/recepcao/dashboard": "Recepcao",
+  "/profissional/dashboard": "Painel do Profissional",
 };
 
-interface BreadcrumbItem {
-  parent: string;
-  current: string;
-}
-
 const PAGE_BREADCRUMBS: Record<string, BreadcrumbItem> = {
-  '/admin/profissional/dashboard': {
-    parent: 'Inicio',
-    current: 'Profissionais',
+  "/admin/profissional/dashboard": {
+    parent: "Inicio",
+    current: "Profissionais",
   },
-  '/admin/profissional': {
-    parent: 'Inicio',
-    current: 'Profissionais',
+  "/admin/profissional": {
+    parent: "Inicio",
+    current: "Profissionais",
   },
 };
 
@@ -171,7 +167,7 @@ const MainContent = styled.main`
 
 export const AppLayout = () => {
   const location = useLocation();
-  const title = PAGE_TITLES[location.pathname] ?? 'Dashboard';
+  const title = PAGE_TITLES[location.pathname] ?? "Dashboard";
   const breadcrumb = PAGE_BREADCRUMBS[location.pathname];
 
   return (

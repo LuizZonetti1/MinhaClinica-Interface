@@ -1,12 +1,5 @@
-import { AlertIcon, AlertText, AlertWrapper } from './styles';
-
-type AlertType = 'warning' | 'success' | 'info';
-
-interface AlertItemProps {
-  type: AlertType;
-  icon: string;
-  message: string;
-}
+import type { AlertItemProps } from "../../types/components";
+import { AlertIcon, AlertText, AlertWrapper } from "./styles";
 
 export const AlertItem = ({ type, icon, message }: AlertItemProps) => {
   return (

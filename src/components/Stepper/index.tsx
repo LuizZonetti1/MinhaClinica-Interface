@@ -1,14 +1,6 @@
 import { Check } from "lucide-react";
+import type { StepperProps } from "../../types/components";
 import { Container, StepCircle, StepItem, StepLabel, StepLine } from "./styles";
-
-interface Step {
-  label: string;
-  status: "completed" | "active" | "inactive";
-}
-
-interface StepperProps {
-  steps: Step[];
-}
 
 export const Stepper = ({ steps }: StepperProps) => {
   return (

@@ -1,11 +1,5 @@
-import { CardWrapper, QuickIcon, QuickLabel } from './styles';
-
-interface QuickAccessCardProps {
-  icon: string;
-  label: string;
-  color: string;
-  onClick?: () => void;
-}
+import type { QuickAccessCardProps } from "../../types/components";
+import { CardWrapper, QuickIcon, QuickLabel } from "./styles";
 
 export const QuickAccessCard = ({ icon, label, color, onClick }: QuickAccessCardProps) => {
   return (

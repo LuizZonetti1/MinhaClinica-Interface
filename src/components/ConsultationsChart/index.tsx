@@ -8,11 +8,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { HistoricalItem } from "../../services/dashboard.service";
-
-interface ConsultationsChartProps {
-  data: HistoricalItem[];
-}
+import type { ConsultationsChartProps } from "../../types/components";
 
 const formatRevenue = (value: number) => `R$ ${(value / 1000).toFixed(0)}k`;
 const formatConsultations = (value: number) => `${value}`;

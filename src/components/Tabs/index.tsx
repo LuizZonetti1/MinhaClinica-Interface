@@ -1,20 +1,6 @@
 import { Check, Lock } from "lucide-react";
+import type { TabsProps } from "../../types/components";
 import { Container, TabButton, TabContent, TabsList } from "./styles";
-
-interface Tab {
-  id: string;
-  label: string;
-  icon?: React.ReactNode;
-  disabled?: boolean;
-  completed?: boolean;
-}
-
-interface TabsProps {
-  tabs: Tab[];
-  activeTab: string;
-  onTabChange: (tabId: string) => void;
-  children: React.ReactNode;
-}
 
 export const Tabs = ({ tabs, activeTab, onTabChange, children }: TabsProps) => {
   return (

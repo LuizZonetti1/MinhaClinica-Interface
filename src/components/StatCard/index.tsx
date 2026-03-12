@@ -1,11 +1,5 @@
-import { CardWrapper, IconBox, StatLabel, StatValue } from './styles';
-
-interface StatCardProps {
-  icon: string;
-  iconBg: string;
-  label: string;
-  value: string;
-}
+import type { StatCardProps } from "../../types/components";
+import { CardWrapper, IconBox, StatLabel, StatValue } from "./styles";
 
 export const StatCard = ({ icon, iconBg, label, value }: StatCardProps) => {
   return (

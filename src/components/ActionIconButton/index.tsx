@@ -1,12 +1,7 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { ActionIconButtonProps } from "../../types/components";
 import { StyledActionIconButton } from "./styles";
 
-export type ActionIconButtonVariant = "view" | "edit" | "delete";
-
-interface ActionIconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant: ActionIconButtonVariant;
-  icon: ReactNode;
-}
+export type { ActionIconButtonVariant } from "../../types/components";
 
 export const ActionIconButton = ({ variant, icon, type, ...props }: ActionIconButtonProps) => {
   return (
