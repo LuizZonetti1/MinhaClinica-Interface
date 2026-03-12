@@ -7,6 +7,7 @@ import { Logo } from "../../../components/Logo";
 import { Stepper } from "../../../components/Stepper";
 import { clinicRegisterResend } from "../../../services/clinic.service";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
+import { notifyError, notifyInfo, notifySuccess } from "../../../utils/toast";
 import {
   Container,
   Description,
@@ -18,9 +19,6 @@ import {
   Title,
 } from "./styles";
 
-// O backend faz um redirect 302 para o frontend após verificar o token.
-// Por isso, redirecionamos o BROWSER direto para a URL do backend,
-// deixando o redirect nativo acontecer sem passar pelo Axios (que causaria CORS).
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
 type VerifyStatus = "redirecting" | "no-token";
@@ -30,23 +28,17 @@ const RegisterClinicVerify = () => {
   const token = searchParams.get("token");
 
   const [status] = useState<VerifyStatus>(token ? "redirecting" : "no-token");
-  const [error, setError] = useState("");
-  const [resendSuccess, setResendSuccess] = useState(false);
   const [countdown, setCountdown] = useState(56);
   const [canResend, setCanResend] = useState(false);
   const [resending, setResending] = useState(false);
 
   const email = localStorage.getItem("@minhaclinica:clinic_register_email") ?? "";
 
-  // Redireciona o browser para o backend, que verifica o token e faz 302
-  // para /clinica/completar-cadastro?tempToken=JWT com role=ADMIN no payload.
-  // ClinicCompleteRedirect lê o `role` do JWT e decide o destino final.
   useEffect(() => {
     if (!token) return;
     window.location.replace(`${API_URL}/api/clinics/verify-email/${token}`);
   }, [token]);
 
-  // ─── Contador de reenvio (apenas quando aguardando e-mail) ───────────────
   useEffect(() => {
     if (status !== "no-token") return;
     if (countdown <= 0) {
@@ -58,30 +50,31 @@ const RegisterClinicVerify = () => {
   }, [countdown, status]);
 
   const handleResend = async () => {
-    if (!email.trim()) return;
+    if (!email.trim()) {
+      notifyInfo("Nao encontramos o email do responsavel. Recomece o cadastro.");
+      return;
+    }
+
     setResending(true);
-    setError("");
-    setResendSuccess(false);
     try {
       await clinicRegisterResend({ email });
-      setResendSuccess(true);
+      notifySuccess("Novo link enviado. Verifique a caixa de entrada.");
       setCanResend(false);
       setCountdown(56);
     } catch (err: unknown) {
-      setError(getApiErrorMessage(err, "Erro ao reenviar. Tente novamente."));
+      notifyError(getApiErrorMessage(err, "Erro ao reenviar. Tente novamente."));
     } finally {
       setResending(false);
     }
   };
 
   const steps = [
-    { label: "Início", status: "completed" as const },
-    { label: "Verificação", status: "active" as const },
+    { label: "Inicio", status: "completed" as const },
+    { label: "Verificacao", status: "active" as const },
     { label: "Completar", status: "inactive" as const },
   ];
 
   const renderContent = () => {
-    // ─── Redirecionando para o backend verificar ──────────────
     if (status === "redirecting") {
       return (
         <>
@@ -89,12 +82,11 @@ const RegisterClinicVerify = () => {
             <Loader size={40} strokeWidth={1.5} style={{ animation: "spin 1s linear infinite" }} />
           </EmailIcon>
           <Title>Verificando e-mail...</Title>
-          <Description>Você será redirecionado em instantes.</Description>
+          <Description>Voce sera redirecionado em instantes.</Description>
         </>
       );
     }
 
-    // ─── Aguardando clique no link do e-mail ──────────────────
     return (
       <>
         <EmailIcon>
@@ -102,31 +94,23 @@ const RegisterClinicVerify = () => {
         </EmailIcon>
         <Title>Verifique seu e-mail</Title>
         <Description>
-          Enviamos um link de verificação para <strong>{email || "o e-mail do responsável"}</strong>
-          . Clique no link para confirmar o cadastro da clínica.
+          Enviamos um link de verificacao para <strong>{email || "o email do responsavel"}</strong>
+          . Clique no link para confirmar o cadastro da clinica.
         </Description>
 
         <InfoBox>
           <Clock size={18} />
           <div>
-            <InfoText>O link expira em 30 minutos. Verifique também a pasta de spam.</InfoText>
+            <InfoText>O link expira em 30 minutos. Verifique tambem a pasta de spam.</InfoText>
           </div>
         </InfoBox>
 
-        {resendSuccess && (
-          <p style={{ color: "#22c55e", fontSize: 13, margin: 0 }}>
-            Novo link enviado! Verifique sua caixa de entrada.
-          </p>
-        )}
-
-        {error && <p style={{ color: "#ef4444", fontSize: 13, margin: 0 }}>{error}</p>}
-
         {canResend ? (
           <ResendButton onClick={handleResend} disabled={resending}>
-            {resending ? "Reenviando..." : "Reenviar e-mail de verificação"}
+            {resending ? "Reenviando..." : "Reenviar e-mail de verificacao"}
           </ResendButton>
         ) : (
-          <ResendText>Você poderá reenviar em {countdown}s</ResendText>
+          <ResendText>Voce podera reenviar em {countdown}s</ResendText>
         )}
       </>
     );

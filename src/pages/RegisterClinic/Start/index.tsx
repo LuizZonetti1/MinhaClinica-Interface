@@ -8,7 +8,9 @@ import { Logo } from "../../../components/Logo";
 import { Stepper } from "../../../components/Stepper";
 import { Tabs } from "../../../components/Tabs";
 import { clinicRegisterStart } from "../../../services/clinic.service";
+import { storeAuthToken } from "../../../utils/authStorage";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
+import { notifyError, notifySuccess } from "../../../utils/toast";
 import { ClinicAddressTab } from "./ClinicAddressTab";
 import { ClinicInfoTab } from "./ClinicInfoTab";
 import { OwnerTab } from "./OwnerTab";
@@ -23,18 +25,14 @@ const RegisterClinicStart = () => {
   const [activeTab, setActiveTab] = useState<TabId>("clinic");
   const [completedTabs, setCompletedTabs] = useState<Set<TabId>>(new Set());
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
-    // Dados da Clínica
     legalName: "",
     tradeName: "",
     cnpj: "",
     phone: "",
     email: "",
     website: "",
-
-    // Endereço
     zipCode: "",
     street: "",
     number: "",
@@ -42,8 +40,6 @@ const RegisterClinicStart = () => {
     neighborhood: "",
     city: "",
     state: "",
-
-    // Responsável
     ownerName: "",
     ownerEmail: "",
   });
@@ -52,7 +48,6 @@ const RegisterClinicStart = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // ─── Validações por aba ───────────────────────────────────────────────────
   const isClinicTabValid = () =>
     Boolean(
       formData.legalName.trim() &&
@@ -95,7 +90,6 @@ const RegisterClinicStart = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isAllTabsValid()) return;
-    setError("");
     setLoading(true);
     try {
       const response = await clinicRegisterStart({
@@ -119,42 +113,44 @@ const RegisterClinicStart = () => {
       localStorage.setItem("@minhaclinica:clinic_register_email", formData.ownerEmail);
 
       if (response.redirectToComplete && response.tempToken) {
-        localStorage.setItem("@minhaclinica:token", response.tempToken);
+        storeAuthToken(response.tempToken);
+        notifySuccess("Email do responsavel ja verificado. Complete o cadastro.");
         navigate("/clinica/registro/completo");
       } else {
+        notifySuccess("Link de verificacao enviado para o responsavel.");
         navigate("/clinica/registro/verificar");
       }
     } catch (err: unknown) {
-      setError(getApiErrorMessage(err, "Erro ao iniciar cadastro. Tente novamente."));
+      notifyError(getApiErrorMessage(err, "Erro ao iniciar cadastro. Tente novamente."));
     } finally {
       setLoading(false);
     }
   };
 
   const steps = [
-    { label: "Início", status: "active" as const },
-    { label: "Verificação", status: "inactive" as const },
+    { label: "Inicio", status: "active" as const },
+    { label: "Verificacao", status: "inactive" as const },
     { label: "Completar", status: "inactive" as const },
   ];
 
   const tabs = [
     {
       id: "clinic",
-      label: "Clínica",
+      label: "Clinica",
       icon: <Building2 />,
       disabled: false,
       completed: completedTabs.has("clinic"),
     },
     {
       id: "address",
-      label: "Endereço",
+      label: "Endereco",
       icon: <MapPin />,
       disabled: !completedTabs.has("clinic"),
       completed: completedTabs.has("address"),
     },
     {
       id: "owner",
-      label: "Responsável",
+      label: "Responsavel",
       icon: <User />,
       disabled: !completedTabs.has("address"),
       completed: completedTabs.has("owner"),
@@ -169,7 +165,7 @@ const RegisterClinicStart = () => {
 
           <Stepper steps={steps} />
 
-          <Title>Cadastrar Clínica</Title>
+          <Title>Cadastrar Clinica</Title>
 
           <form onSubmit={handleSubmit} style={{ width: "100%" }}>
             <Tabs
@@ -187,20 +183,17 @@ const RegisterClinicStart = () => {
             </Tabs>
 
             {isLastTab ? (
-              <>
-                {error && <p style={{ color: "red", fontSize: 13, margin: "0 0 8px" }}>{error}</p>}
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="medium"
-                  fullWidth
-                  icon={<Check />}
-                  iconPosition="left"
-                  disabled={!isAllTabsValid() || loading}
-                >
-                  {loading ? "Enviando..." : "Enviar e verificar e-mail"}
-                </Button>
-              </>
+              <Button
+                type="submit"
+                variant="primary"
+                size="medium"
+                fullWidth
+                icon={<Check />}
+                iconPosition="left"
+                disabled={!isAllTabsValid() || loading}
+              >
+                {loading ? "Enviando..." : "Enviar e verificar e-mail"}
+              </Button>
             ) : (
               <Button
                 type="button"
@@ -219,7 +212,7 @@ const RegisterClinicStart = () => {
 
           <Footer>
             <FooterText>
-              Já possui uma clínica cadastrada?
+              Ja possui uma clinica cadastrada?
               <FooterLink to="/login">Entrar</FooterLink>
             </FooterText>
           </Footer>

@@ -8,7 +8,9 @@ import { Logo } from "../../../components/Logo";
 import { Stepper } from "../../../components/Stepper";
 import { useAuth } from "../../../contexts";
 import { clinicRegisterComplete } from "../../../services/clinic.service";
+import { storeAuthToken } from "../../../utils/authStorage";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
+import { notifyError, notifySuccess } from "../../../utils/toast";
 import { stripCPF } from "../../../utils/validateCPF";
 import { AdminTab } from "./AdminTab";
 import { Container, Title } from "./styles";
@@ -18,14 +20,11 @@ const RegisterClinicComplete = () => {
   const { setUser } = useAuth();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
-  // O backend redireciona direto para esta rota com ?tempToken=&name=&email=
-  // Salva o tempToken no localStorage para o interceptor do Axios usá-lo no POST
   useEffect(() => {
     const tempToken = searchParams.get("tempToken");
     if (tempToken) {
-      localStorage.setItem("@minhaclinica:token", tempToken);
+      storeAuthToken(tempToken);
     }
   }, [searchParams]);
 
@@ -45,12 +44,11 @@ const RegisterClinicComplete = () => {
       const next = { ...prev, [field]: value };
       setFieldErrors((errs) => {
         const updated = { ...errs };
-        // Valida senhas em tempo real
         if (field === "adminPassword" || field === "adminConfirmPassword") {
           const pass = field === "adminPassword" ? value : next.adminPassword;
           const confirm = field === "adminConfirmPassword" ? value : next.adminConfirmPassword;
           if (confirm && pass !== confirm) {
-            updated.adminConfirmPassword = "As senhas não coincidem.";
+            updated.adminConfirmPassword = "As senhas nao coincidem.";
           } else {
             delete updated.adminConfirmPassword;
           }
@@ -64,16 +62,16 @@ const RegisterClinicComplete = () => {
 
   const validate = () => {
     const errs: Record<string, string> = {};
-    if (!formData.adminCpf.trim()) errs.adminCpf = "CPF obrigatório.";
-    if (!formData.adminPhone.trim()) errs.adminPhone = "Telefone obrigatório.";
-    if (!formData.adminPassword.trim()) errs.adminPassword = "Senha obrigatória.";
+    if (!formData.adminCpf.trim()) errs.adminCpf = "CPF obrigatorio.";
+    if (!formData.adminPhone.trim()) errs.adminPhone = "Telefone obrigatorio.";
+    if (!formData.adminPassword.trim()) errs.adminPassword = "Senha obrigatoria.";
     if (!formData.adminConfirmPassword.trim()) {
       errs.adminConfirmPassword = "Confirme a senha.";
     } else if (formData.adminPassword !== formData.adminConfirmPassword) {
-      errs.adminConfirmPassword = "As senhas não coincidem.";
+      errs.adminConfirmPassword = "As senhas nao coincidem.";
     }
-    if (!formData.adminBirthDate.trim()) errs.adminBirthDate = "Data de nascimento obrigatória.";
-    if (!formData.adminGender.trim()) errs.adminGender = "Selecione um gênero.";
+    if (!formData.adminBirthDate.trim()) errs.adminBirthDate = "Data de nascimento obrigatoria.";
+    if (!formData.adminGender.trim()) errs.adminGender = "Selecione um genero.";
     return errs;
   };
 
@@ -85,7 +83,6 @@ const RegisterClinicComplete = () => {
       return;
     }
     setFieldErrors({});
-    setError("");
     setLoading(true);
     try {
       const response = await clinicRegisterComplete({
@@ -97,17 +94,18 @@ const RegisterClinicComplete = () => {
       });
       setUser(response.user);
       localStorage.removeItem("@minhaclinica:clinic_register_email");
+      notifySuccess("Cadastro concluido com sucesso.");
       navigate("/dashboard", { replace: true });
     } catch (err: unknown) {
-      setError(getApiErrorMessage(err, "Erro ao concluir cadastro. Tente novamente."));
+      notifyError(getApiErrorMessage(err, "Erro ao concluir cadastro. Tente novamente."));
     } finally {
       setLoading(false);
     }
   };
 
   const steps = [
-    { label: "Início", status: "completed" as const },
-    { label: "Verificação", status: "completed" as const },
+    { label: "Inicio", status: "completed" as const },
+    { label: "Verificacao", status: "completed" as const },
     { label: "Completar", status: "active" as const },
   ];
 
@@ -122,8 +120,6 @@ const RegisterClinicComplete = () => {
 
           <form onSubmit={handleSubmit} style={{ width: "100%" }}>
             <AdminTab formData={formData} onChange={handleChange} fieldErrors={fieldErrors} />
-
-            {error && <p style={{ color: "red", fontSize: 13, margin: "8px 0 0" }}>{error}</p>}
 
             <Button
               type="submit"

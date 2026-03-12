@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useSearchParams } from "react-router";
+import { storeAuthToken } from "../../../utils/authStorage";
 
 /**
  * Decodifica o payload de um JWT sem validar a assinatura.
@@ -26,8 +27,8 @@ function decodeJwtPayload(token: string): Record<string, unknown> {
  *
  * O destino é determinado pelo claim `role` do JWT temporário:
  *   ADMIN        → /clinica/registro/completo
- *   PROFESSIONAL → /profissional/registro/completo (futuro)
- *   RECEPTIONIST → /recepcao/registro/completo     (futuro)
+ *   PROFESSIONAL → /profissional/registro/completo
+ *   RECEPTIONIST → /recepcao/registro/completo
  *
  * Fluxo:
  *   backend /api/clinics/verify-email/:token → 302 → /clinica/completar-cadastro?tempToken=JWT
@@ -40,11 +41,13 @@ const ClinicCompleteRedirect = () => {
     const tempToken = searchParams.get("tempToken");
 
     if (tempToken) {
-      localStorage.setItem("@minhaclinica:token", tempToken);
+      storeAuthToken(tempToken);
 
       const payload = decodeJwtPayload(tempToken);
+      const normalizedRole =
+        typeof payload.role === "string" ? payload.role.toUpperCase() : payload.role;
 
-      switch (payload.role) {
+      switch (normalizedRole) {
         case "PROFESSIONAL":
           window.location.replace("/profissional/registro/completo");
           break;

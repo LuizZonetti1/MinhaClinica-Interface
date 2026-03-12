@@ -1,4 +1,5 @@
 import { api } from "../config/api";
+import { storeAuthToken } from "../utils/authStorage";
 import type {
     Clinic,
     ClinicListResponse,
@@ -34,7 +35,7 @@ export const clinicRegisterVerify = async (
         "/clinics/register/verify",
         payload,
     );
-    localStorage.setItem("@minhaclinica:token", data.tempToken);
+    storeAuthToken(data.tempToken);
     return data;
 };
 
@@ -56,7 +57,7 @@ export const clinicRegisterComplete = async (
         payload,
     );
     if (data.accessToken) {
-        localStorage.setItem("@minhaclinica:token", data.accessToken);
+        storeAuthToken(data.accessToken);
     }
     return data;
 };
