@@ -1,4 +1,5 @@
 import { Navigate } from "react-router";
+import { getAuthToken } from "../utils/authStorage";
 
 /**
  * Protege a rota /registro/completo.
@@ -6,7 +7,7 @@ import { Navigate } from "react-router";
  * gerado após a verificação de e-mail bem-sucedida.
  */
 export const RegisterCompleteGuard = ({ children }: { children: React.ReactNode }) => {
-  const hasToken = Boolean(localStorage.getItem("@minhaclinica:token"));
+  const hasToken = Boolean(getAuthToken());
 
   if (!hasToken) {
     return <Navigate to="/registro/inicial" replace />;

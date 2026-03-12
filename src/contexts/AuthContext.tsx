@@ -1,42 +1,25 @@
-import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import type { AuthContextData, AuthProviderProps, User } from "../types/auth";
 import type { UserRole } from "../types/enums";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-}
-
-interface AuthContextData {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  setUser: (user: User | null) => void;
-  logout: () => void;
-  // Funções de verificação de papel
-  isPatient: () => boolean;
-  isReceptionist: () => boolean;
-  isProfessional: () => boolean;
-  isAdmin: () => boolean;
-  hasRole: (role: UserRole) => boolean;
-}
+import {
+  clearAuthStorage,
+  clearStoredAuthUser,
+  getAuthToken,
+  getStoredAuthUser,
+  storeAuthUser,
+} from "../utils/authStorage";
 
 const AuthContext = createContext<AuthContextData | undefined>(undefined);
-
-interface AuthProviderProps {
-  children: ReactNode;
-}
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Carregar usuário do localStorage se houver um token
+    // Carrega usuário da sessão (persistente ou temporária) se houver token válido.
     const loadUser = () => {
-      const token = localStorage.getItem("@minhaclinica:token");
-      const storedUser = localStorage.getItem("@minhaclinica:user");
+      const token = getAuthToken();
+      const storedUser = getStoredAuthUser();
 
       if (token && storedUser) {
         try {
@@ -44,8 +27,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setUser(parsedUser);
         } catch (error) {
           console.error("Erro ao carregar usuário:", error);
-          localStorage.removeItem("@minhaclinica:user");
-          localStorage.removeItem("@minhaclinica:token");
+          clearAuthStorage();
         }
       }
       setIsLoading(false);
@@ -56,17 +38,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const handleSetUser = (userData: User | null) => {
     if (userData) {
-      localStorage.setItem("@minhaclinica:user", JSON.stringify(userData));
+      storeAuthUser(userData);
       setUser(userData);
     } else {
-      localStorage.removeItem("@minhaclinica:user");
+      clearStoredAuthUser();
       setUser(null);
     }
   };
 
   const logout = () => {
-    localStorage.removeItem("@minhaclinica:token");
-    localStorage.removeItem("@minhaclinica:user");
+    clearAuthStorage();
     setUser(null);
   };
 

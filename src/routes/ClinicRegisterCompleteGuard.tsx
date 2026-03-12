@@ -1,4 +1,5 @@
 import { Navigate } from "react-router";
+import { getAuthToken } from "../utils/authStorage";
 
 /**
  * Protege a rota /clinica/registro/completo.
@@ -6,7 +7,7 @@ import { Navigate } from "react-router";
  * (caso o backend redirecione direto para cá após verificar o e-mail).
  */
 export const ClinicRegisterCompleteGuard = ({ children }: { children: React.ReactNode }) => {
-  const hasTokenInStorage = Boolean(localStorage.getItem("@minhaclinica:token"));
+  const hasTokenInStorage = Boolean(getAuthToken());
   const hasTokenInUrl = new URLSearchParams(window.location.search).has("tempToken");
 
   if (!hasTokenInStorage && !hasTokenInUrl) {
