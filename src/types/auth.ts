@@ -1,5 +1,32 @@
+import type { ReactNode } from "react";
 import type { Gender, UserRole } from "./enums";
 
+// ─── Auth Context ─────────────────────────────────────────────────────────────
+export interface User {
+    id: string;
+    name: string;
+    email: string;
+    role: UserRole;
+}
+
+export interface AuthContextData {
+    user: User | null;
+    isAuthenticated: boolean;
+    isLoading: boolean;
+    setUser: (user: User | null) => void;
+    logout: () => void;
+    isPatient: () => boolean;
+    isReceptionist: () => boolean;
+    isProfessional: () => boolean;
+    isAdmin: () => boolean;
+    hasRole: (role: UserRole) => boolean;
+}
+
+export interface AuthProviderProps {
+    children: ReactNode;
+}
+
+// ─── Login ────────────────────────────────────────────────────────────────────
 export interface LoginPayload {
     email: string;
     password: string;
