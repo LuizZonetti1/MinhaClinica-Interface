@@ -18,11 +18,15 @@ import RegisterClinicComplete from "../pages/RegisterClinic/Complete";
 import ClinicCompleteRedirect from "../pages/RegisterClinic/CompleteRedirect";
 import RegisterClinicStart from "../pages/RegisterClinic/Start";
 import RegisterClinicVerify from "../pages/RegisterClinic/Verify";
+import RegisterProfessionalComplete from "../pages/RegisterProfessional/Complete";
+import RegisterReceptionComplete from "../pages/RegisterReception/Complete";
 import ReceptionDashboard from "../pages/reception/deshboard";
 import { Unauthorized } from "../pages/Unauthorized";
 import { UserRole } from "../types/enums";
 import { ClinicRegisterCompleteGuard } from "./ClinicRegisterCompleteGuard";
 import { PrivateRoutes } from "./PrivateRoutes";
+import { ProfessionalRegisterCompleteGuard } from "./ProfessionalRegisterCompleteGuard";
+import { ReceptionRegisterCompleteGuard } from "./ReceptionRegisterCompleteGuard";
 import { RegisterCompleteGuard } from "./RegisterCompleteGuard";
 import { RoleGuard } from "./RoleGuard";
 import { RoleRedirect } from "./RoleRedirect";
@@ -42,6 +46,8 @@ const AppRoutes = () => {
         <Route path="/registro/verificar" element={<RegisterVerify />} />
         <Route path="/verify-email" element={<RegisterVerify />} />
         <Route path="/completar-cadastro" element={<CompleteRedirect />} />
+        <Route path="/profissional/completar-cadastro" element={<CompleteRedirect />} />
+        <Route path="/recepcao/completar-cadastro" element={<CompleteRedirect />} />
         <Route
           path="/registro/completo"
           element={
@@ -62,6 +68,22 @@ const AppRoutes = () => {
             <ClinicRegisterCompleteGuard>
               <RegisterClinicComplete />
             </ClinicRegisterCompleteGuard>
+          }
+        />
+        <Route
+          path="/profissional/registro/completo"
+          element={
+            <ProfessionalRegisterCompleteGuard>
+              <RegisterProfessionalComplete />
+            </ProfessionalRegisterCompleteGuard>
+          }
+        />
+        <Route
+          path="/recepcao/registro/completo"
+          element={
+            <ReceptionRegisterCompleteGuard>
+              <RegisterReceptionComplete />
+            </ReceptionRegisterCompleteGuard>
           }
         />
 
