@@ -5,11 +5,8 @@ import { ConsultationsChart } from "../../../components/ConsultationsChart";
 import { QuickAccessCard } from "../../../components/QuickAccessCard";
 import { StatCard } from "../../../components/StatCard";
 import { useAuth } from "../../../contexts";
-import {
-  type DashboardSummary,
-  getDashboardSummary,
-  type HistoricalItem,
-} from "../../../services/dashboard.service";
+import { getDashboardSummary } from "../../../services/admin.service";
+import type { DashboardSummary, HistoricalItem } from "../../../types/dashboard";
 import {
   AlertsList,
   AlertsSection,
