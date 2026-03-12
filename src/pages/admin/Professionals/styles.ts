@@ -261,3 +261,90 @@ export const ModalActions = styled.div`
   justify-content: flex-end;
   gap: 12px;
 `;
+
+export const TabRow = styled.div`
+  display: flex;
+  gap: 0;
+  margin-bottom: 24px;
+  border-bottom: 2px solid ${theme.colors.border.light};
+`;
+
+export const TabButton = styled.button<{ $active: boolean }>`
+  padding: 10px 24px;
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: ${({ $active }) => ($active ? theme.colors.primary : theme.colors.text.secondary)};
+  background: none;
+  border: none;
+  border-bottom: 2px solid ${({ $active }) => ($active ? theme.colors.primary : "transparent")};
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover {
+    color: ${theme.colors.primary};
+  }
+`;
+
+export const StatusMessage = styled.p<{ $variant?: "error" | "success" }>`
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  color: ${({ $variant }) =>
+    $variant === "error"
+      ? theme.colors.error
+      : $variant === "success"
+        ? theme.colors.success
+        : theme.colors.text.secondary};
+  text-align: center;
+  padding: 32px 0;
+`;
+
+export const PhoneText = styled.span`
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  color: ${theme.colors.text.secondary};
+`;
+
+export const RoleBadge = styled.span`
+  font-family: "Roboto", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: ${theme.colors.text.secondary};
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+`;
+
+export const DetailsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const DetailItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid ${theme.colors.border.light};
+  border-radius: ${theme.borderRadius.md};
+  background-color: #f8fafc;
+`;
+
+export const DetailLabel = styled.span`
+  font-family: "Roboto", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: ${theme.colors.text.secondary};
+`;
+
+export const DetailValue = styled.span`
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: ${theme.colors.text.primary};
+`;
