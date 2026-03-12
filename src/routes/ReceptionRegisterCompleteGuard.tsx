@@ -1,0 +1,21 @@
+import { Navigate } from "react-router";
+import { getAuthToken } from "../utils/authStorage";
+
+/**
+ * Protege a rota /recepcao/registro/completo.
+ * Permite acesso se houver token salvo OU tempToken na URL.
+ */
+export const ReceptionRegisterCompleteGuard = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  const hasTokenInStorage = Boolean(getAuthToken());
+  const hasTokenInUrl = new URLSearchParams(window.location.search).has("tempToken");
+
+  if (!hasTokenInStorage && !hasTokenInUrl) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+};
