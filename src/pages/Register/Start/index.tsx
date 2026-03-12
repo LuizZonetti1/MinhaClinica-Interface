@@ -7,8 +7,10 @@ import { Card } from "../../../components/Card";
 import { Input } from "../../../components/Input";
 import { Logo } from "../../../components/Logo";
 import { Stepper } from "../../../components/Stepper";
-import { registerStart } from "../../../services/auth.service";
+import { registerStart } from "../../../services/patient.service";
+import { storeAuthToken } from "../../../utils/authStorage";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
+import { notifyError, notifySuccess } from "../../../utils/toast";
 import { Container, Footer, FooterLink, FooterText, Form, Title } from "./styles";
 
 const RegisterStart = () => {
@@ -16,35 +18,32 @@ const RegisterStart = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
     try {
       const response = await registerStart({ name, email });
-      // Salva o e-mail para usar nas próximas etapas
       localStorage.setItem("@minhaclinica:register_email", email);
 
       if (response.redirectToComplete && response.tempToken) {
-        // Caso 3: email já verificado mas cadastro não finalizado — pula etapa 2
-        localStorage.setItem("@minhaclinica:token", response.tempToken);
+        storeAuthToken(response.tempToken);
+        notifySuccess("Email ja verificado. Complete seu cadastro.");
         navigate("/registro/completo");
       } else {
-        // Casos 1 e 2: fluxo normal — ir para verificação de email
+        notifySuccess("Link de verificacao enviado para seu email.");
         navigate("/registro/verificar");
       }
     } catch (err: unknown) {
-      setError(getApiErrorMessage(err, "Erro ao iniciar cadastro. Tente novamente."));
+      notifyError(getApiErrorMessage(err, "Erro ao iniciar cadastro. Tente novamente."));
     } finally {
       setLoading(false);
     }
   };
 
   const steps = [
-    { label: "Início", status: "active" as const },
-    { label: "Verificação", status: "inactive" as const },
+    { label: "Inicio", status: "active" as const },
+    { label: "Verificacao", status: "inactive" as const },
     { label: "Completar", status: "inactive" as const },
   ];
 
@@ -81,8 +80,6 @@ const RegisterStart = () => {
               required
             />
 
-            {error && <p style={{ color: "red", fontSize: 13, margin: 0 }}>{error}</p>}
-
             <Button
               type="submit"
               variant="primary"
@@ -98,7 +95,7 @@ const RegisterStart = () => {
 
           <Footer>
             <FooterText>
-              Já tem uma conta? <FooterLink to="/login">Fazer login</FooterLink>
+              Ja tem uma conta? <FooterLink to="/login">Fazer login</FooterLink>
             </FooterText>
           </Footer>
         </Container>

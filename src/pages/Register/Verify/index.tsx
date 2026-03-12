@@ -5,8 +5,9 @@ import { AuthLayout } from "../../../components/AuthLayout";
 import { Card } from "../../../components/Card";
 import { Logo } from "../../../components/Logo";
 import { Stepper } from "../../../components/Stepper";
-import { resendVerification } from "../../../services/auth.service";
+import { resendVerification } from "../../../services/patient.service";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
+import { notifyError, notifyInfo, notifySuccess } from "../../../utils/toast";
 import {
   Container,
   Description,
@@ -18,9 +19,6 @@ import {
   Title,
 } from "./styles";
 
-// O backend faz um redirect 302 para o frontend após verificar o token.
-// Por isso, redirecionamos o BROWSER direto para a URL do backend,
-// deixando o redirect nativo acontecer sem passar pelo Axios (que causaria CORS).
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
 type VerifyStatus = "redirecting" | "no-token";
@@ -31,24 +29,19 @@ const RegisterVerify = () => {
   const type = searchParams.get("type") ?? undefined;
 
   const [status] = useState<VerifyStatus>(token ? "redirecting" : "no-token");
-  const [error, setError] = useState("");
-  const [resendSuccess, setResendSuccess] = useState(false);
   const [countdown, setCountdown] = useState(56);
   const [canResend, setCanResend] = useState(false);
   const [resending, setResending] = useState(false);
 
   const email = localStorage.getItem("@minhaclinica:register_email") ?? "";
 
-  // Redireciona o browser para o backend, que faz a verificação e redireciona
-  // de volta para /completar-cadastro?tempToken=JWT no frontend.
-  // Esta página é exclusiva do fluxo de paciente; o fluxo de clínica usa RegisterClinicVerify.
   useEffect(() => {
     if (!token) return;
-    const typeParam = type ? `&type=${type}` : "";
-    window.location.replace(`${API_URL}/api/auth/verify-email/${token}?${typeParam}`);
+    const typeParam = type ? `type=${type}` : "";
+    const query = typeParam ? `?${typeParam}` : "";
+    window.location.replace(`${API_URL}/api/auth/verify-email/${token}${query}`);
   }, [token, type]);
 
-  // Contador de reenvio (só ativo na tela de aguardar email)
   useEffect(() => {
     if (status !== "no-token") return;
     if (countdown <= 0) {
@@ -60,30 +53,31 @@ const RegisterVerify = () => {
   }, [countdown, status]);
 
   const handleResend = async () => {
-    if (!email.trim()) return;
+    if (!email.trim()) {
+      notifyInfo("Nao encontramos seu email. Recomece o cadastro.");
+      return;
+    }
+
     setResending(true);
-    setError("");
-    setResendSuccess(false);
     try {
       await resendVerification({ email, type });
-      setResendSuccess(true);
+      notifySuccess("Novo link enviado. Verifique sua caixa de entrada.");
       setCanResend(false);
       setCountdown(56);
     } catch (err: unknown) {
-      setError(getApiErrorMessage(err, "Erro ao reenviar. Tente novamente."));
+      notifyError(getApiErrorMessage(err, "Erro ao reenviar. Tente novamente."));
     } finally {
       setResending(false);
     }
   };
 
   const steps = [
-    { label: "Início", status: "completed" as const },
-    { label: "Verificação", status: "active" as const },
+    { label: "Inicio", status: "completed" as const },
+    { label: "Verificacao", status: "active" as const },
     { label: "Completar", status: "inactive" as const },
   ];
 
   const renderContent = () => {
-    // ─── Redirecionando para o backend verificar ──────────────
     if (status === "redirecting") {
       return (
         <>
@@ -91,12 +85,11 @@ const RegisterVerify = () => {
             <Loader size={40} strokeWidth={1.5} style={{ animation: "spin 1s linear infinite" }} />
           </EmailIcon>
           <Title>Verificando email...</Title>
-          <Description>Você será redirecionado em instantes.</Description>
+          <Description>Voce sera redirecionado em instantes.</Description>
         </>
       );
     }
 
-    // ─── Aguardando clique no link do email ───────────────────
     return (
       <>
         <EmailIcon>
@@ -104,31 +97,23 @@ const RegisterVerify = () => {
         </EmailIcon>
         <Title>Verifique seu email</Title>
         <Description>
-          Enviamos um link de verificação para <strong>{email || "seu email"}</strong>. Clique no
+          Enviamos um link de verificacao para <strong>{email || "seu email"}</strong>. Clique no
           link do email para confirmar seu cadastro.
         </Description>
 
         <InfoBox>
           <Clock size={18} />
           <div>
-            <InfoText>O link expira em 30 minutos. Verifique também a pasta de spam.</InfoText>
+            <InfoText>O link expira em 30 minutos. Verifique tambem a pasta de spam.</InfoText>
           </div>
         </InfoBox>
 
-        {resendSuccess && (
-          <p style={{ color: "#22c55e", fontSize: 13, margin: 0 }}>
-            Novo link enviado! Verifique sua caixa de entrada.
-          </p>
-        )}
-
-        {error && <p style={{ color: "#ef4444", fontSize: 13, margin: 0 }}>{error}</p>}
-
         {canResend ? (
           <ResendButton onClick={handleResend} disabled={resending}>
-            {resending ? "Reenviando..." : "Reenviar email de verificação"}
+            {resending ? "Reenviando..." : "Reenviar email de verificacao"}
           </ResendButton>
         ) : (
-          <ResendText>Você poderá reenviar em {countdown}s</ResendText>
+          <ResendText>Voce podera reenviar em {countdown}s</ResendText>
         )}
       </>
     );

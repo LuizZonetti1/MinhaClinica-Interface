@@ -8,9 +8,10 @@ import { Logo } from "../../../components/Logo";
 import { Stepper } from "../../../components/Stepper";
 import { Tabs } from "../../../components/Tabs";
 import { useAuth } from "../../../contexts";
-import { registerComplete } from "../../../services/auth.service";
+import { registerComplete } from "../../../services/patient.service";
 import type { Gender } from "../../../types/enums";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
+import { notifyError, notifySuccess } from "../../../utils/toast";
 import { stripCPF } from "../../../utils/validateCPF";
 import { AddressTab } from "./AddressTab";
 import { MedicalInfoTab } from "./MedicalInfoTab";
@@ -27,18 +28,14 @@ const RegisterComplete = () => {
   const [activeTab, setActiveTab] = useState<TabId>("personal");
   const [completedTabs, setCompletedTabs] = useState<Set<TabId>>(new Set());
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
-    // Personal Data
     cpf: "",
     phone: "",
     password: "",
     confirmPassword: "",
     birthDate: "",
     gender: "",
-
-    // Address
     cep: "",
     street: "",
     number: "",
@@ -46,8 +43,6 @@ const RegisterComplete = () => {
     neighborhood: "",
     city: "",
     state: "",
-
-    // Medical Info
     bloodType: "",
     allergies: "",
     medications: "",
@@ -60,7 +55,6 @@ const RegisterComplete = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // --- Validações por aba ---
   const isPersonalValid = () =>
     Boolean(
       formData.cpf.trim() &&
@@ -112,7 +106,6 @@ const RegisterComplete = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isCurrentTabValid()) return;
-    setError("");
     setLoading(true);
     try {
       const response = await registerComplete({
@@ -141,17 +134,18 @@ const RegisterComplete = () => {
       });
       setUser(response.user);
       localStorage.removeItem("@minhaclinica:register_email");
+      notifySuccess("Cadastro concluido com sucesso.");
       navigate("/dashboard", { replace: true });
     } catch (err: unknown) {
-      setError(getApiErrorMessage(err, "Erro ao concluir cadastro. Tente novamente."));
+      notifyError(getApiErrorMessage(err, "Erro ao concluir cadastro. Tente novamente."));
     } finally {
       setLoading(false);
     }
   };
 
   const steps = [
-    { label: "Início", status: "completed" as const },
-    { label: "Verificação", status: "completed" as const },
+    { label: "Inicio", status: "completed" as const },
+    { label: "Verificacao", status: "completed" as const },
     { label: "Completar", status: "active" as const },
   ];
 
@@ -165,14 +159,14 @@ const RegisterComplete = () => {
     },
     {
       id: "address",
-      label: "Endereço",
+      label: "Endereco",
       icon: <MapPin />,
       disabled: !completedTabs.has("personal"),
       completed: completedTabs.has("address"),
     },
     {
       id: "medical",
-      label: "Info Médicas",
+      label: "Info Medicas",
       icon: <Heart />,
       disabled: !completedTabs.has("address"),
       completed: completedTabs.has("medical"),
@@ -206,20 +200,17 @@ const RegisterComplete = () => {
             </Tabs>
 
             {isLastTab ? (
-              <>
-                {error && <p style={{ color: "red", fontSize: 13, margin: "0 0 8px" }}>{error}</p>}
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="medium"
-                  fullWidth
-                  icon={<Check />}
-                  iconPosition="left"
-                  disabled={!isCurrentTabValid() || loading}
-                >
-                  {loading ? "Enviando..." : "Concluir Cadastro"}
-                </Button>
-              </>
+              <Button
+                type="submit"
+                variant="primary"
+                size="medium"
+                fullWidth
+                icon={<Check />}
+                iconPosition="left"
+                disabled={!isCurrentTabValid() || loading}
+              >
+                {loading ? "Enviando..." : "Concluir Cadastro"}
+              </Button>
             ) : (
               <Button
                 type="button"
