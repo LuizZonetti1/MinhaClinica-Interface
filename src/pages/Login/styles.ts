@@ -105,7 +105,7 @@ export const ErrorText = styled.p`
   font-family: 'Roboto', sans-serif;
   font-size: 13px;
   font-weight: 500;
-  color: ${theme.colors.text.error};
+  color: ${theme.colors.error};
   margin: 0;
   text-align: center;
 `;

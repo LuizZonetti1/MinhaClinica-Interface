@@ -8,12 +8,13 @@ import { Input } from "../../components/Input";
 import { Logo } from "../../components/Logo";
 import { useAuth } from "../../contexts";
 import { login } from "../../services/auth.service";
+import { isRememberMeEnabled } from "../../utils/authStorage";
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage";
+import { notifyError, notifySuccess } from "../../utils/toast";
 import {
   Checkbox,
   CheckboxLabel,
   Container,
-  ErrorText,
   Footer,
   FooterLink,
   FooterText,
@@ -31,20 +32,19 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState(() => isRememberMeEnabled());
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
     try {
-      const response = await login({ email, password });
+      const response = await login({ email, password }, rememberMe);
       setUser(response.user);
+      notifySuccess("Login realizado com sucesso.");
       navigate("/dashboard", { replace: true });
     } catch (err: unknown) {
-      setError(getApiErrorMessage(err, "E-mail ou senha inválidos."));
+      notifyError(getApiErrorMessage(err, "E-mail ou senha invalidos."));
     } finally {
       setLoading(false);
     }
@@ -55,7 +55,7 @@ const Login = () => {
       <Card>
         <Container>
           <Logo variant="auth" showSubtitle={false} />
-          <Title>Minha Clínica</Title>
+          <Title>Minha Clinica</Title>
           <Subtitle>Bem-vindo de volta</Subtitle>
 
           <Form onSubmit={handleSubmit}>
@@ -97,13 +97,11 @@ const Login = () => {
             <Button type="submit" variant="primary" size="medium" fullWidth disabled={loading}>
               {loading ? "Entrando..." : "Entrar"}
             </Button>
-
-            {error && <ErrorText>{error}</ErrorText>}
           </Form>
 
           <Footer>
             <FooterText>
-              Não tem uma conta? <FooterLink to="/register/start">Cadastre-se</FooterLink>
+              Nao tem uma conta? <FooterLink to="/register/start">Cadastre-se</FooterLink>
             </FooterText>
           </Footer>
         </Container>
