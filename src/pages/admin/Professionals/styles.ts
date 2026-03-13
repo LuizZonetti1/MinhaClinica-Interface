@@ -104,7 +104,7 @@ export const TableElement = styled.table`
 `;
 
 export const TableHeaderRow = styled.tr`
-  background-color: #f8fafc;
+  background-color: ${theme.colors.surfaceMuted};
 `;
 
 export const TableHeaderCell = styled.th`
@@ -114,7 +114,7 @@ export const TableHeaderCell = styled.th`
   font-size: 13px;
   letter-spacing: 0.04em;
   font-weight: 700;
-  color: #4b5563;
+  color: ${theme.colors.text.secondary};
 
   @media (max-width: ${theme.breakpoints.wide}) {
     font-size: 12px;
@@ -165,7 +165,7 @@ export const ProfessionalEmail = styled.span`
   font-family: "Roboto", sans-serif;
   font-size: 13px;
   font-weight: 400;
-  color: #6b7280;
+  color: ${theme.colors.text.muted};
 
   @media (max-width: ${theme.breakpoints.wide}) {
     font-size: 12px;
@@ -332,7 +332,7 @@ export const DetailItem = styled.div`
   padding: 10px 12px;
   border: 1px solid ${theme.colors.border.light};
   border-radius: ${theme.borderRadius.md};
-  background-color: #f8fafc;
+  background-color: ${theme.colors.surfaceMuted};
 `;
 
 export const DetailLabel = styled.span`

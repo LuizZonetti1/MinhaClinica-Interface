@@ -23,6 +23,7 @@ import type {
   UpdateReceptionistPayload,
 } from "../../../types/professional";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
+import { formatPhoneNumber } from "../../../utils/formatters";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import {
   ActionsGroup,
@@ -408,7 +409,7 @@ const ProfessionalsPage = () => {
           isActive: receptionEdit.isActive,
         };
         await updateReceptionist(editId, payload);
-        notifySuccess("Recepcao atualizada com sucesso.");
+        notifySuccess("Recepção atualizada com sucesso.");
       }
 
       closeEditModal();
@@ -446,7 +447,7 @@ const ProfessionalsPage = () => {
         notifySuccess("Profissional removido com sucesso.");
       } else {
         await deactivateReceptionist(deleteTarget.id);
-        notifySuccess("Recepcao removida com sucesso.");
+        notifySuccess("Recepção removida com sucesso.");
       }
 
       setIsDeleteOpen(false);
@@ -480,7 +481,7 @@ const ProfessionalsPage = () => {
           $active={activeTab === "receptionists"}
           onClick={() => setActiveTab("receptionists")}
         >
-          Recepcao ({receptionists.length})
+          Recepção ({receptionists.length})
         </TabButton>
       </TabRow>
 
@@ -650,7 +651,7 @@ const ProfessionalsPage = () => {
                     </ProfessionalCell>
                   </td>
                   <td>
-                    <PhoneText>{r.phone ?? "-"}</PhoneText>
+                    <PhoneText>{formatPhoneNumber(r.phone)}</PhoneText>
                   </td>
                   <td>
                     <RoleBadge>{r.role}</RoleBadge>
@@ -726,7 +727,7 @@ const ProfessionalsPage = () => {
                   }
                 >
                   <option value="PROFESSIONAL">Profissional</option>
-                  <option value="RECEPTIONIST">Recepcao</option>
+                  <option value="RECEPTIONIST">Recepção</option>
                 </ModalSelect>
                 {createFormErrors.role && <FieldError>{createFormErrors.role}</FieldError>}
               </ModalFieldGroup>
@@ -769,7 +770,7 @@ const ProfessionalsPage = () => {
         <ModalOverlay onClick={closeViewModal}>
           <ModalCard onClick={(event) => event.stopPropagation()}>
             <ModalTitle>
-              {viewType === "professional" ? "Detalhes do profissional" : "Detalhes da recepcao"}
+              {viewType === "professional" ? "Detalhes do profissional" : "Detalhes da recepção"}
             </ModalTitle>
             {viewType === "professional" && viewProfessional && (
               <DetailsGrid>
@@ -803,7 +804,7 @@ const ProfessionalsPage = () => {
                 </DetailItem>
                 <DetailItem>
                   <DetailLabel>Telefone</DetailLabel>
-                  <DetailValue>{viewReceptionist.phone ?? "-"}</DetailValue>
+                  <DetailValue>{formatPhoneNumber(viewReceptionist.phone)}</DetailValue>
                 </DetailItem>
                 <DetailItem>
                   <DetailLabel>Status</DetailLabel>
@@ -824,7 +825,7 @@ const ProfessionalsPage = () => {
         <ModalOverlay onClick={closeEditModal}>
           <ModalCard onClick={(event) => event.stopPropagation()}>
             <ModalTitle>
-              {editType === "professional" ? "Editar profissional" : "Editar recepcao"}
+              {editType === "professional" ? "Editar profissional" : "Editar recepção"}
             </ModalTitle>
             <ModalForm onSubmit={submitEdit}>
               {editType === "professional" && (
@@ -993,7 +994,7 @@ const ProfessionalsPage = () => {
             <ModalTitle>Confirmar exclusao</ModalTitle>
             <StatusMessage>
               {`Deseja excluir ${
-                deleteTarget.type === "professional" ? "o profissional" : "a recepcao"
+                deleteTarget.type === "professional" ? "o profissional" : "a recepção"
               } ${deleteTarget.name}?`}
             </StatusMessage>
             <ModalActions>

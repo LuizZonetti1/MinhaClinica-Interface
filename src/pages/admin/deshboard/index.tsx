@@ -6,6 +6,7 @@ import { QuickAccessCard } from "../../../components/QuickAccessCard";
 import { StatCard } from "../../../components/StatCard";
 import { useAuth } from "../../../contexts";
 import { getDashboardSummary } from "../../../services/admin.service";
+import { theme } from "../../../themes/themes";
 import type { DashboardSummary, HistoricalItem } from "../../../types/dashboard";
 import {
   AlertsList,
@@ -33,25 +34,25 @@ const formatBalance = (value: number) => {
 const buildStats = (data: DashboardSummary) => [
   {
     icon: "/icons/stat-patients.svg",
-    iconBg: "#DBEAFE",
+    iconBg: theme.colors.featureBg.blue,
     label: "Total de Pacientes",
     value: String(data.totalPatients),
   },
   {
     icon: "/icons/stat-consultations.svg",
-    iconBg: "#DCFCE7",
+    iconBg: theme.colors.featureBg.green,
     label: "Consultas Hoje",
     value: String(data.appointmentsToday),
   },
   {
     icon: "/icons/stat-professionals.svg",
-    iconBg: "#F3E8FF",
+    iconBg: theme.colors.featureBg.purple,
     label: "Profissionais Ativos",
     value: String(data.totalProfessionals),
   },
   {
     icon: "/icons/stat-revenue.svg",
-    iconBg: "#FFEDD5",
+    iconBg: theme.colors.featureBg.orange,
     label: "Receita Mensal",
     value: formatBalance(data.monthlyBalance),
   },
@@ -171,8 +172,6 @@ const AdminDashboard = () => {
   const firstName = user?.name.split(" ").slice(0, 2).join(" ") ?? "Administrador";
   const greeting = getGreeting();
   const today = getFormattedDate();
-
-  console.log(user);
 
   return (
     <PageWrapper>

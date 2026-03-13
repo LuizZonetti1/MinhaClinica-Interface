@@ -50,9 +50,9 @@ const RegisterReceptionComplete = () => {
   const { setUser } = useAuth();
 
   const [formData, setFormData] = useState<ReceptionCompleteFormData>(INITIAL_FORM_DATA);
-  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ReceptionCompleteFormData, string>>>(
-    {},
-  );
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<keyof ReceptionCompleteFormData, string>>
+  >({});
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -116,10 +116,10 @@ const RegisterReceptionComplete = () => {
       });
 
       setUser(response.user);
-      notifySuccess("Cadastro da recepcao concluido com sucesso.");
+      notifySuccess("Cadastro da recepção concluído com sucesso.");
       navigate("/dashboard", { replace: true });
     } catch (err: unknown) {
-      notifyError(getApiErrorMessage(err, "Erro ao concluir cadastro da recepcao."));
+      notifyError(getApiErrorMessage(err, "Erro ao concluir cadastro da recepção."));
     } finally {
       setLoading(false);
     }
@@ -130,7 +130,7 @@ const RegisterReceptionComplete = () => {
       <Card padding="small">
         <Container>
           <Logo variant="auth" showSubtitle={false} />
-          <Title>Completar cadastro da recepcao</Title>
+          <Title>Completar cadastro da recepção</Title>
           <Stepper steps={steps} />
 
           <Form onSubmit={handleSubmit}>
