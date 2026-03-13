@@ -7,6 +7,7 @@ export interface User {
     name: string;
     email: string;
     role: UserRole;
+    avatarUrl?: string;
 }
 
 export interface AuthContextData {
@@ -39,6 +40,7 @@ export interface LoginResponse {
         name: string;
         email: string;
         role: UserRole;
+        avatarUrl?: string;
         clinicId?: string;
         clinicName?: string;
     };
@@ -101,5 +103,6 @@ export interface RegisterCompleteResponse {
         name: string;
         email: string;
         role: UserRole;
+        avatarUrl?: string;
     };
 }

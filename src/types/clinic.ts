@@ -111,3 +111,40 @@ export interface ClinicListResponse {
     data: Clinic[];
     total: number;
 }
+
+// Clinic settings (admin)
+export interface ClinicSettingsInfoPayload {
+    name: string;
+    cnpj: string;
+    phone: string;
+    email: string;
+    address: string;
+}
+
+export interface ClinicSettingsSchedulePayload {
+    openTime: string;
+    closeTime: string;
+    appointmentInterval: number;
+    workingDays: string;
+}
+
+export interface ClinicSettingsNotificationsPayload {
+    appointmentReminder: boolean;
+    cancellationAlert: boolean;
+    newPatient: boolean;
+    dailyReport: boolean;
+}
+
+export interface ClinicSettingsSecurityPayload {
+    twoFactor: boolean;
+    accessLog: boolean;
+    sessionTimeout: number;
+}
+
+export interface ClinicSettingsResponse {
+    info?: Partial<ClinicSettingsInfoPayload>;
+    schedule?: Partial<ClinicSettingsSchedulePayload>;
+    notifications?: Partial<ClinicSettingsNotificationsPayload>;
+    security?: Partial<ClinicSettingsSecurityPayload>;
+    [key: string]: unknown;
+}
