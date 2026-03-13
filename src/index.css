@@ -1,15 +1,124 @@
+:root {
+  --mc-color-background: #f9fafb;
+  --mc-color-surface: #ffffff;
+  --mc-color-surface-muted: #f1f5f9;
+  --mc-color-surface-hover: #e2e8f0;
+  --mc-color-dark: #1f2937;
+  --mc-color-darker: #111827;
+
+  --mc-feature-bg-blue: #dbeafe;
+  --mc-feature-bg-green: #dcfce7;
+  --mc-feature-bg-purple: #f3e8ff;
+  --mc-feature-bg-orange: #ffedd5;
+
+  --mc-gradient-primary: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+  --mc-gradient-hero: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+  --mc-gradient-cta: linear-gradient(157.6deg, #2563eb 0%, #1e40af 100%);
+
+  --mc-text-primary: #111827;
+  --mc-text-secondary: #4b5563;
+  --mc-text-muted: #6b7280;
+  --mc-text-disabled: #9ca3af;
+  --mc-text-inverse: #ffffff;
+  --mc-text-link: #3b82f6;
+  --mc-text-link-hover: #2563eb;
+  --mc-text-on-dark: #d1d5db;
+
+  --mc-border-light: #e5e7eb;
+  --mc-border-default: #d1d5db;
+  --mc-border-focus: #3b82f6;
+  --mc-border-divider: #cbd5e1;
+  --mc-border-error: #ef4444;
+  --mc-border-dark: #374151;
+  --mc-border-lighter: #f3f4f6;
+
+  --mc-badge-info-bg: #eaf2ff;
+  --mc-badge-info-text: #2563eb;
+  --mc-badge-success-bg: #d9f4e3;
+  --mc-badge-success-text: #15803d;
+  --mc-badge-neutral-bg: #f1f5f9;
+  --mc-badge-neutral-text: #475569;
+
+  --mc-action-view-bg: #d9f4e3;
+  --mc-action-view-text: #15803d;
+  --mc-action-edit-bg: #dbeafe;
+  --mc-action-edit-text: #1d4ed8;
+  --mc-action-delete-bg: #fee2e2;
+  --mc-action-delete-text: #dc2626;
+  --mc-action-border: rgba(15, 23, 42, 0.08);
+}
+
+:root[data-theme="dark"] {
+  --mc-color-background: #0b1220;
+  --mc-color-surface: #111827;
+  --mc-color-surface-muted: #1f2937;
+  --mc-color-surface-hover: #334155;
+  --mc-color-dark: #020617;
+  --mc-color-darker: #000000;
+
+  --mc-feature-bg-blue: #1d4ed8;
+  --mc-feature-bg-green: #166534;
+  --mc-feature-bg-purple: #6d28d9;
+  --mc-feature-bg-orange: #9a3412;
+
+  --mc-gradient-primary: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+  --mc-gradient-hero: linear-gradient(180deg, #1e3a8a 0%, #1d4ed8 100%);
+  --mc-gradient-cta: linear-gradient(157.6deg, #1d4ed8 0%, #1e3a8a 100%);
+
+  --mc-text-primary: #e2e8f0;
+  --mc-text-secondary: #cbd5e1;
+  --mc-text-muted: #94a3b8;
+  --mc-text-disabled: #64748b;
+  --mc-text-inverse: #ffffff;
+  --mc-text-link: #60a5fa;
+  --mc-text-link-hover: #93c5fd;
+  --mc-text-on-dark: #cbd5e1;
+
+  --mc-border-light: #334155;
+  --mc-border-default: #475569;
+  --mc-border-focus: #60a5fa;
+  --mc-border-divider: #334155;
+  --mc-border-error: #f87171;
+  --mc-border-dark: #1e293b;
+  --mc-border-lighter: #1f2937;
+
+  --mc-badge-info-bg: #1e3a8a;
+  --mc-badge-info-text: #bfdbfe;
+  --mc-badge-success-bg: #14532d;
+  --mc-badge-success-text: #86efac;
+  --mc-badge-neutral-bg: #1f2937;
+  --mc-badge-neutral-text: #cbd5e1;
+
+  --mc-action-view-bg: #14532d;
+  --mc-action-view-text: #86efac;
+  --mc-action-edit-bg: #1e3a8a;
+  --mc-action-edit-text: #93c5fd;
+  --mc-action-delete-bg: #7f1d1d;
+  --mc-action-delete-text: #fca5a5;
+  --mc-action-border: rgba(148, 163, 184, 0.22);
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+}
+
+html {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 #root {
@@ -20,14 +129,21 @@ html, body {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 body {
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--mc-color-background);
+  color: var(--mc-text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
