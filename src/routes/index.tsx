@@ -1,6 +1,8 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import { AppLayout } from "../layout/AppLayout";
 import AdminDashboard from "../pages/admin/deshboard";
+import EditProfilePage from "../pages/admin/EditProfile";
+import PatientsPage from "../pages/admin/Patients";
 import ProfessionalsPage from "../pages/admin/Professionals";
 import ProfilePage from "../pages/admin/Profile";
 import ReportsPage from "../pages/admin/Reports";
@@ -119,10 +121,11 @@ const AppRoutes = () => {
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
               <Route path="/admin/profissional" element={<ProfessionalsPage />} />
               <Route path="/admin/profissional/dashboard" element={<ProfessionalsPage />} />
-              <Route path="/admin/paciente/dashboard" element={<PatientDashboard />} />
+              <Route path="/admin/paciente/dashboard" element={<PatientsPage />} />
               <Route path="/admin/relatorios" element={<ReportsPage />} />
               <Route path="/admin/configuracoes" element={<SettingsPage />} />
               <Route path="/admin/perfil" element={<ProfilePage />} />
+              <Route path="/admin/perfil/editar" element={<EditProfilePage />} />
             </Route>
           </Route>
         </Route>
