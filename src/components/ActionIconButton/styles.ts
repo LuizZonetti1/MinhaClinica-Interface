@@ -3,16 +3,16 @@ import type { ActionIconButtonVariant } from "./index";
 
 const buttonStyles: Record<ActionIconButtonVariant, ReturnType<typeof css>> = {
   view: css`
-    background-color: #d9f4e3;
-    color: #16a34a;
+    background-color: var(--mc-action-view-bg, #d9f4e3);
+    color: var(--mc-action-view-text, #16a34a);
   `,
   edit: css`
-    background-color: #dbeafe;
-    color: #2563eb;
+    background-color: var(--mc-action-edit-bg, #dbeafe);
+    color: var(--mc-action-edit-text, #2563eb);
   `,
   delete: css`
-    background-color: #fee2e2;
-    color: #ef4444;
+    background-color: var(--mc-action-delete-bg, #fee2e2);
+    color: var(--mc-action-delete-text, #ef4444);
   `,
 };
 
@@ -24,6 +24,7 @@ export const StyledActionIconButton = styled.button<{ $variant: ActionIconButton
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid var(--mc-action-border, rgba(15, 23, 42, 0.08));
   cursor: pointer;
   transition: filter 0.15s ease-in-out;
 

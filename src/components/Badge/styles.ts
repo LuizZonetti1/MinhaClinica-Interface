@@ -4,16 +4,16 @@ import type { BadgeVariant } from "./index";
 
 const variantStyles: Record<BadgeVariant, ReturnType<typeof css>> = {
   info: css`
-    background-color: #eaf2ff;
-    color: ${theme.colors.primaryHover};
+    background-color: var(--mc-badge-info-bg, #eaf2ff);
+    color: var(--mc-badge-info-text, ${theme.colors.primaryHover});
   `,
   success: css`
-    background-color: #d9f4e3;
-    color: ${theme.colors.successHover};
+    background-color: var(--mc-badge-success-bg, #d9f4e3);
+    color: var(--mc-badge-success-text, ${theme.colors.successHover});
   `,
   neutral: css`
-    background-color: ${theme.colors.border.lighter};
-    color: ${theme.colors.text.secondary};
+    background-color: var(--mc-badge-neutral-bg, ${theme.colors.border.lighter});
+    color: var(--mc-badge-neutral-text, ${theme.colors.text.secondary});
   `,
 };
 
