@@ -1,34 +1,37 @@
 import { api } from "../config/api";
+import type { DashboardSummary } from "../types/dashboard";
+import { getPatientSummary, listPatientsAdmin } from "./patient-admin.service";
 import {
-    deactivateProfessional,
-    getProfessionalById,
-    inviteProfessional,
-    listProfessionals,
-    updateProfessional,
+  deactivateProfessional,
+  getProfessionalById,
+  inviteProfessional,
+  listProfessionals,
+  updateProfessional,
 } from "./professional.service";
 import {
-    deactivateReceptionist,
-    getReceptionistById,
-    inviteStaff,
-    listReceptionists,
-    updateReceptionist,
+  deactivateReceptionist,
+  getReceptionistById,
+  inviteStaff,
+  listReceptionists,
+  updateReceptionist,
 } from "./reception.service";
-import type { DashboardSummary } from "../types/dashboard";
 
 export const getDashboardSummary = async (): Promise<DashboardSummary> => {
-    const { data } = await api.get<DashboardSummary>("/dashboard");
-    return data;
+  const { data } = await api.get<DashboardSummary>("/dashboard");
+  return data;
 };
 
 export {
-    deactivateProfessional,
-    deactivateReceptionist,
-    getProfessionalById,
-    getReceptionistById,
-    inviteProfessional,
-    inviteStaff,
-    listProfessionals,
-    listReceptionists,
-    updateProfessional,
-    updateReceptionist,
+  deactivateProfessional,
+  deactivateReceptionist,
+  getPatientSummary,
+  getProfessionalById,
+  getReceptionistById,
+  inviteProfessional,
+  inviteStaff,
+  listPatientsAdmin,
+  listProfessionals,
+  listReceptionists,
+  updateProfessional,
+  updateReceptionist,
 };
