@@ -214,5 +214,6 @@ export const updateProfilePassword = async (
   await api.patch("/staff/me/password", {
     currentPassword: payload.currentPassword,
     newPassword: payload.newPassword,
+    confirmPassword: payload.confirmPassword,
   });
 };
