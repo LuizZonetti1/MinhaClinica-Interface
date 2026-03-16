@@ -1,14 +1,66 @@
 export interface DashboardSummary {
-    totalPatients: number;
-    appointmentsToday: number;
-    totalProfessionals: number;
-    monthlyBalance: number;
-    referenceDate: string;
-    appointmentsThisMonth: number;
+  totalPatients: number;
+  appointmentsToday: number;
+  totalProfessionals: number;
+  monthlyBalance: number;
+  referenceDate: string;
+  appointmentsThisMonth: number;
 }
 
 export interface HistoricalItem {
-    month: string;
-    consultations: number;
-    revenue: number;
+  month: string;
+  consultations: number;
+  revenue: number;
+}
+
+// ─── Reports ──────────────────────────────────────────────────────────────────
+
+export interface MonthlyStatsItem {
+  month: string;
+  consultations: number;
+  cancellations: number;
+  revenue: number;
+}
+
+export interface FinancialItem {
+  month: string;
+  entradas: number;
+  saidas: number;
+  lucro: number;
+}
+
+export interface AppointmentStatusItem {
+  name: string;
+  value: number;
+}
+
+export interface TopProfessionalItem {
+  rank: number;
+  name: string;
+  specialty: string;
+  consultations: number;
+}
+
+export interface TopSpecialtyItem {
+  rank: number;
+  name: string;
+  consultations: number;
+}
+
+export interface ReportSummary {
+  consultationsCount: number;
+  totalRevenue: number;
+  cancellationsCount: number;
+  estimatedProfit: number;
+}
+
+export interface ReportData {
+  summary: ReportSummary;
+  monthly: MonthlyStatsItem[];
+  financial: FinancialItem[];
+  statusDistribution: AppointmentStatusItem[];
+  revenueTrend: HistoricalItem[];
+  topProfessionals: TopProfessionalItem[];
+  topSpecialties: TopSpecialtyItem[];
+  referenceLabel: string;
 }
