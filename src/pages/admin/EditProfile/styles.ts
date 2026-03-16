@@ -111,6 +111,14 @@ export const FullWidthField = styled.div`
   margin-bottom: 16px;
 `;
 
+export const PasswordRequirements = styled.p`
+  margin: 10px 0 0;
+  font-family: "Roboto", sans-serif;
+  font-size: 12px;
+  line-height: 1.45;
+  color: ${theme.colors.text.muted};
+`;
+
 export const ActionRow = styled.div`
   display: flex;
   align-items: center;

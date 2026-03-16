@@ -1,4 +1,4 @@
-import { Camera, Save } from "lucide-react";
+import { Camera, Eye, EyeOff, Save } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "../../../components/Button";
@@ -24,6 +24,7 @@ import {
   FormCardTitle,
   FormGrid,
   FullWidthField,
+  PasswordRequirements,
   PageTitle,
   PageWrapper,
 } from "./styles";
@@ -51,12 +52,21 @@ const getInitials = (name: string) =>
 
 const normalizeApiValue = (value: string, fallback = "") => (value === "-" ? fallback : value);
 
+const PASSWORD_REQUIREMENTS_MESSAGE =
+  "A nova senha deve ter no minimo 8 caracteres, com letras maiusculas, minusculas e numeros.";
+
+const isPasswordStrong = (password: string) =>
+  password.length >= 8 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /\d/.test(password);
+
 const EditProfilePage = () => {
   const { user, setUser } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isSaving, setIsSaving] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
   const [currentAvatarUrl, setCurrentAvatarUrl] = useState<string>("");
@@ -179,6 +189,11 @@ const EditProfilePage = () => {
         notifyError("As senhas nao coincidem.");
         return;
       }
+
+      if (!isPasswordStrong(form.newPassword)) {
+        notifyError(PASSWORD_REQUIREMENTS_MESSAGE);
+        return;
+      }
     }
 
     const profileChanged =
@@ -205,6 +220,7 @@ const EditProfilePage = () => {
         await updateProfilePassword({
           currentPassword: form.currentPassword,
           newPassword: form.newPassword,
+          confirmPassword: form.confirmPassword,
         });
       }
 
@@ -283,34 +299,41 @@ const EditProfilePage = () => {
         <FullWidthField>
           <Input
             label="Senha Atual"
-            type="password"
+            type={showCurrentPassword ? "text" : "password"}
             fullWidth
             value={form.currentPassword}
             onChange={(e) => set("currentPassword", e.target.value)}
             placeholder="********"
+            rightIcon={showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            onRightIconClick={() => setShowCurrentPassword((prev) => !prev)}
             disabled={isSaving}
           />
         </FullWidthField>
         <FormGrid>
           <Input
             label="Nova Senha"
-            type="password"
+            type={showNewPassword ? "text" : "password"}
             fullWidth
             value={form.newPassword}
             onChange={(e) => set("newPassword", e.target.value)}
             placeholder="********"
+            rightIcon={showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            onRightIconClick={() => setShowNewPassword((prev) => !prev)}
             disabled={isSaving}
           />
           <Input
             label="Confirmar Nova Senha"
-            type="password"
+            type={showConfirmPassword ? "text" : "password"}
             fullWidth
             value={form.confirmPassword}
             onChange={(e) => set("confirmPassword", e.target.value)}
             placeholder="********"
+            rightIcon={showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            onRightIconClick={() => setShowConfirmPassword((prev) => !prev)}
             disabled={isSaving}
           />
         </FormGrid>
+        <PasswordRequirements>{PASSWORD_REQUIREMENTS_MESSAGE}.</PasswordRequirements>
       </FormCard>
 
       <ActionRow>

@@ -3,7 +3,6 @@ import {
   Briefcase,
   Building2,
   Calendar,
-  Clock,
   DollarSign,
   Mail,
   MapPin,
@@ -241,13 +240,6 @@ const ProfilePage = () => {
               <InfoLabel>Nivel de Acesso</InfoLabel>
             </InfoLeft>
             <InfoValue>{toDash(profileData.accessLevel)}</InfoValue>
-          </InfoRow>
-          <InfoRow>
-            <InfoLeft>
-              <Clock size={16} />
-              <InfoLabel>Ultimo Acesso</InfoLabel>
-            </InfoLeft>
-            <InfoValue>{toDash(profileData.lastAccess)}</InfoValue>
           </InfoRow>
           <InfoRow>
             <InfoLeft>
