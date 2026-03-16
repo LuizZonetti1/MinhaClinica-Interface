@@ -25,6 +25,18 @@ export const IconBox = styled.div<{ $bgColor: string }>`
     width: 24px;
     height: 24px;
   }
+
+  span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+  }
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
 `;
 
 export const StatLabel = styled.p`

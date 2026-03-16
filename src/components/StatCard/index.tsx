@@ -5,7 +5,7 @@ export const StatCard = ({ icon, iconBg, label, value }: StatCardProps) => {
   return (
     <CardWrapper>
       <IconBox $bgColor={iconBg}>
-        <img src={icon} alt={label} />
+        {typeof icon === "string" ? <img src={icon} alt={label} /> : <span aria-hidden>{icon}</span>}
       </IconBox>
       <div>
         <StatLabel>{label}</StatLabel>
