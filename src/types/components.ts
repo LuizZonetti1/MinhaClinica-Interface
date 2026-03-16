@@ -86,9 +86,25 @@ export interface QuickAccessCardProps {
   onClick?: () => void;
 }
 
+// ─── GroupedBarChart ─────────────────────────────────────────────────────────
+export interface BarSeries {
+  dataKey: string;
+  name: string;
+  color: string;
+  yAxisId?: "left" | "right";
+}
+
+export interface GroupedBarChartProps {
+  data: object[];
+  series: BarSeries[];
+  leftFormatter?: (v: number) => string;
+  rightFormatter?: (v: number) => string;
+  height?: number;
+}
+
 // ─── StatCard ─────────────────────────────────────────────────────────────────
 export interface StatCardProps {
-  icon: string;
+  icon: ReactNode | string;
   iconBg: string;
   label: string;
   value: string;
