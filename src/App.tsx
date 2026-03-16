@@ -1,15 +1,13 @@
-import { AuthProvider, ThemeModeProvider } from "./contexts";
+import { AuthProvider } from "./contexts";
 import { AppToastContainer } from "./components/AppToastContainer";
 import AppRoutes from "./routes";
 
 function App() {
   return (
-    <ThemeModeProvider>
-      <AuthProvider>
-        <AppRoutes />
-        <AppToastContainer />
-      </AuthProvider>
-    </ThemeModeProvider>
+    <AuthProvider>
+      <AppRoutes />
+      <AppToastContainer />
+    </AuthProvider>
   );
 }
 

@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
+import { ThemeModeProvider } from "../contexts";
 import { AppLayout } from "../layout/AppLayout";
 import AdminDashboard from "../pages/admin/deshboard";
 import EditProfilePage from "../pages/admin/EditProfile";
@@ -90,7 +91,13 @@ const AppRoutes = () => {
         />
 
         {/* ─── Rotas privadas (exigem autenticação) ───────────── */}
-        <Route element={<PrivateRoutes />}>
+        <Route
+          element={
+            <ThemeModeProvider>
+              <PrivateRoutes />
+            </ThemeModeProvider>
+          }
+        >
           {/* Redireciona /dashboard para o dashboard correto da role */}
           <Route path="/dashboard" element={<RoleRedirect />} />
 

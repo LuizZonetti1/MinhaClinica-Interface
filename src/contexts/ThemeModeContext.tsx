@@ -53,6 +53,16 @@ export function ThemeModeProvider({ children }: ThemeModeProviderProps) {
   }, [mode]);
 
   useEffect(() => {
+    return () => {
+      if (typeof document === "undefined") return;
+
+      const root = document.documentElement;
+      root.setAttribute("data-theme", "light");
+      root.style.colorScheme = "light";
+    };
+  }, []);
+
+  useEffect(() => {
     if (typeof window === "undefined") return;
 
     const handleStorage = (event: StorageEvent) => {
@@ -90,4 +100,3 @@ export const useThemeMode = (): ThemeModeContextData => {
 
   return context;
 };
-
