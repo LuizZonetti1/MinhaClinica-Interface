@@ -72,6 +72,7 @@ export interface ProfessionalRegisterCompletePayload {
     registrationNumber: string;
     registrationState: string;
     defaultAppointmentDuration?: number;
+    formations?: string;
 }
 
 export interface ProfessionalRegisterCompleteResponse {

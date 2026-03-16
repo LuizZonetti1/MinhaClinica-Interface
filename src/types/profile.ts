@@ -36,6 +36,7 @@ export interface UpdateProfilePayload {
 export interface UpdateProfilePasswordPayload {
   currentPassword: string;
   newPassword: string;
+  confirmPassword: string;
 }
 
 export interface UserMeResponse {
