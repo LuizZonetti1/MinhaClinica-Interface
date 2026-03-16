@@ -64,6 +64,7 @@ export const Sidebar = () => {
 
   const initials = user ? getInitials(user.name) : "U";
   const roleLabel = user ? getRoleLabel(user.role) : "";
+  const avatarUrl = user?.avatarUrl?.trim() ?? "";
 
   return (
     <SidebarWrapper>
@@ -84,9 +85,13 @@ export const Sidebar = () => {
       </Nav>
 
       <UserSection>
-        <UserRow>
+        <UserRow type="button" onClick={() => navigate("/admin/perfil")} aria-label="Abrir perfil">
           <Avatar>
-            <span>{initials}</span>
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={`Foto de ${user?.name ?? "Usuario"}`} />
+            ) : (
+              <span>{initials}</span>
+            )}
           </Avatar>
           <UserInfo>
             <UserName>{user?.name ?? "Usuário"}</UserName>

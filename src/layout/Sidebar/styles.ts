@@ -97,10 +97,23 @@ export const UserSection = styled.div`
   gap: 12px;
 `;
 
-export const UserRow = styled.div`
+export const UserRow = styled.button`
   display: flex;
   align-items: center;
   gap: 12px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-radius: ${theme.borderRadius.sm};
+  padding: 6px 8px;
+  margin: -6px -8px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.07);
+  }
 `;
 
 export const Avatar = styled.div`
@@ -112,6 +125,14 @@ export const Avatar = styled.div`
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
 
   span {
     font-family: 'Roboto', sans-serif;
