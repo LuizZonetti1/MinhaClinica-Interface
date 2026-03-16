@@ -22,6 +22,11 @@ type TabId = "personal" | "address" | "medical";
 
 const TAB_ORDER: TabId[] = ["personal", "address", "medical"];
 
+const onlyDigits = (value: string) => value.replace(/\D/g, "");
+
+const isPasswordStrong = (value: string) =>
+  value.length >= 6 && /[A-Z]/.test(value) && /[a-z]/.test(value) && /\d/.test(value);
+
 const RegisterComplete = () => {
   const navigate = useNavigate();
   const { setUser } = useAuth();
@@ -55,15 +60,21 @@ const RegisterComplete = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const isPersonalValid = () =>
-    Boolean(
-      formData.cpf.trim() &&
-        formData.phone.trim() &&
-        formData.password.trim() &&
-        formData.confirmPassword.trim() &&
+  const isPersonalValid = () => {
+    const cpfDigits = onlyDigits(formData.cpf);
+    const phoneDigits = onlyDigits(formData.phone);
+    const hasValidPhone = phoneDigits.length >= 10 && phoneDigits.length <= 11;
+    const passwordsMatch = formData.password.trim() === formData.confirmPassword.trim();
+
+    return Boolean(
+      cpfDigits.length === 11 &&
+        hasValidPhone &&
+        isPasswordStrong(formData.password.trim()) &&
+        passwordsMatch &&
         formData.birthDate.trim() &&
         formData.gender.trim(),
     );
+  };
 
   const isAddressValid = () =>
     Boolean(

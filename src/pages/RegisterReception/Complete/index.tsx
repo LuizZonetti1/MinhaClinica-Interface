@@ -13,7 +13,7 @@ import { storeAuthToken } from "../../../utils/authStorage";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import { stripCPF } from "../../../utils/validateCPF";
-import { Container, Form, Row, Title } from "./styles";
+import { Container, Form, RequirementsText, Row, Title } from "./styles";
 
 type ReceptionCompleteFormData = {
   cpf: string;
@@ -43,6 +43,12 @@ const maskPhone = (value: string) =>
     .slice(0, 11)
     .replace(/(\d{2})(\d)/, "($1) $2")
     .replace(/(\d{5})(\d{1,4})$/, "$1-$2");
+
+const PASSWORD_REQUIREMENTS_TEXT =
+  "Senha com no minimo 6 caracteres, incluindo letra maiuscula, minuscula e numero.";
+
+const isPasswordStrong = (value: string) =>
+  value.length >= 6 && /[A-Z]/.test(value) && /[a-z]/.test(value) && /\d/.test(value);
 
 const RegisterReceptionComplete = () => {
   const navigate = useNavigate();
@@ -93,7 +99,9 @@ const RegisterReceptionComplete = () => {
     if (phoneDigits.length < 10 || phoneDigits.length > 11) {
       errors.phone = "Telefone deve ter 10 ou 11 digitos.";
     }
-    if (formData.password.trim().length < 6) errors.password = "Senha minima de 6 caracteres.";
+    if (!isPasswordStrong(formData.password.trim())) {
+      errors.password = PASSWORD_REQUIREMENTS_TEXT;
+    }
 
     return errors;
   };
@@ -175,6 +183,11 @@ const RegisterReceptionComplete = () => {
               fullWidth
               required
             />
+
+            <RequirementsText>
+              Para concluir: CPF com 11 digitos, telefone com 10 ou 11 digitos e{" "}
+              {PASSWORD_REQUIREMENTS_TEXT.toLowerCase()}
+            </RequirementsText>
 
             <Button type="submit" variant="primary" size="medium" fullWidth disabled={loading}>
               {loading ? "Concluindo..." : "Concluir cadastro"}

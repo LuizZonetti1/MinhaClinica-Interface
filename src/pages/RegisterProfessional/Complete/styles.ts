@@ -47,3 +47,11 @@ export const ErrorText = styled.p`
   font-size: 13px;
   color: ${theme.colors.error};
 `;
+
+export const RequirementsText = styled.p`
+  margin: 4px 0 0;
+  font-family: "Roboto", sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+  color: ${theme.colors.text.muted};
+`;

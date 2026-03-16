@@ -15,6 +15,12 @@ import { stripCPF } from "../../../utils/validateCPF";
 import { AdminTab } from "./AdminTab";
 import { Container, Title } from "./styles";
 
+const PASSWORD_REQUIREMENTS_TEXT =
+  "Senha com no minimo 6 caracteres, incluindo letra maiuscula, minuscula e numero.";
+
+const isPasswordStrong = (value: string) =>
+  value.length >= 6 && /[A-Z]/.test(value) && /[a-z]/.test(value) && /\d/.test(value);
+
 const RegisterClinicComplete = () => {
   const navigate = useNavigate();
   const { setUser } = useAuth();
@@ -64,7 +70,11 @@ const RegisterClinicComplete = () => {
     const errs: Record<string, string> = {};
     if (!formData.adminCpf.trim()) errs.adminCpf = "CPF obrigatorio.";
     if (!formData.adminPhone.trim()) errs.adminPhone = "Telefone obrigatorio.";
-    if (!formData.adminPassword.trim()) errs.adminPassword = "Senha obrigatoria.";
+    if (!formData.adminPassword.trim()) {
+      errs.adminPassword = "Senha obrigatoria.";
+    } else if (!isPasswordStrong(formData.adminPassword.trim())) {
+      errs.adminPassword = PASSWORD_REQUIREMENTS_TEXT;
+    }
     if (!formData.adminConfirmPassword.trim()) {
       errs.adminConfirmPassword = "Confirme a senha.";
     } else if (formData.adminPassword !== formData.adminConfirmPassword) {

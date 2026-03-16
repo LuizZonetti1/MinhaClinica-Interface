@@ -127,3 +127,11 @@ export const EmergencyTitle = styled.h3`
   color: ${theme.colors.text.secondary};
   margin: 0;
 `;
+
+export const RequirementsText = styled.p`
+  margin: 2px 0 0;
+  font-family: "Roboto", sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+  color: ${theme.colors.text.muted};
+`;

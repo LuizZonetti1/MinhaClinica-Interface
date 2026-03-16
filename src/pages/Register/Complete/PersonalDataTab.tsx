@@ -1,6 +1,6 @@
 import { Calendar, Lock, Phone, User } from "lucide-react";
 import { Input } from "../../../components/Input";
-import { FieldGroup, Label, RadioButton, RadioGroup, Row } from "./styles";
+import { FieldGroup, Label, RadioButton, RadioGroup, RequirementsText, Row } from "./styles";
 
 interface PersonalDataTabProps {
   formData: {
@@ -81,6 +81,11 @@ export const PersonalDataTab = ({ formData, onChange, cpfError }: PersonalDataTa
           required
         />
       </Row>
+
+      <RequirementsText>
+        Para avancar: CPF com 11 digitos, telefone com 10 ou 11 digitos, senha com no minimo 6
+        caracteres (maiuscula, minuscula e numero) e confirmacao igual.
+      </RequirementsText>
 
       <Input
         label="Data de Nascimento *"

@@ -28,6 +28,14 @@ export const Form = styled.form`
   width: 100%;
 `;
 
+export const RequirementsText = styled.p`
+  margin: 2px 0 0;
+  font-family: "Roboto", sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+  color: ${theme.colors.text.muted};
+`;
+
 export const Footer = styled.div`
   display: flex;
   justify-content: center;

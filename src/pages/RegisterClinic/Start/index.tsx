@@ -14,11 +14,20 @@ import { notifyError, notifySuccess } from "../../../utils/toast";
 import { ClinicAddressTab } from "./ClinicAddressTab";
 import { ClinicInfoTab } from "./ClinicInfoTab";
 import { OwnerTab } from "./OwnerTab";
-import { Container, Footer, FooterLink, FooterText, Title } from "./styles";
+import { Container, Footer, FooterLink, FooterText, RequirementsText, Title } from "./styles";
 
 type TabId = "clinic" | "address" | "owner";
 
 const TAB_ORDER: TabId[] = ["clinic", "address", "owner"];
+
+const TAB_REQUIREMENTS: Record<TabId, string> = {
+  clinic:
+    "Aba Clinica: informe nome legal, nome fantasia, CNPJ, telefone e email da clinica.",
+  address:
+    "Aba Endereco: preencha CEP, rua, numero, bairro, cidade e estado para prosseguir.",
+  owner:
+    "Aba Responsavel: informe nome e email validos do responsavel para envio da verificacao.",
+};
 
 const RegisterClinicStart = () => {
   const navigate = useNavigate();
@@ -181,6 +190,8 @@ const RegisterClinicStart = () => {
               )}
               {activeTab === "owner" && <OwnerTab formData={formData} onChange={handleChange} />}
             </Tabs>
+
+            <RequirementsText>{TAB_REQUIREMENTS[activeTab]}</RequirementsText>
 
             {isLastTab ? (
               <Button

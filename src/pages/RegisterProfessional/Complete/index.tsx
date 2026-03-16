@@ -1,4 +1,4 @@
-import { Clock3, Eye, EyeOff, Hash, IdCard, Lock, MapPin, Phone, Shield } from "lucide-react";
+import { Clock3, Eye, EyeOff, GraduationCap, Hash, IdCard, Lock, MapPin, Phone, Shield } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { AuthLayout } from "../../../components/AuthLayout";
@@ -23,6 +23,7 @@ type ProfessionalCompleteFormData = {
   registrationNumber: string;
   registrationState: string;
   defaultAppointmentDuration: string;
+  formations: string;
 };
 
 const INITIAL_FORM_DATA: ProfessionalCompleteFormData = {
@@ -33,6 +34,7 @@ const INITIAL_FORM_DATA: ProfessionalCompleteFormData = {
   registrationNumber: "",
   registrationState: "",
   defaultAppointmentDuration: "30",
+  formations: "",
 };
 
 const onlyDigits = (value: string) => value.replace(/\D/g, "");
@@ -57,6 +59,12 @@ const maskRegistrationNumber = (value: string) =>
     .replace(/\D/g, "")
     .slice(0, 20)
     .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+const PASSWORD_REQUIREMENTS_TEXT =
+  "Senha com no minimo 6 caracteres, incluindo letra maiuscula, minuscula e numero.";
+
+const isPasswordStrong = (value: string) =>
+  value.length >= 6 && /[A-Z]/.test(value) && /[a-z]/.test(value) && /\d/.test(value);
 
 const RegisterProfessionalComplete = () => {
   const navigate = useNavigate();
@@ -99,6 +107,7 @@ const RegisterProfessionalComplete = () => {
       nextValue = value.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 2);
     }
     if (field === "defaultAppointmentDuration") nextValue = onlyDigits(value).slice(0, 3);
+    if (field === "formations") nextValue = value.slice(0, 120);
 
     setFormData((prev) => ({ ...prev, [field]: nextValue }));
     setFieldErrors((prev) => {
@@ -119,7 +128,9 @@ const RegisterProfessionalComplete = () => {
     if (phoneDigits.length < 10 || phoneDigits.length > 11) {
       errors.phone = "Telefone deve ter 10 ou 11 digitos.";
     }
-    if (formData.password.trim().length < 6) errors.password = "Senha minima de 6 caracteres.";
+    if (!isPasswordStrong(formData.password.trim())) {
+      errors.password = PASSWORD_REQUIREMENTS_TEXT;
+    }
     if (!formData.professionalCouncil.trim()) {
       errors.professionalCouncil = "Informe o conselho profissional.";
     }
@@ -161,6 +172,7 @@ const RegisterProfessionalComplete = () => {
         defaultAppointmentDuration: formData.defaultAppointmentDuration.trim()
           ? Number(formData.defaultAppointmentDuration)
           : undefined,
+        formations: formData.formations.trim() || undefined,
       });
 
       setUser(response.user);
@@ -264,16 +276,28 @@ const RegisterProfessionalComplete = () => {
               />
             </Row>
 
-            <Input
-              label="Duracao padrao da consulta (min)"
-              placeholder="30"
-              icon={<Clock3 />}
-              inputMode="numeric"
-              value={formData.defaultAppointmentDuration}
-              onChange={(event) => handleFieldChange("defaultAppointmentDuration", event.target.value)}
-              error={fieldErrors.defaultAppointmentDuration}
-              fullWidth
-            />
+            <Row>
+              <Input
+                label="Duracao padrao da consulta (min)"
+                placeholder="30"
+                icon={<Clock3 />}
+                inputMode="numeric"
+                value={formData.defaultAppointmentDuration}
+                onChange={(event) => handleFieldChange("defaultAppointmentDuration", event.target.value)}
+                error={fieldErrors.defaultAppointmentDuration}
+                fullWidth
+              />
+
+              <Input
+                label="Formacoes"
+                placeholder="Ex: Pos-graduacao em Ortodontia"
+                icon={<GraduationCap />}
+                value={formData.formations}
+                onChange={(event) => handleFieldChange("formations", event.target.value)}
+                error={fieldErrors.formations}
+                fullWidth
+              />
+            </Row>
 
             <Button type="submit" variant="primary" size="medium" fullWidth disabled={loading}>
               {loading ? "Concluindo..." : "Concluir cadastro"}

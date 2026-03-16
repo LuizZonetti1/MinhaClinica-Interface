@@ -11,7 +11,7 @@ import { registerStart } from "../../../services/patient.service";
 import { storeAuthToken } from "../../../utils/authStorage";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError, notifySuccess } from "../../../utils/toast";
-import { Container, Footer, FooterLink, FooterText, Form, Title } from "./styles";
+import { Container, Footer, FooterLink, FooterText, Form, RequirementsText, Title } from "./styles";
 
 const RegisterStart = () => {
   const navigate = useNavigate();
@@ -79,6 +79,11 @@ const RegisterStart = () => {
               fullWidth
               required
             />
+
+            <RequirementsText>
+              Para continuar: informe nome completo e um email valido para receber o link de
+              verificacao.
+            </RequirementsText>
 
             <Button
               type="submit"

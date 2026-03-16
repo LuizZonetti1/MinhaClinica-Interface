@@ -10,11 +10,12 @@ import { useAuth } from "../../contexts";
 import { login } from "../../services/auth.service";
 import { isRememberMeEnabled } from "../../utils/authStorage";
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage";
-import { notifyError, notifySuccess } from "../../utils/toast";
+import { notifySuccess } from "../../utils/toast";
 import {
   Checkbox,
   CheckboxLabel,
   Container,
+  ErrorText,
   Footer,
   FooterLink,
   FooterText,
@@ -34,9 +35,13 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(() => isRememberMeEnabled());
   const [loading, setLoading] = useState(false);
+  const [inlineError, setInlineError] = useState("");
+
+  const INVALID_LOGIN_MESSAGE = "Email ou senha incorretos. Verifique e tente novamente.";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setInlineError("");
     setLoading(true);
     try {
       const response = await login({ email, password }, rememberMe);
@@ -44,7 +49,20 @@ const Login = () => {
       notifySuccess("Login realizado com sucesso.");
       navigate("/dashboard", { replace: true });
     } catch (err: unknown) {
-      notifyError(getApiErrorMessage(err, "E-mail ou senha invalidos."));
+      const apiMessage = getApiErrorMessage(err, INVALID_LOGIN_MESSAGE);
+      const normalized = apiMessage.toLowerCase();
+
+      if (
+        normalized.includes("email") ||
+        normalized.includes("e-mail") ||
+        normalized.includes("senha") ||
+        normalized.includes("credencial") ||
+        normalized.includes("invalid")
+      ) {
+        setInlineError(INVALID_LOGIN_MESSAGE);
+      } else {
+        setInlineError(apiMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -63,7 +81,10 @@ const Login = () => {
               type="email"
               placeholder="Email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (inlineError) setInlineError("");
+              }}
               icon={<Mail />}
               fullWidth
               required
@@ -73,7 +94,10 @@ const Login = () => {
               type={showPassword ? "text" : "password"}
               placeholder="Senha"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (inlineError) setInlineError("");
+              }}
               icon={<Lock />}
               iconPosition="left"
               rightIcon={showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -81,6 +105,8 @@ const Login = () => {
               fullWidth
               required
             />
+
+            {inlineError && <ErrorText>{inlineError}</ErrorText>}
 
             <RememberRow>
               <CheckboxLabel>

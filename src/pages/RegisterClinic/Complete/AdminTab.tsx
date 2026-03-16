@@ -1,6 +1,9 @@
 import { Calendar, Lock, Phone, User } from "lucide-react";
 import { Input } from "../../../components/Input";
-import { FieldGroup, Label, RadioButton, RadioGroup, Row } from "./styles";
+import { FieldGroup, Label, RadioButton, RadioGroup, RequirementsText, Row } from "./styles";
+
+const PASSWORD_REQUIREMENTS_TEXT =
+  "Senha com no minimo 6 caracteres, incluindo letra maiuscula, minuscula e numero.";
 
 const maskCPF = (value: string) =>
   value
@@ -85,6 +88,11 @@ export const AdminTab = ({ formData, onChange, cpfError, fieldErrors = {} }: Adm
           error={fieldErrors.adminConfirmPassword}
         />
       </Row>
+
+      <RequirementsText>
+        Para concluir: CPF, telefone e data de nascimento obrigatorios, genero selecionado e{" "}
+        {PASSWORD_REQUIREMENTS_TEXT.toLowerCase()} A confirmacao deve ser igual a senha.
+      </RequirementsText>
 
       <Input
         label="Data de nascimento *"
