@@ -11,6 +11,11 @@ import type {
     StaffRegisterCompleteResponse,
     UpdateReceptionistPayload,
 } from "../types/professional";
+import type {
+    AppointmentStatus,
+    ReceptionDashboardData,
+    TodayAppointmentItem,
+} from "../types/dashboard";
 
 type ReceptionApiShape = {
     id: string;
@@ -181,4 +186,83 @@ export const receptionRegisterComplete = async (
     }
 
     return data;
+};
+
+// ─── Reception Dashboard ─────────────────────────────────────────────────────
+
+const toNum = (v: unknown): number => {
+    if (typeof v === "number" && Number.isFinite(v)) return v;
+    if (typeof v === "string") {
+        const p = Number(v.trim());
+        if (Number.isFinite(p)) return p;
+    }
+    return 0;
+};
+
+const toStr = (v: unknown, fallback = ""): string =>
+    typeof v === "string" ? v : fallback;
+
+const toRec = (v: unknown): Record<string, unknown> | null =>
+    typeof v === "object" && v !== null ? (v as Record<string, unknown>) : null;
+
+const normalizeStatus = (v: unknown): AppointmentStatus => {
+    const s = String(v ?? "").toUpperCase();
+    const valid: AppointmentStatus[] = ["WAITING", "CHECKED_IN", "IN_PROGRESS", "DONE", "CANCELLED"];
+    return valid.includes(s as AppointmentStatus) ? (s as AppointmentStatus) : "WAITING";
+};
+
+const normalizeAppointment = (item: unknown): TodayAppointmentItem | null => {
+    const r = toRec(item);
+    if (!r) return null;
+    return {
+        id: toStr(r.id, String(Math.random())),
+        time: toStr(r.time ?? r.scheduledTime ?? r.appointmentTime ?? r.startAt, "--:--"),
+        patientName: toStr(r.patientName ?? r.patient, "—"),
+        doctorName: toStr(r.doctorName ?? r.professional ?? r.doctor, "—"),
+        status: normalizeStatus(r.status ?? r.appointmentStatus),
+    };
+};
+
+const normalizeReceptionDashboard = (raw: unknown): ReceptionDashboardData => {
+    const data = toRec(raw) ?? {};
+    const summaryRaw = toRec(data.summary ?? data) ?? {};
+    const appointmentsRaw = Array.isArray(data.appointments)
+        ? data.appointments
+        : Array.isArray(data.data)
+        ? data.data
+        : [];
+
+    return {
+        summary: {
+            consultationsToday: toNum(
+                summaryRaw.consultationsToday ??
+                summaryRaw.appointmentsToday ??
+                summaryRaw.totalConsultations ??
+                data.consultationsToday,
+            ),
+            awaitingCheckin: toNum(
+                summaryRaw.awaitingCheckin ??
+                summaryRaw.pendingCheckin ??
+                data.awaitingCheckin,
+            ),
+            checkinsDone: toNum(
+                summaryRaw.checkinsDone ??
+                summaryRaw.completedCheckins ??
+                data.checkinsDone,
+            ),
+            pendingConfirmations: toNum(
+                summaryRaw.pendingConfirmations ??
+                summaryRaw.confirmationsPending ??
+                data.pendingConfirmations,
+            ),
+        },
+        appointments: appointmentsRaw
+            .map(normalizeAppointment)
+            .filter((a): a is TodayAppointmentItem => a !== null),
+    };
+};
+
+export const getReceptionDashboard = async (): Promise<ReceptionDashboardData> => {
+    const { data } = await api.get<unknown>("/reception/dashboard");
+    return normalizeReceptionDashboard(data);
 };
