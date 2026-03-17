@@ -64,3 +64,27 @@ export interface ReportData {
   topSpecialties: TopSpecialtyItem[];
   referenceLabel: string;
 }
+
+// ─── Reception Dashboard ─────────────────────────────────────────────────────
+
+export type AppointmentStatus = "WAITING" | "CHECKED_IN" | "IN_PROGRESS" | "DONE" | "CANCELLED";
+
+export interface TodayAppointmentItem {
+  id: string;
+  time: string;
+  patientName: string;
+  doctorName: string;
+  status: AppointmentStatus;
+}
+
+export interface ReceptionDashboardSummary {
+  consultationsToday: number;
+  awaitingCheckin: number;
+  checkinsDone: number;
+  pendingConfirmations: number;
+}
+
+export interface ReceptionDashboardData {
+  summary: ReceptionDashboardSummary;
+  appointments: TodayAppointmentItem[];
+}
