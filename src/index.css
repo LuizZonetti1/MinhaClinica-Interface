@@ -46,6 +46,22 @@
   --mc-action-delete-bg: #fee2e2;
   --mc-action-delete-text: #dc2626;
   --mc-action-border: rgba(15, 23, 42, 0.08);
+
+  --mc-status-waiting-bg: #fef3c7;
+  --mc-status-waiting-text: #92400e;
+  --mc-status-waiting-border: #fcd34d;
+  --mc-status-checkin-bg: #dcfce7;
+  --mc-status-checkin-text: #166534;
+  --mc-status-checkin-border: #86efac;
+  --mc-status-progress-bg: #dbeafe;
+  --mc-status-progress-text: #1e40af;
+  --mc-status-progress-border: #93c5fd;
+  --mc-status-done-bg: #f3f4f6;
+  --mc-status-done-text: #374151;
+  --mc-status-done-border: #d1d5db;
+  --mc-status-cancelled-bg: #fee2e2;
+  --mc-status-cancelled-text: #991b1b;
+  --mc-status-cancelled-border: #fca5a5;
 }
 
 :root[data-theme="dark"] {
@@ -96,6 +112,22 @@
   --mc-action-delete-bg: #7f1d1d;
   --mc-action-delete-text: #fca5a5;
   --mc-action-border: rgba(148, 163, 184, 0.22);
+
+  --mc-status-waiting-bg: #4b3a16;
+  --mc-status-waiting-text: #fcd34d;
+  --mc-status-waiting-border: #92400e;
+  --mc-status-checkin-bg: #163728;
+  --mc-status-checkin-text: #86efac;
+  --mc-status-checkin-border: #166534;
+  --mc-status-progress-bg: #162f4f;
+  --mc-status-progress-text: #93c5fd;
+  --mc-status-progress-border: #1d4ed8;
+  --mc-status-done-bg: #334155;
+  --mc-status-done-text: #e2e8f0;
+  --mc-status-done-border: #475569;
+  --mc-status-cancelled-bg: #4a1f26;
+  --mc-status-cancelled-text: #fca5a5;
+  --mc-status-cancelled-border: #dc2626;
 }
 
 * {

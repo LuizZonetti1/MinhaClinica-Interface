@@ -52,7 +52,12 @@ const PAGE_TITLES: Record<string, string> = {
   "/admin/perfil": "Meu Perfil",
   "/admin/perfil/editar": "Editar Perfil",
   "/paciente/dashboard": "Painel do Paciente",
-  "/recepcao/dashboard": "Recepcao",
+  "/recepcao/dashboard": "Inicio",
+  "/recepcao/marcar-consulta": "Marcar Consulta",
+  "/recepcao/cadastrar-paciente": "Cadastrar Paciente",
+  "/recepcao/agendas": "Ver Agendas",
+  "/recepcao/checkin": "Check-in",
+  "/recepcao/perfil": "Meu Perfil",
   "/profissional/dashboard": "Painel do Profissional",
 };
 
@@ -100,6 +105,36 @@ const PAGE_BREADCRUMBS: Record<string, BreadcrumbItem> = {
     parentPath: "/admin/perfil",
     current: "Editar",
     currentPath: "/admin/perfil/editar",
+  },
+  "/recepcao/marcar-consulta": {
+    parent: "Inicio",
+    parentPath: "/recepcao/dashboard",
+    current: "Marcar Consulta",
+    currentPath: "/recepcao/marcar-consulta",
+  },
+  "/recepcao/cadastrar-paciente": {
+    parent: "Inicio",
+    parentPath: "/recepcao/dashboard",
+    current: "Cadastrar Paciente",
+    currentPath: "/recepcao/cadastrar-paciente",
+  },
+  "/recepcao/agendas": {
+    parent: "Inicio",
+    parentPath: "/recepcao/dashboard",
+    current: "Ver Agendas",
+    currentPath: "/recepcao/agendas",
+  },
+  "/recepcao/checkin": {
+    parent: "Inicio",
+    parentPath: "/recepcao/dashboard",
+    current: "Check-in",
+    currentPath: "/recepcao/checkin",
+  },
+  "/recepcao/perfil": {
+    parent: "Inicio",
+    parentPath: "/recepcao/dashboard",
+    current: "Meu Perfil",
+    currentPath: "/recepcao/perfil",
   },
 };
 
@@ -150,7 +185,7 @@ export const AppLayout = () => {
   }, [user?.avatarUrl]);
 
   useEffect(() => {
-    if (!user || user.role === "PATIENT") return;
+    if (!user || user.role === "PATIENT" || user.role === "RECEPTIONIST") return;
 
     let cancelled = false;
 
@@ -219,7 +254,12 @@ export const AppLayout = () => {
     return roleLabel;
   }, [roleLabel, staffRoleOrSpecialty, user?.role]);
   const clinicValue = staffClinicName !== "-" ? staffClinicName : "-";
-  const profilePath = user?.role === "PATIENT" ? null : "/admin/perfil";
+  const profilePath =
+    user?.role === "ADMIN"
+      ? "/admin/perfil"
+      : user?.role === "RECEPTIONIST"
+        ? "/recepcao/perfil"
+        : null;
   const editProfilePath = user?.role === "ADMIN" ? "/admin/perfil/editar" : null;
 
   const handleOpenProfile = () => {

@@ -114,6 +114,14 @@ export const UserRow = styled.button`
   &:hover {
     background-color: rgba(255, 255, 255, 0.07);
   }
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &:disabled:hover {
+    background-color: transparent;
+  }
 `;
 
 export const Avatar = styled.div`
