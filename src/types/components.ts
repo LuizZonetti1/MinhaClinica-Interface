@@ -14,7 +14,7 @@ export type AlertType = "warning" | "success" | "info";
 
 export interface AlertItemProps {
   type: AlertType;
-  icon: string;
+  icon: ReactNode | string;
   message: string;
 }
 
@@ -80,7 +80,7 @@ export interface ToggleProps {
 
 // ─── QuickAccessCard ──────────────────────────────────────────────────────────
 export interface QuickAccessCardProps {
-  icon: string;
+  icon: ReactNode | string;
   label: string;
   color: string;
   onClick?: () => void;
