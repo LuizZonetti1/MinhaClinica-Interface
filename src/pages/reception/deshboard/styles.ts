@@ -149,19 +149,20 @@ export const StatusBadge = styled.span<{
   padding: 3px 10px;
   border-radius: 9999px;
   white-space: nowrap;
+  border: 1px solid transparent;
 
   ${({ $variant }) => {
     switch ($variant) {
       case "waiting":
-        return "background-color: #FEF3C7; color: #92400E;";
+        return "background-color: var(--mc-status-waiting-bg); color: var(--mc-status-waiting-text); border-color: var(--mc-status-waiting-border);";
       case "checkin":
-        return "background-color: #DCFCE7; color: #166534;";
+        return "background-color: var(--mc-status-checkin-bg); color: var(--mc-status-checkin-text); border-color: var(--mc-status-checkin-border);";
       case "progress":
-        return "background-color: #DBEAFE; color: #1E40AF;";
+        return "background-color: var(--mc-status-progress-bg); color: var(--mc-status-progress-text); border-color: var(--mc-status-progress-border);";
       case "done":
-        return "background-color: #F3F4F6; color: #374151;";
+        return "background-color: var(--mc-status-done-bg); color: var(--mc-status-done-text); border-color: var(--mc-status-done-border);";
       case "cancelled":
-        return "background-color: #FEE2E2; color: #991B1B;";
+        return "background-color: var(--mc-status-cancelled-bg); color: var(--mc-status-cancelled-text); border-color: var(--mc-status-cancelled-border);";
     }
   }}
 `;

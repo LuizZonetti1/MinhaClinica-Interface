@@ -1,3 +1,16 @@
+import {
+  Bell,
+  CalendarDays,
+  CheckCircle,
+  FileText,
+  LayoutDashboard,
+  Settings,
+  Stethoscope,
+  TrendingUp,
+  User,
+  UserPlus,
+  Users,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { AlertItem } from "../../../components/AlertItem";
@@ -33,25 +46,25 @@ const formatBalance = (value: number) => {
 
 const buildStats = (data: DashboardSummary) => [
   {
-    icon: "/icons/stat-patients.svg",
+    icon: <Users size={22} color="#2563EB" />,
     iconBg: theme.colors.featureBg.blue,
     label: "Total de Pacientes",
     value: String(data.totalPatients),
   },
   {
-    icon: "/icons/stat-consultations.svg",
+    icon: <CalendarDays size={22} color="#16A34A" />,
     iconBg: theme.colors.featureBg.green,
     label: "Consultas Hoje",
     value: String(data.appointmentsToday),
   },
   {
-    icon: "/icons/stat-professionals.svg",
+    icon: <Stethoscope size={22} color="#9333EA" />,
     iconBg: theme.colors.featureBg.purple,
     label: "Profissionais Ativos",
     value: String(data.totalProfessionals),
   },
   {
-    icon: "/icons/stat-revenue.svg",
+    icon: <TrendingUp size={22} color="#EA580C" />,
     iconBg: theme.colors.featureBg.orange,
     label: "Receita Mensal",
     value: formatBalance(data.monthlyBalance),
@@ -61,54 +74,54 @@ const buildStats = (data: DashboardSummary) => [
 const ALERTS = [
   {
     type: "warning" as const,
-    icon: "/icons/alert-warning.svg",
+    icon: <Bell size={18} />,
     message: "3 profissionais com agenda vazia esta semana.",
   },
   {
     type: "success" as const,
-    icon: "/icons/alert-success.svg",
+    icon: <CheckCircle size={18} />,
     message: "Meta de consultas de Fevereiro atingida (280/250).",
   },
   {
     type: "info" as const,
-    icon: "/icons/alert-info.svg",
+    icon: <CalendarDays size={18} />,
     message: "5 pacientes aguardando confirmação de consulta.",
   },
 ];
 
 const QUICK_ACCESS = [
   {
-    icon: "/icons/quick-professionals.svg",
+    icon: <Stethoscope size={20} />,
     label: "Gerenciar Profissionais",
     color: "#2563EB",
     path: "/admin/profissional/dashboard",
   },
   {
-    icon: "/icons/quick-patients.svg",
+    icon: <UserPlus size={20} />,
     label: "Gerenciar Pacientes",
     color: "#16A34A",
     path: "/admin/paciente/dashboard",
   },
   {
-    icon: "/icons/quick-reports.svg",
+    icon: <FileText size={20} />,
     label: "Ver Relatórios",
     color: "#9333EA",
     path: "/admin/relatorios",
   },
   {
-    icon: "/icons/quick-settings.svg",
+    icon: <Settings size={20} />,
     label: "Configurações",
     color: "#EA580C",
     path: "/admin/configuracoes",
   },
   {
-    icon: "/icons/quick-profile.svg",
+    icon: <User size={20} />,
     label: "Meu Perfil",
     color: "#4B5563",
     path: "/admin/perfil",
   },
   {
-    icon: "/icons/quick-reception.svg",
+    icon: <LayoutDashboard size={20} />,
     label: "Painel da Recepção",
     color: "#1E40AF",
     path: "/recepcao/dashboard",

@@ -1,4 +1,13 @@
-
+import {
+  Bell,
+  CalendarCheck2,
+  CalendarDays,
+  CalendarPlus2,
+  CheckCircle,
+  ClipboardCheck,
+  Clock,
+  UserPlus,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { QuickAccessCard } from "../../../components/QuickAccessCard";
@@ -53,26 +62,26 @@ const getFormattedDate = () =>
 
 const buildStats = (summary: ReceptionDashboardSummary) => [
   {
-    icon: "/icons/reception-stat-today.svg",
+    icon: <CalendarDays size={22} color="#2563EB" />,
     iconBg: theme.colors.featureBg.blue,
     label: "Consultas Hoje",
     value: String(summary.consultationsToday),
   },
   {
-    icon: "/icons/reception-stat-checkin-pending.svg",
+    icon: <Clock size={22} color="#EA580C" />,
     iconBg: theme.colors.featureBg.orange,
     label: "Aguardando Check-in",
     value: String(summary.awaitingCheckin),
   },
   {
-    icon: "/icons/reception-stat-checkin-done.svg",
+    icon: <CheckCircle size={22} color="#16A34A" />,
     iconBg: theme.colors.featureBg.green,
     label: "Check-ins Realizados",
     value: String(summary.checkinsDone),
   },
   {
-    icon: "/icons/reception-stat-confirmations.svg",
-    iconBg: "#FEF9C3",
+    icon: <Bell size={22} color="var(--mc-status-waiting-text)" />,
+    iconBg: "var(--mc-status-waiting-bg)",
     label: "Confirmações Pendentes",
     value: String(summary.pendingConfirmations),
   },
@@ -80,25 +89,25 @@ const buildStats = (summary: ReceptionDashboardSummary) => [
 
 const QUICK_ACCESS = [
   {
-    icon: "/icons/quick-schedule.svg",
+    icon: <CalendarPlus2 size={20} />,
     label: "Marcar Consulta",
     color: "#2563EB",
     path: "/recepcao/marcar-consulta",
   },
   {
-    icon: "/icons/quick-patients.svg",
+    icon: <UserPlus size={20} />,
     label: "Cadastrar Paciente",
     color: "#16A34A",
     path: "/recepcao/cadastrar-paciente",
   },
   {
-    icon: "/icons/quick-agendas.svg",
+    icon: <CalendarCheck2 size={20} />,
     label: "Ver Agendas",
     color: "#9333EA",
     path: "/recepcao/agendas",
   },
   {
-    icon: "/icons/quick-checkin.svg",
+    icon: <ClipboardCheck size={20} />,
     label: "Check-in",
     color: "#EA580C",
     path: "/recepcao/checkin",
@@ -132,10 +141,35 @@ const ReceptionDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getReceptionDashboard()
-      .then(setDashData)
-      .catch(() => notifyError("Erro ao carregar dados do painel."))
-      .finally(() => setLoading(false));
+    let isMounted = true;
+
+    const loadDashboard = async (silent = false) => {
+      try {
+        const data = await getReceptionDashboard();
+        if (!isMounted) return;
+        setDashData(data);
+      } catch {
+        if (!silent && isMounted) {
+          notifyError("Erro ao carregar dados do painel.");
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void loadDashboard(false);
+
+    // Sincroniza mudancas automaticas de status no backend (ex.: WAITING -> NO_SHOW).
+    const intervalId = window.setInterval(() => {
+      void loadDashboard(true);
+    }, 60000);
+
+    return () => {
+      isMounted = false;
+      window.clearInterval(intervalId);
+    };
   }, []);
 
   const firstName = user?.name.split(" ").slice(0, 2).join(" ") ?? "Recepcionista";
