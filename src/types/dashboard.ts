@@ -68,6 +68,14 @@ export interface ReportData {
 // ─── Reception Dashboard ─────────────────────────────────────────────────────
 
 export type AppointmentStatus = "WAITING" | "CHECKED_IN" | "IN_PROGRESS" | "DONE" | "CANCELLED";
+export type AppointmentStatusUpdate =
+  | "SCHEDULED"
+  | "CONFIRMED"
+  | "WAITING"
+  | "IN_PROGRESS"
+  | "COMPLETED"
+  | "NO_SHOW"
+  | "CANCELLED";
 
 export interface TodayAppointmentItem {
   id: string;
@@ -75,6 +83,8 @@ export interface TodayAppointmentItem {
   patientName: string;
   doctorName: string;
   status: AppointmentStatus;
+  avatarUrl?: string | null;
+  appointmentType?: string | null;
 }
 
 export interface ReceptionDashboardSummary {
@@ -87,4 +97,36 @@ export interface ReceptionDashboardSummary {
 export interface ReceptionDashboardData {
   summary: ReceptionDashboardSummary;
   appointments: TodayAppointmentItem[];
+}
+
+// ─── Agendas (Reception Schedules) ──────────────────────────────────────────
+
+export type AgendaSlotStatus =
+  | "SCHEDULED"
+  | "CONFIRMED"
+  | "WAITING"
+  | "IN_PROGRESS"
+  | "COMPLETED"
+  | "NO_SHOW"
+  | "CANCELLED";
+
+export interface AgendaSlot {
+  time: string;
+  libre: boolean;
+  appointmentId?: string | null;
+  patientName?: string | null;
+  status?: AgendaSlotStatus | null;
+}
+
+export interface AgendaProfessional {
+  id: string;
+  name: string;
+  specialty: string;
+  avatarUrl?: string | null;
+  slots: AgendaSlot[];
+}
+
+export interface AgendasResponse {
+  date: string;
+  professionals: AgendaProfessional[];
 }
