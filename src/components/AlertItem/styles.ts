@@ -32,10 +32,20 @@ export const AlertWrapper = styled.div<{ $type: AlertType }>`
   background-color: ${({ $type }) => alertStyles[$type].bg};
 `;
 
-export const AlertIcon = styled.img`
+export const AlertIcon = styled.span<{ $type: AlertType }>`
   width: 18px;
   height: 18px;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: ${({ $type }) => alertStyles[$type].border};
+
+  img,
+  svg {
+    width: 18px;
+    height: 18px;
+  }
 `;
 
 export const AlertText = styled.p`

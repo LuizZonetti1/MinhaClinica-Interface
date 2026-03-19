@@ -19,10 +19,20 @@ export const CardWrapper = styled.a<{ $color: string }>`
   }
 `;
 
-export const QuickIcon = styled.img`
+export const QuickIcon = styled.span<{ $color: string }>`
   width: 20px;
   height: 20px;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: ${({ $color }) => $color};
+
+  img,
+  svg {
+    width: 20px;
+    height: 20px;
+  }
 `;
 
 export const QuickLabel = styled.span<{ $color: string }>`
