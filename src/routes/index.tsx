@@ -23,7 +23,13 @@ import RegisterClinicStart from "../pages/RegisterClinic/Start";
 import RegisterClinicVerify from "../pages/RegisterClinic/Verify";
 import RegisterProfessionalComplete from "../pages/RegisterProfessional/Complete";
 import RegisterReceptionComplete from "../pages/RegisterReception/Complete";
+import ReceptionAgendasPage from "../pages/reception/Agendas";
+import ReceptionCadastrarPacientePage from "../pages/reception/CadastrarPaciente";
+import ReceptionCheckinPage from "../pages/reception/Checkin";
 import ReceptionDashboard from "../pages/reception/deshboard";
+import ReceptionEditProfilePage from "../pages/reception/EditProfile";
+import ReceptionMarcarConsultaPage from "../pages/reception/MarcarConsulta";
+import ReceptionProfilePage from "../pages/reception/Profile";
 import { Unauthorized } from "../pages/Unauthorized";
 import { UserRole } from "../types/enums";
 import { ClinicRegisterCompleteGuard } from "./ClinicRegisterCompleteGuard";
@@ -38,12 +44,12 @@ const AppRoutes = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* ─── Rotas públicas ─────────────────────────────────── */}
+        {/* Public routes */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/nao-autorizado" element={<Unauthorized />} />
 
-        {/* ─── Registro (Paciente) ─────────────────────────────── */}
+        {/* Patient register */}
         <Route path="/paciente/acesso" element={<PatientAccess />} />
         <Route path="/registro/inicial" element={<RegisterStart />} />
         <Route path="/registro/verificar" element={<RegisterVerify />} />
@@ -60,7 +66,7 @@ const AppRoutes = () => {
           }
         />
 
-        {/* ─── Registro (Clínica) ──────────────────────────────── */}
+        {/* Clinic register */}
         <Route path="/clinica/registro/inicial" element={<RegisterClinicStart />} />
         <Route path="/clinica/registro/verificar" element={<RegisterClinicVerify />} />
         <Route path="/clinica/verify-email" element={<RegisterClinicVerify />} />
@@ -90,7 +96,7 @@ const AppRoutes = () => {
           }
         />
 
-        {/* ─── Rotas privadas (exigem autenticação) ───────────── */}
+        {/* Private routes */}
         <Route
           element={
             <ThemeModeProvider>
@@ -98,31 +104,35 @@ const AppRoutes = () => {
             </ThemeModeProvider>
           }
         >
-          {/* Redireciona /dashboard para o dashboard correto da role */}
           <Route path="/dashboard" element={<RoleRedirect />} />
 
-          {/* ── Paciente ── */}
           <Route element={<RoleGuard allowedRoles={[UserRole.PATIENT]} />}>
             <Route element={<AppLayout />}>
               <Route path="/paciente/dashboard" element={<PatientDashboard />} />
             </Route>
           </Route>
 
-          {/* ── Recepção ── */}
-          <Route element={<RoleGuard allowedRoles={[UserRole.RECEPTIONIST, UserRole.ADMIN]} />}>
+          <Route element={<RoleGuard allowedRoles={[UserRole.RECEPTIONIST]} />}>
             <Route element={<AppLayout />}>
               <Route path="/recepcao/dashboard" element={<ReceptionDashboard />} />
+              <Route path="/recepcao/marcar-consulta" element={<ReceptionMarcarConsultaPage />} />
+              <Route
+                path="/recepcao/cadastrar-paciente"
+                element={<ReceptionCadastrarPacientePage />}
+              />
+              <Route path="/recepcao/agendas" element={<ReceptionAgendasPage />} />
+              <Route path="/recepcao/checkin" element={<ReceptionCheckinPage />} />
+              <Route path="/recepcao/perfil" element={<ReceptionProfilePage />} />
+              <Route path="/recepcao/perfil/editar" element={<ReceptionEditProfilePage />} />
             </Route>
           </Route>
 
-          {/* ── Profissional ── */}
           <Route element={<RoleGuard allowedRoles={[UserRole.PROFESSIONAL]} />}>
             <Route element={<AppLayout />}>
               <Route path="/profissional/dashboard" element={<ProfessionalDashboard />} />
             </Route>
           </Route>
 
-          {/* ── Admin ── */}
           <Route element={<RoleGuard allowedRoles={[UserRole.ADMIN]} />}>
             <Route element={<AppLayout />}>
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -136,7 +146,6 @@ const AppRoutes = () => {
             </Route>
           </Route>
         </Route>
-        {/* ────────────────────────────────────────────────────── */}
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
