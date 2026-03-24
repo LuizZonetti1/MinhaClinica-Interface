@@ -24,7 +24,7 @@ export interface AuthLayoutProps {
 }
 
 // ─── Badge ────────────────────────────────────────────────────────────────────
-export type BadgeVariant = "info" | "success" | "neutral";
+export type BadgeVariant = "info" | "success" | "neutral" | "warning";
 
 export interface BadgeProps {
   variant: BadgeVariant;

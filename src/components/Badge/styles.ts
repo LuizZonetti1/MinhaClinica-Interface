@@ -15,6 +15,10 @@ const variantStyles: Record<BadgeVariant, ReturnType<typeof css>> = {
     background-color: var(--mc-badge-neutral-bg, ${theme.colors.border.lighter});
     color: var(--mc-badge-neutral-text, ${theme.colors.text.secondary});
   `,
+  warning: css`
+    background-color: var(--mc-badge-warning-bg, #fef3c7);
+    color: var(--mc-badge-warning-text, #b45309);
+  `,
 };
 
 export const StyledBadge = styled.span<{ $variant: BadgeVariant }>`
