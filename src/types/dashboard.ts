@@ -13,8 +13,6 @@ export interface HistoricalItem {
   revenue: number;
 }
 
-// ─── Reports ──────────────────────────────────────────────────────────────────
-
 export interface MonthlyStatsItem {
   month: string;
   consultations: number;
@@ -65,9 +63,8 @@ export interface ReportData {
   referenceLabel: string;
 }
 
-// ─── Reception Dashboard ─────────────────────────────────────────────────────
-
 export type AppointmentStatus = "WAITING" | "CHECKED_IN" | "IN_PROGRESS" | "DONE" | "CANCELLED";
+
 export type AppointmentStatusUpdate =
   | "SCHEDULED"
   | "CONFIRMED"
@@ -99,7 +96,11 @@ export interface ReceptionDashboardData {
   appointments: TodayAppointmentItem[];
 }
 
-// ─── Agendas (Reception Schedules) ──────────────────────────────────────────
+export interface ProfessionalDashboardSummary {
+  consultasHoje: number;
+  confirmadas: number;
+  pacientesDoMes: number;
+}
 
 export type AgendaSlotStatus =
   | "SCHEDULED"
@@ -109,6 +110,49 @@ export type AgendaSlotStatus =
   | "COMPLETED"
   | "NO_SHOW"
   | "CANCELLED";
+
+export interface ProfessionalAppointment {
+  id: string;
+  time: string;
+  endTime?: string | null;
+  patientId?: string | null;
+  patientName: string;
+  patientAvatarUrl?: string | null;
+  professionalName?: string | null;
+  professionalId?: string | null;
+  appointmentType?: string | null;
+  status: AgendaSlotStatus;
+}
+
+export interface ProfessionalDashboardData {
+  summary: ProfessionalDashboardSummary;
+  appointments: ProfessionalAppointment[];
+}
+
+export interface ProfessionalAgendaDay {
+  date: string;
+  appointments: ProfessionalAppointment[];
+  totalAppointments: number;
+  confirmedAppointments: number;
+  completedAppointments: number;
+  hasAppointments: boolean;
+}
+
+export interface ProfessionalMonthlyAgendaSummary {
+  appointmentsCount: number;
+  confirmedCount: number;
+  completedCount: number;
+  daysWithAppointments: number;
+  patientsCount: number;
+}
+
+export interface ProfessionalMonthlyAgendaData {
+  referenceMonth: string;
+  startDate: string;
+  endDate: string;
+  days: ProfessionalAgendaDay[];
+  summary: ProfessionalMonthlyAgendaSummary;
+}
 
 export interface AgendaSlot {
   time: string;
