@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
-import { ThemeModeProvider } from "../contexts";
+import { ProfessionalAgendaProvider, ThemeModeProvider } from "../contexts";
 import { AppLayout } from "../layout/AppLayout";
 import AdminDashboard from "../pages/admin/deshboard";
 import EditProfilePage from "../pages/admin/EditProfile";
@@ -11,8 +11,16 @@ import SettingsPage from "../pages/admin/Settings";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import PatientAccess from "../pages/Patient/Access";
+import PatientAppointmentsPage from "../pages/Patient/Agendamentos";
 import PatientDashboard from "../pages/Patient/deshboard";
+import PatientHistoryPage from "../pages/Patient/Historico";
+import PatientNotificationsPage from "../pages/Patient/Notificacoes";
+import PatientProfilePage from "../pages/Patient/Profile";
+import ProfessionalAgendaPage from "../pages/professional/Agenda";
+import ProfessionalCommentsPage from "../pages/professional/Comments";
 import ProfessionalDashboard from "../pages/professional/deshboard";
+import ProfessionalEditProfilePage from "../pages/professional/EditProfile";
+import ProfessionalProfilePage from "../pages/professional/Profile";
 import RegisterComplete from "../pages/Register/Complete";
 import CompleteRedirect from "../pages/Register/CompleteRedirect";
 import RegisterStart from "../pages/Register/Start";
@@ -106,9 +114,25 @@ const AppRoutes = () => {
         >
           <Route path="/dashboard" element={<RoleRedirect />} />
 
+          <Route element={<RoleGuard allowedRoles={[UserRole.ADMIN]} />}>
+            <Route element={<AppLayout />}>
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/profissional" element={<ProfessionalsPage />} />
+              <Route path="/admin/paciente/dashboard" element={<PatientsPage />} />
+              <Route path="/admin/relatorios" element={<ReportsPage />} />
+              <Route path="/admin/configuracoes" element={<SettingsPage />} />
+              <Route path="/admin/perfil" element={<ProfilePage />} />
+              <Route path="/admin/perfil/editar" element={<EditProfilePage />} />
+            </Route>
+          </Route>
+
           <Route element={<RoleGuard allowedRoles={[UserRole.PATIENT]} />}>
             <Route element={<AppLayout />}>
               <Route path="/paciente/dashboard" element={<PatientDashboard />} />
+              <Route path="/paciente/agendamentos" element={<PatientAppointmentsPage />} />
+              <Route path="/paciente/historico" element={<PatientHistoryPage />} />
+              <Route path="/paciente/notificacoes" element={<PatientNotificationsPage />} />
+              <Route path="/paciente/perfil" element={<PatientProfilePage />} />
             </Route>
           </Route>
 
@@ -130,19 +154,17 @@ const AppRoutes = () => {
           <Route element={<RoleGuard allowedRoles={[UserRole.PROFESSIONAL]} />}>
             <Route element={<AppLayout />}>
               <Route path="/profissional/dashboard" element={<ProfessionalDashboard />} />
-            </Route>
-          </Route>
-
-          <Route element={<RoleGuard allowedRoles={[UserRole.ADMIN]} />}>
-            <Route element={<AppLayout />}>
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
-              <Route path="/admin/profissional" element={<ProfessionalsPage />} />
-              <Route path="/admin/profissional/dashboard" element={<ProfessionalsPage />} />
-              <Route path="/admin/paciente/dashboard" element={<PatientsPage />} />
-              <Route path="/admin/relatorios" element={<ReportsPage />} />
-              <Route path="/admin/configuracoes" element={<SettingsPage />} />
-              <Route path="/admin/perfil" element={<ProfilePage />} />
-              <Route path="/admin/perfil/editar" element={<EditProfilePage />} />
+              <Route
+                path="/profissional/agenda"
+                element={
+                  <ProfessionalAgendaProvider>
+                    <ProfessionalAgendaPage />
+                  </ProfessionalAgendaProvider>
+                }
+              />
+              <Route path="/profissional/comentarios" element={<ProfessionalCommentsPage />} />
+              <Route path="/profissional/perfil" element={<ProfessionalProfilePage />} />
+              <Route path="/profissional/perfil/editar" element={<ProfessionalEditProfilePage />} />
             </Route>
           </Route>
         </Route>
