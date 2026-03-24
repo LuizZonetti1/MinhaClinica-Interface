@@ -168,7 +168,9 @@ let preferredPatientSearchAttempt: PatientSearchAttempt | null = null;
 
 const isSearchFallbackError = (error: unknown): boolean =>
   isAxiosError(error) &&
-  (error.response?.status === 404 || error.response?.status === 400);
+  (error.response?.status === 404 ||
+    error.response?.status === 403 ||
+    error.response?.status === 400);
 
 export const searchAppointmentPatients = async (q: string): Promise<PatientSearchResult[]> => {
   const query = q.trim();
