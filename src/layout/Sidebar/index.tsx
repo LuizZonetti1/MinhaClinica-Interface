@@ -1,10 +1,14 @@
 import {
   BarChart2,
+  Bell,
   CalendarCheck2,
+  CalendarDays,
   CalendarPlus2,
   ClipboardCheck,
+  Clock3,
   LayoutDashboard,
   LogOut,
+  MessageSquare,
   Settings,
   Stethoscope,
   User,
@@ -32,16 +36,16 @@ import {
 } from "./styles";
 
 const ADMIN_NAV_LINKS: NavLink[] = [
-  { label: "Início", path: "/admin/dashboard", icon: LayoutDashboard },
+  { label: "Inicio", path: "/admin/dashboard", icon: LayoutDashboard },
   { label: "Profissionais", path: "/admin/profissional", icon: Stethoscope },
   { label: "Pacientes", path: "/admin/paciente/dashboard", icon: Users },
-  { label: "Relatórios", path: "/admin/relatorios", icon: BarChart2 },
-  { label: "Configurações", path: "/admin/configuracoes", icon: Settings },
+  { label: "Relatorios", path: "/admin/relatorios", icon: BarChart2 },
+  { label: "Configuracoes", path: "/admin/configuracoes", icon: Settings },
   { label: "Perfil", path: "/admin/perfil", icon: User },
 ];
 
 const RECEPTION_NAV_LINKS: NavLink[] = [
-  { label: "Início", path: "/recepcao/dashboard", icon: LayoutDashboard },
+  { label: "Inicio", path: "/recepcao/dashboard", icon: LayoutDashboard },
   { label: "Marcar Consulta", path: "/recepcao/marcar-consulta", icon: CalendarPlus2 },
   { label: "Cadastrar Paciente", path: "/recepcao/cadastrar-paciente", icon: UserPlus },
   { label: "Ver Agendas", path: "/recepcao/agendas", icon: CalendarCheck2 },
@@ -50,11 +54,18 @@ const RECEPTION_NAV_LINKS: NavLink[] = [
 ];
 
 const PROFESSIONAL_NAV_LINKS: NavLink[] = [
-  { label: "Início", path: "/profissional/dashboard", icon: LayoutDashboard },
+  { label: "Inicio", path: "/profissional/dashboard", icon: LayoutDashboard },
+  { label: "Agenda", path: "/profissional/agenda", icon: CalendarDays },
+  { label: "Comentarios", path: "/profissional/comentarios", icon: MessageSquare },
+  { label: "Perfil", path: "/profissional/perfil", icon: User },
 ];
 
 const PATIENT_NAV_LINKS: NavLink[] = [
-  { label: "Início", path: "/paciente/dashboard", icon: LayoutDashboard },
+  { label: "Inicio", path: "/paciente/dashboard", icon: LayoutDashboard },
+  { label: "Agendamentos", path: "/paciente/agendamentos", icon: CalendarDays },
+  { label: "Historico", path: "/paciente/historico", icon: Clock3 },
+  { label: "Notificacoes", path: "/paciente/notificacoes", icon: Bell },
+  { label: "Perfil", path: "/paciente/perfil", icon: User },
 ];
 
 const getRoleNavLinks = (role?: string): NavLink[] => {
@@ -78,6 +89,10 @@ const getProfilePathByRole = (role?: string): string | null => {
       return "/admin/perfil";
     case UserRole.RECEPTIONIST:
       return "/recepcao/perfil";
+    case UserRole.PROFESSIONAL:
+      return "/profissional/perfil";
+    case UserRole.PATIENT:
+      return "/paciente/perfil";
     default:
       return null;
   }
@@ -87,13 +102,13 @@ const getInitials = (name: string) =>
   name
     .split(" ")
     .slice(0, 2)
-    .map((n) => n[0])
+    .map((part) => part[0])
     .join("")
     .toUpperCase();
 
 const getRoleLabel = (role: string) => {
   const labels: Record<string, string> = {
-    ADMIN: "Proprietário",
+    ADMIN: "Proprietario",
     PROFESSIONAL: "Profissional",
     RECEPTIONIST: "Recepcionista",
     PATIENT: "Paciente",
@@ -123,7 +138,7 @@ export const Sidebar = () => {
         <LogoIconWrapper>
           <Stethoscope size={18} />
         </LogoIconWrapper>
-        <LogoText>Minha Clínica</LogoText>
+        <LogoText>Minha Clinica</LogoText>
       </LogoRow>
 
       <Nav>
@@ -144,13 +159,13 @@ export const Sidebar = () => {
         >
           <Avatar>
             {avatarUrl ? (
-              <img src={avatarUrl} alt={`Foto de ${user?.name ?? "Usuário"}`} />
+              <img src={avatarUrl} alt={`Foto de ${user?.name ?? "Usuario"}`} />
             ) : (
               <span>{initials}</span>
             )}
           </Avatar>
           <UserInfo>
-            <UserName>{user?.name ?? "Usuário"}</UserName>
+            <UserName>{user?.name ?? "Usuario"}</UserName>
             <UserRoleLabel>{roleLabel}</UserRoleLabel>
           </UserInfo>
         </UserRow>

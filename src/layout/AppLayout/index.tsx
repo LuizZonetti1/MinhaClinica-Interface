@@ -51,14 +51,22 @@ const PAGE_TITLES: Record<string, string> = {
   "/admin/configuracoes": "Configuracoes",
   "/admin/perfil": "Meu Perfil",
   "/admin/perfil/editar": "Editar Perfil",
-  "/paciente/dashboard": "Painel do Paciente",
+  "/paciente/dashboard": "Inicio",
+  "/paciente/agendamentos": "Agendamentos",
+  "/paciente/historico": "Historico",
+  "/paciente/notificacoes": "Notificacoes",
+  "/paciente/perfil": "Perfil",
   "/recepcao/dashboard": "Inicio",
   "/recepcao/marcar-consulta": "Marcar Consulta",
   "/recepcao/cadastrar-paciente": "Cadastrar Paciente",
   "/recepcao/agendas": "Ver Agendas",
   "/recepcao/checkin": "Check-in",
   "/recepcao/perfil": "Meu Perfil",
-  "/profissional/dashboard": "Painel do Profissional",
+  "/profissional/dashboard": "Inicio",
+  "/profissional/agenda": "Agenda",
+  "/profissional/comentarios": "Comentarios",
+  "/profissional/perfil": "Meu Perfil",
+  "/profissional/perfil/editar": "Editar Perfil",
 };
 
 const PAGE_BREADCRUMBS: Record<string, BreadcrumbItem> = {
@@ -136,6 +144,56 @@ const PAGE_BREADCRUMBS: Record<string, BreadcrumbItem> = {
     current: "Meu Perfil",
     currentPath: "/recepcao/perfil",
   },
+  "/profissional/agenda": {
+    parent: "Inicio",
+    parentPath: "/profissional/dashboard",
+    current: "Agenda",
+    currentPath: "/profissional/agenda",
+  },
+  "/profissional/comentarios": {
+    parent: "Inicio",
+    parentPath: "/profissional/dashboard",
+    current: "Comentarios",
+    currentPath: "/profissional/comentarios",
+  },
+  "/profissional/perfil": {
+    parent: "Inicio",
+    parentPath: "/profissional/dashboard",
+    current: "Meu Perfil",
+    currentPath: "/profissional/perfil",
+  },
+  "/profissional/perfil/editar": {
+    grandParent: "Inicio",
+    grandParentPath: "/profissional/dashboard",
+    parent: "Perfil",
+    parentPath: "/profissional/perfil",
+    current: "Editar",
+    currentPath: "/profissional/perfil/editar",
+  },
+  "/paciente/agendamentos": {
+    parent: "Inicio",
+    parentPath: "/paciente/dashboard",
+    current: "Agendamentos",
+    currentPath: "/paciente/agendamentos",
+  },
+  "/paciente/historico": {
+    parent: "Inicio",
+    parentPath: "/paciente/dashboard",
+    current: "Historico",
+    currentPath: "/paciente/historico",
+  },
+  "/paciente/notificacoes": {
+    parent: "Inicio",
+    parentPath: "/paciente/dashboard",
+    current: "Notificacoes",
+    currentPath: "/paciente/notificacoes",
+  },
+  "/paciente/perfil": {
+    parent: "Inicio",
+    parentPath: "/paciente/dashboard",
+    current: "Perfil",
+    currentPath: "/paciente/perfil",
+  },
 };
 
 const getInitials = (name: string) =>
@@ -185,7 +243,8 @@ export const AppLayout = () => {
   }, [user?.avatarUrl]);
 
   useEffect(() => {
-    if (!user || user.role === "PATIENT" || user.role === "RECEPTIONIST") return;
+    // /staff/me eh endpoint administrativo; evita 403 para role PROFESSIONAL.
+    if (!user || user.role !== "ADMIN") return;
 
     let cancelled = false;
 
@@ -259,8 +318,19 @@ export const AppLayout = () => {
       ? "/admin/perfil"
       : user?.role === "RECEPTIONIST"
         ? "/recepcao/perfil"
-        : null;
-  const editProfilePath = user?.role === "ADMIN" ? "/admin/perfil/editar" : null;
+        : user?.role === "PROFESSIONAL"
+          ? "/profissional/perfil"
+          : user?.role === "PATIENT"
+            ? "/paciente/perfil"
+          : null;
+  const editProfilePath =
+    user?.role === "ADMIN"
+      ? "/admin/perfil/editar"
+      : user?.role === "RECEPTIONIST"
+        ? "/recepcao/perfil/editar"
+        : user?.role === "PROFESSIONAL"
+          ? "/profissional/perfil/editar"
+          : null;
 
   const handleOpenProfile = () => {
     if (!profilePath) return;
