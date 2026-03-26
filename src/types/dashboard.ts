@@ -102,6 +102,33 @@ export interface ProfessionalDashboardSummary {
   pacientesDoMes: number;
 }
 
+export interface PatientDashboardStats {
+  upcomingCount: number;
+  completedCount: number;
+  lastAppointmentDate: string | null;
+  unreadNotifications: number;
+}
+
+export interface PatientNextAppointment {
+  id: string;
+  status: string;
+  appointmentDate: string;
+  startTime: string;
+  endTime: string;
+  type: string;
+  channel: string;
+  professionalName: string;
+  professionalAvatarUrl: string | null;
+  primarySpecialty: string | null;
+  clinicName: string | null;
+}
+
+export interface PatientDashboardData {
+  stats: PatientDashboardStats;
+  nextAppointment: PatientNextAppointment | null;
+  upcomingAppointments: PatientNextAppointment[];
+}
+
 export type AgendaSlotStatus =
   | "SCHEDULED"
   | "CONFIRMED"
