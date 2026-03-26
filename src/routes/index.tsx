@@ -13,6 +13,7 @@ import Login from "../pages/Login";
 import PatientAccess from "../pages/Patient/Access";
 import PatientAppointmentsPage from "../pages/Patient/Agendamentos";
 import PatientDashboard from "../pages/Patient/deshboard";
+import PatientEditProfilePage from "../pages/Patient/EditProfile";
 import PatientHistoryPage from "../pages/Patient/Historico";
 import PatientNotificationsPage from "../pages/Patient/Notificacoes";
 import PatientProfilePage from "../pages/Patient/Profile";
@@ -133,6 +134,7 @@ const AppRoutes = () => {
               <Route path="/paciente/historico" element={<PatientHistoryPage />} />
               <Route path="/paciente/notificacoes" element={<PatientNotificationsPage />} />
               <Route path="/paciente/perfil" element={<PatientProfilePage />} />
+              <Route path="/paciente/perfil/editar" element={<PatientEditProfilePage />} />
             </Route>
           </Route>
 

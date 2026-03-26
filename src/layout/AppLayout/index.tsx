@@ -56,6 +56,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/paciente/historico": "Historico",
   "/paciente/notificacoes": "Notificacoes",
   "/paciente/perfil": "Perfil",
+  "/paciente/perfil/editar": "Editar Perfil",
   "/recepcao/dashboard": "Inicio",
   "/recepcao/marcar-consulta": "Marcar Consulta",
   "/recepcao/cadastrar-paciente": "Cadastrar Paciente",
@@ -194,6 +195,14 @@ const PAGE_BREADCRUMBS: Record<string, BreadcrumbItem> = {
     current: "Perfil",
     currentPath: "/paciente/perfil",
   },
+  "/paciente/perfil/editar": {
+    grandParent: "Inicio",
+    grandParentPath: "/paciente/dashboard",
+    parent: "Perfil",
+    parentPath: "/paciente/perfil",
+    current: "Editar",
+    currentPath: "/paciente/perfil/editar",
+  },
 };
 
 const getInitials = (name: string) =>
@@ -328,8 +337,10 @@ export const AppLayout = () => {
       ? "/admin/perfil/editar"
       : user?.role === "RECEPTIONIST"
         ? "/recepcao/perfil/editar"
-        : user?.role === "PROFESSIONAL"
-          ? "/profissional/perfil/editar"
+      : user?.role === "PROFESSIONAL"
+        ? "/profissional/perfil/editar"
+        : user?.role === "PATIENT"
+          ? "/paciente/perfil/editar"
           : null;
 
   const handleOpenProfile = () => {
