@@ -421,49 +421,10 @@ export const EmptyState = styled.div`
   border-radius: ${theme.borderRadius.md};
 `;
 
-export const ConfirmOverlay = styled.div`
-  position: fixed;
-  inset: 0;
-  z-index: 1200;
-  background: rgba(15, 23, 42, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-`;
-
-export const ConfirmDialog = styled.div`
-  width: min(440px, 100%);
-  background: ${theme.colors.surface};
-  border: 1px solid ${theme.colors.border.default};
-  border-radius: ${theme.borderRadius.md};
-  padding: 20px;
-  box-shadow: ${theme.shadows.md};
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`;
-
-export const ConfirmTitle = styled.h3`
-  margin: 0;
-  font-family: "Roboto", sans-serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: ${theme.colors.text.primary};
-`;
-
 export const ConfirmMessage = styled.p`
   margin: 0;
   font-family: "Roboto", sans-serif;
   font-size: 14px;
   color: ${theme.colors.text.secondary};
   line-height: 1.5;
-`;
-
-export const ConfirmActions = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 10px;
-  margin-top: 8px;
 `;

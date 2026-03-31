@@ -2,6 +2,7 @@ import { Pencil, Plus, Send, Trash2, X } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
 import { Badge } from "../../../components/Badge";
 import { Button } from "../../../components/Button";
+import { Modal } from "../../../components/Modal";
 import {
   commentService,
   listCompletedConsultationPatients,
@@ -40,11 +41,7 @@ import {
   SearchResultInfo,
   SearchResultMeta,
   SearchResultName,
-  ConfirmActions,
-  ConfirmDialog,
   ConfirmMessage,
-  ConfirmOverlay,
-  ConfirmTitle,
   SelectedPatientCard,
   SelectedPatientClear,
   SelectedPatientContent,
@@ -277,19 +274,6 @@ const ProfessionalCommentsPage = () => {
 
   const canSubmit = Boolean(selectedPatient?.patientId && commentText.trim());
 
-  useEffect(() => {
-    if (!commentPendingDelete) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        closeDeleteModal();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [commentPendingDelete, deletingComment]);
-
   return (
     <PageWrapper>
       <PageHeader>
@@ -491,20 +475,12 @@ const ProfessionalCommentsPage = () => {
       )}
 
       {commentPendingDelete && (
-        <ConfirmOverlay
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="confirm-delete-title"
-          onClick={closeDeleteModal}
-        >
-          <ConfirmDialog onClick={(event) => event.stopPropagation()}>
-            <ConfirmTitle id="confirm-delete-title">Remover comentario?</ConfirmTitle>
-            <ConfirmMessage>
-              Essa acao nao pode ser desfeita. O comentario de{" "}
-              <strong>{commentPendingDelete.patientName}</strong> sera removido.
-            </ConfirmMessage>
-
-            <ConfirmActions>
+        <Modal
+          isOpen={Boolean(commentPendingDelete)}
+          onClose={closeDeleteModal}
+          title="Remover comentario?"
+          actions={
+            <>
               <Button
                 type="button"
                 variant="outline"
@@ -523,9 +499,14 @@ const ProfessionalCommentsPage = () => {
               >
                 {deletingComment ? "Removendo..." : "Remover"}
               </Button>
-            </ConfirmActions>
-          </ConfirmDialog>
-        </ConfirmOverlay>
+            </>
+          }
+        >
+          <ConfirmMessage>
+            Essa acao nao pode ser desfeita. O comentario de{" "}
+            <strong>{commentPendingDelete.patientName}</strong> sera removido.
+          </ConfirmMessage>
+        </Modal>
       )}
     </PageWrapper>
   );

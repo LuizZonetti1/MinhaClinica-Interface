@@ -18,7 +18,9 @@ import {
   type PatientSearchResult,
 } from "../../../types/appointment";
 import type { Step } from "../../../types/components";
+import { formatDateToIsoDate, formatIsoDateToBr } from "../../../utils/dateParsers";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
+import { isPastTimeSlotForDate } from "../../../utils/timeParsers";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import {
   ConfirmButton,
@@ -75,11 +77,7 @@ const getStepperConfig = (step: number): Step[] => [
   { label: "Confirmar",   status: step === 3 ? "active" : "inactive" },
 ];
 
-const formatDateBR = (d: string): string => {
-  if (!d) return "—";
-  const [y, m, day] = d.split("-");
-  return `${day}/${m}/${y}`;
-};
+const formatDateBR = (d: string): string => formatIsoDateToBr(d, "-", { strictIsoOnly: true });
 
 const maskCPF = (cpf: string): string => {
   const d = cpf.replace(/\D/g, "");
@@ -115,33 +113,16 @@ const normalizeText = (value: string): string =>
     .trim()
     .toLowerCase();
 
-const getLocalDateISO = (date: Date): string => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
-
-const parseTimeToMinutes = (time: string): number | null => {
-  const match = time.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
-  if (!match) return null;
-
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  if (!Number.isInteger(hours) || !Number.isInteger(minutes)) return null;
-  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
-
-  return hours * 60 + minutes;
-};
+const getLocalDateISO = (date: Date): string => formatDateToIsoDate(date);
 
 const isPastSlotForDate = (date: string, time: string, now: Date): boolean => {
-  if (!date || date !== getLocalDateISO(now)) return false;
-
-  const slotMinutes = parseTimeToMinutes(time);
-  if (slotMinutes === null) return false;
-
-  const nowMinutes = now.getHours() * 60 + now.getMinutes();
-  return slotMinutes <= nowMinutes;
+  return isPastTimeSlotForDate(date, time, {
+    now,
+    parseTimeOptions: {
+      allowSingleDigitHour: true,
+      allowSeconds: true,
+    },
+  });
 };
 
 const CONSULTATION_TYPE_OPTIONS: Array<{
@@ -665,3 +646,4 @@ const ReceptionMarcarConsultaPage = () => {
 };
 
 export default ReceptionMarcarConsultaPage;
+

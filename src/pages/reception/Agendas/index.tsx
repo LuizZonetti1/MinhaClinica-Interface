@@ -7,6 +7,7 @@ import type {
   AgendasResponse,
   AppointmentStatus,
 } from "../../../types/dashboard";
+import { formatDateToIsoDate } from "../../../utils/dateParsers";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError } from "../../../utils/toast";
 import {
@@ -96,8 +97,7 @@ const getInitials = (name: string) =>
     .map((w) => w[0]?.toUpperCase() ?? "")
     .join("");
 
-const toISODate = (d: Date): string =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const toISODate = (d: Date): string => formatDateToIsoDate(d);
 
 const addDays = (d: Date, n: number): Date => {
   const result = new Date(d);

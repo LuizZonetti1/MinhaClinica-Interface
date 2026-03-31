@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Badge } from "../../../components/Badge";
 import { useProfessionalAgenda } from "../../../contexts";
 import type { AgendaSlotStatus, ProfessionalAgendaDay } from "../../../types/dashboard";
+import { formatDateToIsoDate } from "../../../utils/dateParsers";
 import { notifyError } from "../../../utils/toast";
 import {
   AppointmentMeta,
@@ -84,10 +85,7 @@ const buildEmptyAgendaDay = (date: string): ProfessionalAgendaDay => ({
   hasAppointments: false,
 });
 
-const toIsoDate = (date: Date): string =>
-  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
-    date.getDate(),
-  ).padStart(2, "0")}`;
+const toIsoDate = (date: Date): string => formatDateToIsoDate(date);
 
 const parseLocalDate = (value: string): Date => new Date(`${value}T12:00:00`);
 
