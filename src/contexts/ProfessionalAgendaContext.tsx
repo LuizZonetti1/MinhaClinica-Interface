@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { getProfessionalMonthlyAgenda } from "../services/professional.service";
 import type { ProfessionalMonthlyAgendaData } from "../types/dashboard";
+import { formatDateToIsoDate } from "../utils/dateParsers";
 import { getApiErrorMessage } from "../utils/getApiErrorMessage";
 
 type ProfessionalAgendaContextValue = {
@@ -36,10 +37,7 @@ const addMonths = (date: Date, amount: number): Date =>
 
 const parseLocalDate = (value: string): Date => new Date(`${value}T12:00:00`);
 
-const toIsoDate = (date: Date): string =>
-  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
-    date.getDate(),
-  ).padStart(2, "0")}`;
+const toIsoDate = (date: Date): string => formatDateToIsoDate(date);
 
 const getTodayIso = (): string => {
   const today = new Date();
