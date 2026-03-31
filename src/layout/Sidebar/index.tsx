@@ -15,6 +15,7 @@ import {
   UserPlus,
   Users,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "../../contexts";
 import { UserRole } from "../../types/enums";
@@ -119,6 +120,7 @@ const getRoleLabel = (role: string) => {
 export const Sidebar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [hasAvatarLoadError, setHasAvatarLoadError] = useState(false);
 
   const navLinks = getRoleNavLinks(user?.role);
   const profilePath = getProfilePathByRole(user?.role);
@@ -131,6 +133,11 @@ export const Sidebar = () => {
   const initials = user ? getInitials(user.name) : "U";
   const roleLabel = user ? getRoleLabel(user.role) : "";
   const avatarUrl = user?.avatarUrl?.trim() ?? "";
+  const shouldRenderAvatarImage = Boolean(avatarUrl) && !hasAvatarLoadError;
+
+  useEffect(() => {
+    setHasAvatarLoadError(false);
+  }, [avatarUrl]);
 
   return (
     <SidebarWrapper>
@@ -158,8 +165,12 @@ export const Sidebar = () => {
           disabled={!profilePath}
         >
           <Avatar>
-            {avatarUrl ? (
-              <img src={avatarUrl} alt={`Foto de ${user?.name ?? "Usuario"}`} />
+            {shouldRenderAvatarImage ? (
+              <img
+                src={avatarUrl}
+                alt={`Foto de ${user?.name ?? "Usuario"}`}
+                onError={() => setHasAvatarLoadError(true)}
+              />
             ) : (
               <span>{initials}</span>
             )}

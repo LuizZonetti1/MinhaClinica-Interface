@@ -12,8 +12,12 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 import { useAuth, useThemeMode } from "../../contexts";
+import { getPatientProfile } from "../../services/patient-profile.service";
+import { getProfessionalProfile } from "../../services/professional-profile.service";
 import { getProfile } from "../../services/profile.service";
+import { getReceptionProfile } from "../../services/reception.service";
 import { theme } from "../../themes/themes";
+import { UserRole } from "../../types/enums";
 import type { BreadcrumbItem } from "../../types/layout";
 import { Sidebar } from "../Sidebar";
 import {
@@ -232,6 +236,11 @@ const toDash = (value?: string) => {
   return normalized;
 };
 
+const normalizeAvatarUrl = (value?: string | null) => {
+  const normalized = value?.trim() ?? "";
+  return normalized;
+};
+
 export const AppLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -239,7 +248,8 @@ export const AppLayout = () => {
   const { mode, toggleMode } = useThemeMode();
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
-  const [avatarUrl, setAvatarUrl] = useState<string>(user?.avatarUrl ?? "");
+  const [avatarUrl, setAvatarUrl] = useState<string>(normalizeAvatarUrl(user?.avatarUrl));
+  const [hasAvatarLoadError, setHasAvatarLoadError] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [staffRoleOrSpecialty, setStaffRoleOrSpecialty] = useState<string>("-");
   const [staffClinicName, setStaffClinicName] = useState<string>("-");
@@ -248,36 +258,88 @@ export const AppLayout = () => {
   const breadcrumb = PAGE_BREADCRUMBS[location.pathname];
 
   useEffect(() => {
-    setAvatarUrl(user?.avatarUrl ?? "");
+    setAvatarUrl(normalizeAvatarUrl(user?.avatarUrl));
+    setHasAvatarLoadError(false);
   }, [user?.avatarUrl]);
 
   useEffect(() => {
-    // /staff/me eh endpoint administrativo; evita 403 para role PROFESSIONAL.
-    if (!user || user.role !== "ADMIN") return;
+    if (!user) return;
 
     let cancelled = false;
 
-    getProfile()
-      .then((profile) => {
-        if (cancelled) return;
+    const syncAuthUser = (name: string, avatar: string) => {
+      if (cancelled) return;
 
-        const nextName = profile.fullName !== "-" ? profile.fullName : user.name;
-        const nextAvatarUrl = profile.avatarUrl.trim();
-        const nextClinicRole = toDash(profile.clinicRole);
-        const nextClinicName = toDash(profile.clinicName);
-        setAvatarUrl(nextAvatarUrl);
-        setStaffRoleOrSpecialty(nextClinicRole);
-        setStaffClinicName(nextClinicName);
+      const normalizedName = name.trim() || user.name;
+      const normalizedAvatar = normalizeAvatarUrl(avatar);
+      const currentAvatar = normalizeAvatarUrl(user.avatarUrl);
 
-        if (nextName !== user.name || nextAvatarUrl !== (user.avatarUrl ?? "")) {
-          setUser({
-            ...user,
-            name: nextName,
-            avatarUrl: nextAvatarUrl || undefined,
-          });
+      setAvatarUrl(normalizedAvatar);
+      setHasAvatarLoadError(false);
+
+      if (normalizedName !== user.name || normalizedAvatar !== currentAvatar) {
+        setUser({
+          ...user,
+          name: normalizedName,
+          avatarUrl: normalizedAvatar || undefined,
+        });
+      }
+    };
+
+    const loadProfileIdentity = async () => {
+      try {
+        if (user.role === UserRole.ADMIN) {
+          const profile = await getProfile();
+          if (cancelled) return;
+
+          const nextName = profile.fullName !== "-" ? profile.fullName : user.name;
+          const nextAvatarUrl = normalizeAvatarUrl(profile.avatarUrl);
+          setStaffRoleOrSpecialty(toDash(profile.clinicRole));
+          setStaffClinicName(toDash(profile.clinicName));
+          syncAuthUser(nextName, nextAvatarUrl);
+          return;
         }
-      })
-      .catch(() => undefined);
+
+        setStaffClinicName("-");
+
+        if (user.role === UserRole.PATIENT) {
+          const profile = await getPatientProfile();
+          if (cancelled) return;
+
+          setStaffRoleOrSpecialty("-");
+          syncAuthUser(profile.personal.name || user.name, profile.personal.avatarUrl ?? "");
+          return;
+        }
+
+        if (user.role === UserRole.PROFESSIONAL) {
+          const profile = await getProfessionalProfile();
+          if (cancelled) return;
+
+          const primarySpecialty =
+            profile.specialties.find((specialty) => specialty.isPrimary)?.name ?? "-";
+          setStaffRoleOrSpecialty(toDash(primarySpecialty));
+          syncAuthUser(profile.name || user.name, profile.avatarUrl ?? "");
+          return;
+        }
+
+        if (user.role === UserRole.RECEPTIONIST) {
+          const profile = await getReceptionProfile();
+          if (cancelled) return;
+
+          setStaffRoleOrSpecialty(toDash(profile.role));
+          syncAuthUser(profile.fullName || user.name, profile.avatarUrl);
+          return;
+        }
+
+        setStaffRoleOrSpecialty("-");
+      } catch {
+        if (cancelled) return;
+        setStaffRoleOrSpecialty("-");
+        setStaffClinicName("-");
+      }
+    };
+
+    void loadProfileIdentity();
 
     return () => {
       cancelled = true;
@@ -311,6 +373,8 @@ export const AppLayout = () => {
 
   const initials = useMemo(() => getInitials(user?.name ?? "U"), [user?.name]);
   const roleLabel = useMemo(() => getRoleLabel(user?.role), [user?.role]);
+  const safeAvatarUrl = normalizeAvatarUrl(avatarUrl);
+  const shouldRenderAvatarImage = Boolean(safeAvatarUrl) && !hasAvatarLoadError;
   const functionLabel = user?.role === "PROFESSIONAL" ? "Especializacao" : "Funcao";
   const functionValue = useMemo(() => {
     if (user?.role === "PROFESSIONAL") {
@@ -421,7 +485,15 @@ export const AppLayout = () => {
                 aria-label="Abrir menu do usuario"
                 onClick={() => setIsProfileMenuOpen((prev) => !prev)}
               >
-                {avatarUrl ? <img src={avatarUrl} alt="Foto do usuario" /> : <span>{initials}</span>}
+                {shouldRenderAvatarImage ? (
+                  <img
+                    src={safeAvatarUrl}
+                    alt="Foto do usuario"
+                    onError={() => setHasAvatarLoadError(true)}
+                  />
+                ) : (
+                  <span>{initials}</span>
+                )}
               </HeaderAvatar>
 
               {isProfileMenuOpen && (
@@ -434,8 +506,12 @@ export const AppLayout = () => {
                       title="Abrir perfil"
                       aria-label="Abrir perfil"
                     >
-                      {avatarUrl ? (
-                        <img src={avatarUrl} alt="Foto de perfil" />
+                      {shouldRenderAvatarImage ? (
+                        <img
+                          src={safeAvatarUrl}
+                          alt="Foto de perfil"
+                          onError={() => setHasAvatarLoadError(true)}
+                        />
                       ) : (
                         <span>{initials}</span>
                       )}
