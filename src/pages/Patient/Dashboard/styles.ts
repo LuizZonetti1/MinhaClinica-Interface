@@ -238,61 +238,6 @@ export const QuickAccessGrid = styled.div`
   }
 `;
 
-export const ModalOverlay = styled.div`
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  z-index: 50;
-`;
-
-export const ModalCard = styled.div`
-  width: 100%;
-  max-width: 680px;
-  background-color: ${theme.colors.surface};
-  border-radius: ${theme.borderRadius.lg};
-  border: 1px solid ${theme.colors.border.light};
-  box-shadow: ${theme.shadows.lg};
-  padding: 22px;
-`;
-
-export const ModalTitleRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
-`;
-
-export const ModalTitle = styled.h3`
-  margin: 0;
-  font-family: "Roboto", sans-serif;
-  font-size: 21px;
-  font-weight: 700;
-  color: ${theme.colors.text.primary};
-`;
-
-export const ModalCloseButton = styled.button`
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: 1px solid ${theme.colors.border.default};
-  background: ${theme.colors.surface};
-  color: ${theme.colors.text.secondary};
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-
-  &:hover {
-    border-color: ${theme.colors.border.focus};
-    color: ${theme.colors.text.primary};
-  }
-`;
-
 export const DetailsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -325,12 +270,4 @@ export const DetailValue = styled.span`
   font-size: 14px;
   font-weight: 500;
   color: ${theme.colors.text.primary};
-`;
-
-export const ModalActions = styled.div`
-  margin-top: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
 `;

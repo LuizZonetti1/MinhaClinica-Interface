@@ -5,13 +5,14 @@ import {
   CheckCircle,
   ChevronRight,
   Clock3,
-  X,
   User,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "../../../components/Button";
+import { Modal } from "../../../components/Modal";
 import { QuickAccessCard } from "../../../components/QuickAccessCard";
+import { Skeleton } from "../../../components/Skeleton";
 import { StatCard } from "../../../components/StatCard";
 import { useAuth } from "../../../contexts";
 import {
@@ -20,7 +21,9 @@ import {
 } from "../../../services/patient-dashboard.service";
 import { theme } from "../../../themes/themes";
 import type { PatientDashboardData, PatientNextAppointment } from "../../../types/dashboard";
+import { formatIsoDateToBr, formatIsoDateToLongPtBr } from "../../../utils/dateParsers";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
+import { hasNoShowWindowElapsedForDate } from "../../../utils/timeParsers";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import {
   AppointmentAction,
@@ -40,12 +43,6 @@ import {
   HeroBanner,
   HeroSubtitle,
   HeroTitle,
-  ModalActions,
-  ModalCard,
-  ModalCloseButton,
-  ModalOverlay,
-  ModalTitle,
-  ModalTitleRow,
   NextAppointmentCard,
   NextAppointmentContent,
   NextAppointmentsList,
@@ -96,9 +93,6 @@ const QUICK_ACCESS = [
   },
 ];
 
-const DEFAULT_TIMEZONE = "America/Sao_Paulo";
-const NO_SHOW_GRACE_MINUTES = 30;
-
 const getGreeting = () => {
   const hour = new Date().getHours();
   if (hour < 12) return "Bom dia";
@@ -106,90 +100,18 @@ const getGreeting = () => {
   return "Boa noite";
 };
 
-const parseTimeToMinutes = (timeValue: string): number | null => {
-  const match = timeValue.match(/^(\d{2}):(\d{2})$/);
-  if (!match) return null;
-
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  if (!Number.isInteger(hours) || !Number.isInteger(minutes)) return null;
-  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
-
-  return hours * 60 + minutes;
-};
-
-const getNowInSaoPaulo = (): { dateIso: string; minutesOfDay: number } => {
-  const now = new Date();
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: DEFAULT_TIMEZONE,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).formatToParts(now);
-
-  const map = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-  const year = map.year ?? "0000";
-  const month = map.month ?? "01";
-  const day = map.day ?? "01";
-  const hour = Number(map.hour ?? "0");
-  const minute = Number(map.minute ?? "0");
-
-  return {
-    dateIso: `${year}-${month}-${day}`,
-    minutesOfDay: hour * 60 + minute,
-  };
-};
-
 const shouldHideFromUpcoming = (appointment: PatientNextAppointment): boolean => {
   const normalizedStatus = appointment.status.trim().toUpperCase();
   if (!["SCHEDULED", "CONFIRMED"].includes(normalizedStatus)) return false;
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(appointment.appointmentDate)) return false;
-
-  const appointmentMinutes = parseTimeToMinutes(appointment.startTime);
-  if (appointmentMinutes === null) return false;
-
-  const nowInSaoPaulo = getNowInSaoPaulo();
-  if (appointment.appointmentDate < nowInSaoPaulo.dateIso) return true;
-  if (appointment.appointmentDate > nowInSaoPaulo.dateIso) return false;
-
-  return nowInSaoPaulo.minutesOfDay >= appointmentMinutes + NO_SHOW_GRACE_MINUTES;
+  return hasNoShowWindowElapsedForDate(appointment.appointmentDate, appointment.startTime);
 };
 
 const formatDate = (isoDate: string | null | undefined): string => {
-  if (!isoDate) return "--/--/----";
-  const match = isoDate.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (match) {
-    return `${match[3]}/${match[2]}/${match[1]}`;
-  }
-
-  const parsed = new Date(isoDate);
-  if (Number.isNaN(parsed.getTime())) return "--/--/----";
-  return parsed.toLocaleDateString("pt-BR");
+  return formatIsoDateToBr(isoDate, "--/--/----");
 };
 
 const formatFullDate = (isoDate: string | null | undefined): string => {
-  if (!isoDate) return "--";
-
-  const match = isoDate.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (match) {
-    const asDate = new Date(`${match[1]}-${match[2]}-${match[3]}T00:00:00`);
-    return asDate.toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    });
-  }
-
-  const parsed = new Date(isoDate);
-  if (Number.isNaN(parsed.getTime())) return "--";
-  return parsed.toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
+  return formatIsoDateToLongPtBr(isoDate, "--");
 };
 
 const mapStatusLabel = (status: string): string => {
@@ -407,23 +329,72 @@ const PatientDashboard = () => {
           {greeting}, {firstName}!
         </HeroTitle>
         <HeroSubtitle>
-          {loading ? "Carregando seus dados..." : `Painel do paciente - ${todayLabel}`}
+          {loading ? <Skeleton width={220} height={16} /> : `Painel do paciente - ${todayLabel}`}
         </HeroSubtitle>
       </HeroBanner>
 
-      <StatsGrid>
-        {stats.map((item) => (
-          <StatCard key={item.label} {...item} />
-        ))}
-      </StatsGrid>
+      {loading ? (
+        <StatsGrid>
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div
+              key={`patient-dashboard-stat-skeleton-${index}`}
+              style={{
+                backgroundColor: theme.colors.surface,
+                borderRadius: theme.borderRadius.md,
+                boxShadow: theme.shadows.md,
+                padding: 24,
+                display: "flex",
+                flexDirection: "column",
+                gap: 16,
+              }}
+            >
+              <Skeleton width={48} height={48} radius={10} />
+              <Skeleton width="58%" height={14} />
+              <Skeleton width="32%" height={30} />
+            </div>
+          ))}
+        </StatsGrid>
+      ) : (
+        <StatsGrid>
+          {stats.map((item) => (
+            <StatCard key={item.label} {...item} />
+          ))}
+        </StatsGrid>
+      )}
 
       <div>
         <SectionHeader>
           <SectionTitle>
-            {upcomingAppointments.length <= 1 ? "Proxima Consulta" : "Proximas Consultas"}
+            {loading
+              ? "Proximas Consultas"
+              : upcomingAppointments.length <= 1
+                ? "Proxima Consulta"
+                : "Proximas Consultas"}
           </SectionTitle>
         </SectionHeader>
-        {!upcomingAppointments.length ? (
+        {loading ? (
+          <NextAppointmentsList>
+            {Array.from({ length: 2 }).map((_, index) => (
+              <NextAppointmentCard key={`patient-dashboard-appointment-skeleton-${index}`}>
+                <div style={{ padding: 16 }}>
+                  <Skeleton width={94} height={24} radius={999} />
+                  <div style={{ marginTop: 14 }}>
+                    <Skeleton width="54%" height={20} />
+                  </div>
+                  <div style={{ marginTop: 8 }}>
+                    <Skeleton width="66%" height={14} />
+                  </div>
+                  <div style={{ marginTop: 8 }}>
+                    <Skeleton width="42%" height={14} />
+                  </div>
+                  <div style={{ marginTop: 16 }}>
+                    <Skeleton width={168} height={40} radius={10} />
+                  </div>
+                </div>
+              </NextAppointmentCard>
+            ))}
+          </NextAppointmentsList>
+        ) : !upcomingAppointments.length ? (
           <NextAppointmentCard>
             <EmptyCardText>Nenhuma consulta futura encontrada.</EmptyCardText>
           </NextAppointmentCard>
@@ -502,15 +473,32 @@ const PatientDashboard = () => {
       </QuickAccessSection>
 
       {selectedAppointment && (
-        <ModalOverlay onClick={closeDetailsModal}>
-          <ModalCard onClick={(event) => event.stopPropagation()}>
-            <ModalTitleRow>
-              <ModalTitle>Detalhes da consulta</ModalTitle>
-              <ModalCloseButton type="button" onClick={closeDetailsModal} aria-label="Fechar">
-                <X size={18} />
-              </ModalCloseButton>
-            </ModalTitleRow>
-
+        <Modal
+          isOpen={Boolean(selectedAppointment)}
+          onClose={closeDetailsModal}
+          title="Detalhes da consulta"
+          actions={
+            <>
+              <Button variant="outline" size="small" onClick={closeDetailsModal}>
+                Fechar
+              </Button>
+              <ConfirmPresenceButton
+                type="button"
+                onClick={() => void handleConfirmPresence(selectedAppointment)}
+                disabled={
+                  confirmingAppointmentId === selectedAppointment.id ||
+                  !isAppointmentConfirmable(selectedAppointment)
+                }
+              >
+                {confirmingAppointmentId === selectedAppointment.id
+                  ? "Confirmando..."
+                  : isAppointmentConfirmable(selectedAppointment)
+                    ? "Confirmar Presenca"
+                    : "Presenca confirmada"}
+              </ConfirmPresenceButton>
+            </>
+          }
+        >
             <DetailsGrid>
               <DetailItem>
                 <DetailLabel>Profissional</DetailLabel>
@@ -547,28 +535,7 @@ const PatientDashboard = () => {
                 <DetailValue>{selectedAppointment.primarySpecialty ?? "Nao informada"}</DetailValue>
               </DetailItem>
             </DetailsGrid>
-
-            <ModalActions>
-              <Button variant="outline" size="small" onClick={closeDetailsModal}>
-                Fechar
-              </Button>
-              <ConfirmPresenceButton
-                type="button"
-                onClick={() => void handleConfirmPresence(selectedAppointment)}
-                disabled={
-                  confirmingAppointmentId === selectedAppointment.id ||
-                  !isAppointmentConfirmable(selectedAppointment)
-                }
-              >
-                {confirmingAppointmentId === selectedAppointment.id
-                  ? "Confirmando..."
-                  : isAppointmentConfirmable(selectedAppointment)
-                    ? "Confirmar Presenca"
-                    : "Presenca confirmada"}
-              </ConfirmPresenceButton>
-            </ModalActions>
-          </ModalCard>
-        </ModalOverlay>
+        </Modal>
       )}
     </PageWrapper>
   );

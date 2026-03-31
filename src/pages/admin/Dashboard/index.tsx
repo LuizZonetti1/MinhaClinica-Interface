@@ -18,7 +18,7 @@ import { ConsultationsChart } from "../../../components/ConsultationsChart";
 import { QuickAccessCard } from "../../../components/QuickAccessCard";
 import { StatCard } from "../../../components/StatCard";
 import { useAuth } from "../../../contexts";
-import { getDashboardSummary } from "../../../services/admin.service";
+import { getDashboardHistorical, getDashboardSummary } from "../../../services/admin.service";
 import { theme } from "../../../themes/themes";
 import type { DashboardSummary, HistoricalItem } from "../../../types/dashboard";
 import {
@@ -146,14 +146,84 @@ const getFormattedDate = () =>
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-const getLastSixMonthsAbbr = () => {
+const toValidReferenceDate = (rawDate: string | null | undefined): Date => {
+  if (!rawDate) return new Date();
+
+  const parsed = new Date(rawDate);
+  if (Number.isNaN(parsed.getTime())) return new Date();
+  return parsed;
+};
+
+const getLastSixMonthsAbbr = (referenceDate = new Date()) => {
+  const base = new Date(referenceDate.getFullYear(), referenceDate.getMonth(), 1);
+  const formatter = new Intl.DateTimeFormat("pt-BR", { month: "short" });
   const months: string[] = [];
+
   for (let i = 5; i >= 0; i--) {
-    const d = new Date();
-    d.setMonth(d.getMonth() - i);
-    months.push(d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", ""));
+    const cursor = new Date(base.getFullYear(), base.getMonth() - i, 1);
+    months.push(formatter.format(cursor).replace(".", ""));
   }
+
   return months;
+};
+
+const MONTH_TOKEN_BY_INDEX = [
+  "jan",
+  "fev",
+  "mar",
+  "abr",
+  "mai",
+  "jun",
+  "jul",
+  "ago",
+  "set",
+  "out",
+  "nov",
+  "dez",
+];
+
+const toMonthToken = (rawMonth: string): string => {
+  const normalized = rawMonth
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  for (const token of MONTH_TOKEN_BY_INDEX) {
+    if (normalized.includes(token)) return token;
+  }
+
+  const numericMatch = normalized.match(/(?:^|[^0-9])(0?[1-9]|1[0-2])(?:[^0-9]|$)/);
+  if (numericMatch?.[1]) {
+    return MONTH_TOKEN_BY_INDEX[Number(numericMatch[1]) - 1] ?? "";
+  }
+
+  const parsed = new Date(rawMonth);
+  if (!Number.isNaN(parsed.getTime())) {
+    return MONTH_TOKEN_BY_INDEX[parsed.getMonth()];
+  }
+
+  return "";
+};
+
+const buildChartDataFromHistorical = (
+  historicalItems: HistoricalItem[],
+  referenceDate: Date,
+): HistoricalItem[] => {
+  const monthMap = new Map<string, HistoricalItem>();
+
+  for (const item of historicalItems) {
+    const token = toMonthToken(item.month);
+    if (!token) continue;
+    monthMap.set(token, item);
+  }
+
+  return getLastSixMonthsAbbr(referenceDate).map((month) => {
+    const token = toMonthToken(month);
+    const found = monthMap.get(token);
+    return found
+      ? { month, consultations: found.consultations, revenue: found.revenue }
+      : { month, consultations: 0, revenue: 0 };
+  });
 };
 
 const AdminDashboard = () => {
@@ -166,20 +236,53 @@ const AdminDashboard = () => {
   );
 
   useEffect(() => {
-    getDashboardSummary()
-      .then((data) => {
-        setStats(buildStats(data));
-        setAppointmentsToday(data.appointmentsToday);
-        const months = getLastSixMonthsAbbr();
-        setChartData(
-          months.map((month, i) =>
-            i === months.length - 1
-              ? { month, consultations: data.appointmentsThisMonth, revenue: data.monthlyBalance }
-              : { month, consultations: 0, revenue: 0 },
-          ),
+    let mounted = true;
+
+    const loadDashboard = async () => {
+      const [summaryResult, historicalResult] = await Promise.allSettled([
+        getDashboardSummary(),
+        getDashboardHistorical(6),
+      ]);
+
+      if (!mounted) return;
+
+      const fallbackData = (summary: DashboardSummary, referenceDate: Date): HistoricalItem[] => {
+        const months = getLastSixMonthsAbbr(referenceDate);
+        return months.map((month, i) =>
+          i === months.length - 1
+            ? {
+                month,
+                consultations: summary.appointmentsThisMonth,
+                revenue: summary.monthlyBalance,
+              }
+            : { month, consultations: 0, revenue: 0 },
         );
-      })
-      .catch(console.error);
+      };
+
+      if (summaryResult.status === "fulfilled") {
+        const summary = summaryResult.value;
+        setStats(buildStats(summary));
+        setAppointmentsToday(summary.appointmentsToday);
+
+        const referenceDate = toValidReferenceDate(summary.referenceDate);
+        if (historicalResult.status === "fulfilled" && historicalResult.value.length > 0) {
+          setChartData(buildChartDataFromHistorical(historicalResult.value, referenceDate));
+        } else {
+          setChartData(fallbackData(summary, referenceDate));
+        }
+        return;
+      }
+
+      if (historicalResult.status === "fulfilled" && historicalResult.value.length > 0) {
+        setChartData(buildChartDataFromHistorical(historicalResult.value, new Date()));
+      }
+    };
+
+    void loadDashboard();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const firstName = user?.name.split(" ").slice(0, 2).join(" ") ?? "Administrador";
