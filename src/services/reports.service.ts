@@ -1,5 +1,6 @@
 import { api } from "../config/api";
 import type { ReportData } from "../types/dashboard";
+import { toRecord, toTrimmedStringValue } from "../utils/parsers";
 
 export type TransactionType = "INCOME" | "EXPENSE";
 export type PaymentMethod = "CASH" | "DEBIT_CARD" | "CREDIT_CARD" | "PIX" | "BANK_TRANSFER" | "CHECK";
@@ -73,9 +74,6 @@ const resolveMonthsFromPeriod = (period: string): number => {
   return 6;
 };
 
-const toRecord = (value: unknown): Record<string, unknown> | null =>
-  typeof value === "object" && value !== null ? (value as Record<string, unknown>) : null;
-
 const readStringFromRecord = (
   record: Record<string, unknown>,
   keys: string[],
@@ -83,8 +81,14 @@ const readStringFromRecord = (
 ): string => {
   for (const key of keys) {
     const value = record[key];
-    if (typeof value === "string" && value.trim()) return value.trim();
-    if (typeof value === "number" && Number.isFinite(value)) return String(value);
+    if (typeof value === "string") {
+      const parsed = toTrimmedStringValue(value, "");
+      if (parsed) return parsed;
+      continue;
+    }
+
+    const parsed = toTrimmedStringValue(value, "");
+    if (parsed) return parsed;
   }
 
   return fallback;

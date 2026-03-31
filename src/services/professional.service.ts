@@ -19,6 +19,7 @@ import type {
   UpdateProfessionalPayload,
 } from "../types/professional";
 import { storeAuthToken } from "../utils/authStorage";
+import { formatDateToIsoDate } from "../utils/dateParsers";
 
 type ProfessionalApiShape = {
   id: string;
@@ -512,10 +513,7 @@ const PROFESSIONAL_DASHBOARD_ENDPOINTS = [
 
 const PROFESSIONAL_AGENDA_ENDPOINTS = ["/professionals/me/agenda", "/professional/me/agenda"];
 
-const toIsoDate = (date: Date): string =>
-  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
-    date.getDate(),
-  ).padStart(2, "0")}`;
+const toIsoDate = (date: Date): string => formatDateToIsoDate(date);
 
 const toMonthKey = (date: Date): string =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;

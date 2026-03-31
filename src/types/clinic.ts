@@ -114,31 +114,37 @@ export interface ClinicListResponse {
 
 // Clinic settings (admin)
 export interface ClinicSettingsInfoPayload {
-    name: string;
-    cnpj: string;
-    phone: string;
-    email: string;
-    address: string;
+    tradeName?: string;
+    cnpj?: string;
+    phone?: string;
+    email?: string;
+    zipCode?: string;
+    street?: string;
+    number?: string;
+    complement?: string;
+    neighborhood?: string;
+    city?: string;
+    state?: string;
 }
 
 export interface ClinicSettingsSchedulePayload {
-    openTime: string;
-    closeTime: string;
-    appointmentInterval: number;
-    workingDays: string;
+    openTime?: string;
+    closeTime?: string;
+    minIntervalBetweenAppointments?: number;
+    workingDaysPreset?: "WEEKDAYS" | "MON_TO_SAT" | "ALL_WEEK";
 }
 
 export interface ClinicSettingsNotificationsPayload {
-    appointmentReminder: boolean;
-    cancellationAlert: boolean;
-    newPatient: boolean;
-    dailyReport: boolean;
+    sendAppointmentReminder?: boolean;
+    sendCancellationAlert?: boolean;
+    sendNewPatientAlert?: boolean;
+    sendDailyReport?: boolean;
 }
 
 export interface ClinicSettingsSecurityPayload {
-    twoFactor: boolean;
-    accessLog: boolean;
-    sessionTimeout: number;
+    twoFactorEnabled?: boolean;
+    accessLogEnabled?: boolean;
+    sessionTimeoutMinutes?: number;
 }
 
 export interface ClinicSettingsResponse {

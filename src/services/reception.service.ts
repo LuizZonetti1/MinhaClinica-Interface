@@ -27,6 +27,8 @@ import type {
   UpdateProfilePayload,
 } from "../types/profile";
 import { storeAuthToken } from "../utils/authStorage";
+import { formatDateToIsoDate } from "../utils/dateParsers";
+import { hasTimeElapsedToday } from "../utils/timeParsers";
 
 type ReceptionApiShape = {
   id: string;
@@ -344,25 +346,15 @@ const toStatusToken = (v: unknown): string =>
     .toUpperCase()
     .replace(/[\s-]+/g, "_");
 
-const parseTimeToMinutes = (timeValue: string): number | null => {
-  const match = timeValue.match(/(\d{1,2}):(\d{2})/);
-  if (!match) return null;
-
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  if (!Number.isInteger(hours) || !Number.isInteger(minutes)) return null;
-  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
-
-  return hours * 60 + minutes;
-};
-
 const hasNoShowWindowElapsed = (appointmentTime: string): boolean => {
-  const appointmentMinutes = parseTimeToMinutes(appointmentTime);
-  if (appointmentMinutes === null) return true;
-
-  const now = new Date();
-  const nowMinutes = now.getHours() * 60 + now.getMinutes();
-  return nowMinutes >= appointmentMinutes + 30;
+  return hasTimeElapsedToday(appointmentTime, {
+    graceMinutes: 30,
+    parseTimeOptions: {
+      allowSingleDigitHour: true,
+      looseMatch: true,
+    },
+    invalidTimeReturns: true,
+  });
 };
 
 const readAppointmentType = (
@@ -745,10 +737,7 @@ export const getReceptionDashboard = async (): Promise<ReceptionDashboardData> =
 };
 
 export const getReceptionTodayAppointments = async (): Promise<ReceptionDashboardData> => {
-  const now = new Date();
-  const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(
-    now.getDate(),
-  ).padStart(2, "0")}`;
+  const localDate = formatDateToIsoDate(new Date());
 
   const endpoints: Array<{ path: string; params?: Record<string, string> }> = [
     { path: "/reception/appointments/today" },

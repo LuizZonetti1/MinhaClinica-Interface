@@ -5,6 +5,8 @@ import type {
   PatientComment,
   UpdateCommentPayload,
 } from "../types/comment";
+import { toIsoDateOrFallback } from "../utils/dateParsers";
+import { readNonEmptyValue, toRecord, toTrimmedStringValue } from "../utils/parsers";
 
 type ApiRecord = Record<string, unknown>;
 
@@ -15,15 +17,6 @@ export type CompletedConsultationPatient = {
   name: string;
   avatarUrl: string | null;
   lastCompletedAt: string;
-};
-
-const toRecord = (value: unknown): ApiRecord | null =>
-  typeof value === "object" && value !== null ? (value as ApiRecord) : null;
-
-const toStringValue = (value: unknown, fallback = ""): string => {
-  if (typeof value === "string") return value;
-  if (typeof value === "number") return String(value);
-  return fallback;
 };
 
 const extractArray = (
@@ -42,45 +35,16 @@ const extractArray = (
   return [];
 };
 
-const readValue = (sources: Array<ApiRecord | null | undefined>, keys: string[]): unknown => {
-  for (const source of sources) {
-    if (!source) continue;
-
-    for (const key of keys) {
-      const value = source[key];
-      if (value !== undefined && value !== null && value !== "") return value;
-    }
-  }
-
-  return undefined;
-};
-
 const readString = (
   sources: Array<ApiRecord | null | undefined>,
   keys: string[],
   fallback = "",
 ): string => {
-  const value = readValue(sources, keys);
-  return value === undefined ? fallback : toStringValue(value, fallback).trim();
+  return toTrimmedStringValue(readNonEmptyValue(sources, keys), fallback);
 };
 
-const normalizeDate = (value: string): string => {
-  const trimmedValue = value.trim();
-  if (!trimmedValue) return new Date().toISOString().slice(0, 10);
-
-  const directMatch = trimmedValue.match(/^\d{4}-\d{2}-\d{2}/);
-  if (directMatch) return directMatch[0];
-
-  const parsedDate = new Date(trimmedValue);
-  if (Number.isNaN(parsedDate.getTime())) {
-    return new Date().toISOString().slice(0, 10);
-  }
-
-  const year = parsedDate.getFullYear();
-  const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
-  const day = String(parsedDate.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
+const toIsoDateOrToday = (value: unknown): string =>
+  toIsoDateOrFallback(value, new Date().toISOString().slice(0, 10));
 
 const mapConsultationType = (value: string): CommentConsultationType | null => {
   const normalizedValue = value.trim().toUpperCase();
@@ -162,7 +126,7 @@ const normalizeComment = (payload: unknown): PatientComment => {
     consultationType: mapConsultationType(
       readString(typeSources, ["consultationType", "appointmentType", "type"], ""),
     ),
-    date: normalizeDate(dateSource || createdAt),
+    date: toIsoDateOrToday(dateSource || createdAt),
     createdAt: createdAt || null,
     content: readString(sources, ["content", "comment", "text", "description", "body"], ""),
   };
@@ -184,7 +148,7 @@ const normalizeCompletedPatient = (payload: unknown): CompletedConsultationPatie
     avatarUrl:
       readString([root], ["avatarUrl", "patientAvatarUrl", "avatar", "photoUrl", "imageUrl"], "") ||
       null,
-    lastCompletedAt: normalizeDate(readString([root], ["lastCompletedAt", "completedAt", "date"], "")),
+    lastCompletedAt: toIsoDateOrToday(readString([root], ["lastCompletedAt", "completedAt", "date"], "")),
   };
 };
 

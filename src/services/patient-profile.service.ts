@@ -1,7 +1,10 @@
-import { isAxiosError } from "axios";
 import { api } from "../config/api";
 import type { PatientProfileData, UpdatePatientProfilePayload } from "../types/patient-profile";
 import type { UpdateProfilePasswordPayload } from "../types/profile";
+import { toIsoDateOrEmpty } from "../utils/dateParsers";
+import type { EndpointRequest } from "../utils/requestFallback";
+import { toNullableString, toRecord, toStringValue } from "../utils/parsers";
+import { requestWithEndpointFallback } from "../utils/requestFallback";
 
 type RecordValue = Record<string, unknown>;
 
@@ -9,154 +12,98 @@ const PROFILE_ENDPOINTS = ["/patients/me/profile", "/patient/me/profile"];
 const AVATAR_ENDPOINTS = ["/patients/me/avatar", "/patient/me/avatar"];
 const PASSWORD_ENDPOINTS = ["/patients/me/password", "/patient/me/password"];
 
-const toRecord = (value: unknown): RecordValue | null =>
-  typeof value === "object" && value !== null ? (value as RecordValue) : null;
-
-const toStringValue = (value: unknown, fallback = ""): string => {
-  if (typeof value === "string") return value.trim();
-  if (typeof value === "number" && Number.isFinite(value)) return String(value);
-  return fallback;
-};
-
-const toNullableString = (value: unknown): string | null => {
-  const parsed = toStringValue(value, "");
-  return parsed.length > 0 ? parsed : null;
-};
-
-const toIsoDate = (value: unknown): string => {
-  const raw = toStringValue(value, "");
-  if (!raw) return "";
-
-  const match = raw.match(/^\d{4}-\d{2}-\d{2}/);
-  if (match) return match[0];
-
-  const parsed = new Date(raw);
-  if (Number.isNaN(parsed.getTime())) return "";
-
-  const year = parsed.getFullYear();
-  const month = String(parsed.getMonth() + 1).padStart(2, "0");
-  const day = String(parsed.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
+const requestPatientEndpoint = async <TResult>(
+  endpoints: readonly string[],
+  request: EndpointRequest<TResult>,
+  fallbackMessage: string,
+): Promise<TResult> =>
+  requestWithEndpointFallback(endpoints, request, {
+    fallbackMessage,
+  });
 
 const normalizePatientProfile = (payload: unknown): PatientProfileData => {
-  const root = toRecord(payload) ?? {};
-  const data = toRecord(root.data) ?? root;
-  const personal = toRecord(data.personal) ?? {};
-  const medical = toRecord(data.medical) ?? {};
+  const root = (toRecord(payload) as RecordValue | null) ?? {};
+  const data = (toRecord(root.data) as RecordValue | null) ?? root;
+  const personal = (toRecord(data.personal) as RecordValue | null) ?? {};
+  const medical = (toRecord(data.medical) as RecordValue | null) ?? {};
 
   return {
     personal: {
-      name: toStringValue(personal.name, ""),
-      email: toStringValue(personal.email, ""),
-      phone: toNullableString(personal.phone),
-      cpf: toStringValue(personal.cpf, ""),
-      dateOfBirth: toIsoDate(personal.dateOfBirth),
-      avatarUrl: toNullableString(personal.avatarUrl),
-      street: toNullableString(personal.street),
-      number: toNullableString(personal.number),
-      complement: toNullableString(personal.complement),
-      neighborhood: toNullableString(personal.neighborhood),
-      city: toNullableString(personal.city),
-      state: toNullableString(personal.state),
-      zipCode: toNullableString(personal.zipCode),
-      addressFormatted: toNullableString(personal.addressFormatted),
+      name: toStringValue(personal.name, "", { trim: true }),
+      email: toStringValue(personal.email, "", { trim: true }),
+      phone: toNullableString(personal.phone, { trim: true }),
+      cpf: toStringValue(personal.cpf, "", { trim: true }),
+      dateOfBirth: toIsoDateOrEmpty(personal.dateOfBirth),
+      avatarUrl: toNullableString(personal.avatarUrl, { trim: true }),
+      street: toNullableString(personal.street, { trim: true }),
+      number: toNullableString(personal.number, { trim: true }),
+      complement: toNullableString(personal.complement, { trim: true }),
+      neighborhood: toNullableString(personal.neighborhood, { trim: true }),
+      city: toNullableString(personal.city, { trim: true }),
+      state: toNullableString(personal.state, { trim: true }),
+      zipCode: toNullableString(personal.zipCode, { trim: true }),
+      addressFormatted: toNullableString(personal.addressFormatted, { trim: true }),
     },
     medical: {
-      bloodType: toNullableString(medical.bloodType),
-      allergies: toNullableString(medical.allergies),
-      medications: toNullableString(medical.medications),
-      conditions: toNullableString(medical.conditions),
-      observations: toNullableString(medical.observations),
-      emergencyContactName: toNullableString(medical.emergencyContactName),
-      emergencyContactPhone: toNullableString(medical.emergencyContactPhone),
+      bloodType: toNullableString(medical.bloodType, { trim: true }),
+      allergies: toNullableString(medical.allergies, { trim: true }),
+      medications: toNullableString(medical.medications, { trim: true }),
+      conditions: toNullableString(medical.conditions, { trim: true }),
+      observations: toNullableString(medical.observations, { trim: true }),
+      emergencyContactName: toNullableString(medical.emergencyContactName, { trim: true }),
+      emergencyContactPhone: toNullableString(medical.emergencyContactPhone, { trim: true }),
     },
   };
 };
 
 export const getPatientProfile = async (): Promise<PatientProfileData> => {
-  let lastError: unknown;
-
-  for (const endpoint of PROFILE_ENDPOINTS) {
-    try {
+  return requestPatientEndpoint(
+    PROFILE_ENDPOINTS,
+    async (endpoint) => {
       const { data } = await api.get<unknown>(endpoint);
       return normalizePatientProfile(data);
-    } catch (error: unknown) {
-      if (isAxiosError(error) && error.response?.status === 404) {
-        lastError = error;
-        continue;
-      }
-      throw error;
-    }
-  }
-
-  throw lastError ?? new Error("Nao foi possivel carregar o perfil.");
+    },
+    "Nao foi possivel carregar o perfil.",
+  );
 };
 
 export const updatePatientProfile = async (payload: UpdatePatientProfilePayload): Promise<void> => {
-  let lastError: unknown;
-
-  for (const endpoint of PROFILE_ENDPOINTS) {
-    try {
+  await requestPatientEndpoint(
+    PROFILE_ENDPOINTS,
+    async (endpoint) => {
       await api.patch(endpoint, payload);
-      return;
-    } catch (error: unknown) {
-      if (isAxiosError(error) && error.response?.status === 404) {
-        lastError = error;
-        continue;
-      }
-      throw error;
-    }
-  }
-
-  throw lastError ?? new Error("Nao foi possivel atualizar o perfil.");
+    },
+    "Nao foi possivel atualizar o perfil.",
+  );
 };
 
 export const updatePatientAvatar = async (avatarFile: File): Promise<void> => {
   const formData = new FormData();
   formData.append("avatar", avatarFile, avatarFile.name);
 
-  let lastError: unknown;
-
-  for (const endpoint of AVATAR_ENDPOINTS) {
-    try {
+  await requestPatientEndpoint(
+    AVATAR_ENDPOINTS,
+    async (endpoint) => {
       await api.patch(endpoint, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      return;
-    } catch (error: unknown) {
-      if (isAxiosError(error) && error.response?.status === 404) {
-        lastError = error;
-        continue;
-      }
-      throw error;
-    }
-  }
-
-  throw lastError ?? new Error("Nao foi possivel atualizar o avatar.");
+    },
+    "Nao foi possivel atualizar o avatar.",
+  );
 };
 
 export const updatePatientPassword = async (
   payload: UpdateProfilePasswordPayload,
 ): Promise<void> => {
-  let lastError: unknown;
-
-  for (const endpoint of PASSWORD_ENDPOINTS) {
-    try {
+  await requestPatientEndpoint(
+    PASSWORD_ENDPOINTS,
+    async (endpoint) => {
       await api.patch(endpoint, {
         currentPassword: payload.currentPassword,
         newPassword: payload.newPassword,
         confirmPassword: payload.confirmPassword,
       });
-      return;
-    } catch (error: unknown) {
-      if (isAxiosError(error) && error.response?.status === 404) {
-        lastError = error;
-        continue;
-      }
-      throw error;
-    }
-  }
-
-  throw lastError ?? new Error("Nao foi possivel atualizar a senha.");
+    },
+    "Nao foi possivel atualizar a senha.",
+  );
 };

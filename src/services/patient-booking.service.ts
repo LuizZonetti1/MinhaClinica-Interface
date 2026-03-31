@@ -7,39 +7,14 @@ import type {
   PatientBookingSlotsResult,
   PatientCreateBookingPayload,
 } from "../types/patient";
-
-type RecordValue = Record<string, unknown>;
+import {
+  toBooleanValue,
+  toNumberValue,
+  toRecord,
+  toTrimmedStringValue,
+} from "../utils/parsers";
 
 const BASE_PATH = "/patient-booking";
-
-const toRecord = (value: unknown): RecordValue | null =>
-  typeof value === "object" && value !== null ? (value as RecordValue) : null;
-
-const toStringValue = (value: unknown, fallback = ""): string => {
-  if (typeof value === "string") return value.trim();
-  if (typeof value === "number" && Number.isFinite(value)) return String(value);
-  return fallback;
-};
-
-const toNumberValue = (value: unknown, fallback = 0): number => {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value === "string") {
-    const parsed = Number(value);
-    if (Number.isFinite(parsed)) return parsed;
-  }
-  return fallback;
-};
-
-const toBooleanValue = (value: unknown, fallback = false): boolean => {
-  if (typeof value === "boolean") return value;
-  if (typeof value === "number") return value === 1;
-  if (typeof value === "string") {
-    const normalized = value.trim().toLowerCase();
-    if (["1", "true", "yes", "sim"].includes(normalized)) return true;
-    if (["0", "false", "no", "nao"].includes(normalized)) return false;
-  }
-  return fallback;
-};
 
 const readArray = (payload: unknown): unknown[] => {
   if (Array.isArray(payload)) return payload;
@@ -59,14 +34,14 @@ const normalizeClinic = (value: unknown): PatientBookingClinicItem | null => {
   if (!item) return null;
 
   const normalized: PatientBookingClinicItem = {
-    id: toStringValue(item.id),
-    tradeName: toStringValue(item.tradeName ?? item.name ?? item.clinicName),
-    logoUrl: toStringValue(item.logoUrl, "") || null,
-    city: toStringValue(item.city),
-    state: toStringValue(item.state),
-    street: toStringValue(item.street),
-    number: toStringValue(item.number),
-    neighborhood: toStringValue(item.neighborhood),
+    id: toTrimmedStringValue(item.id),
+    tradeName: toTrimmedStringValue(item.tradeName ?? item.name ?? item.clinicName),
+    logoUrl: toTrimmedStringValue(item.logoUrl, "") || null,
+    city: toTrimmedStringValue(item.city),
+    state: toTrimmedStringValue(item.state),
+    street: toTrimmedStringValue(item.street),
+    number: toTrimmedStringValue(item.number),
+    neighborhood: toTrimmedStringValue(item.neighborhood),
   };
 
   if (!normalized.id || !normalized.tradeName) return null;
@@ -78,14 +53,14 @@ const normalizeProfessional = (value: unknown): PatientBookingProfessionalItem |
   if (!item) return null;
 
   const normalized: PatientBookingProfessionalItem = {
-    id: toStringValue(item.id),
-    userId: toStringValue(item.userId),
-    name: toStringValue(item.name),
-    specialty: toStringValue(item.specialty, "") || null,
+    id: toTrimmedStringValue(item.id),
+    userId: toTrimmedStringValue(item.userId),
+    name: toTrimmedStringValue(item.name),
+    specialty: toTrimmedStringValue(item.specialty, "") || null,
     defaultAppointmentDuration: toNumberValue(item.defaultAppointmentDuration, 30),
     bufferTime: toNumberValue(item.bufferTime, 0),
-    calendarColor: toStringValue(item.calendarColor, "#3B82F6"),
-    avatarUrl: toStringValue(item.avatarUrl, "") || null,
+    calendarColor: toTrimmedStringValue(item.calendarColor, "#3B82F6"),
+    avatarUrl: toTrimmedStringValue(item.avatarUrl, "") || null,
   };
 
   if (!normalized.id || !normalized.name) return null;
@@ -97,8 +72,8 @@ const normalizeSlot = (value: unknown): PatientBookingSlotItem | null => {
   if (!item) return null;
 
   const normalized: PatientBookingSlotItem = {
-    startTime: toStringValue(item.startTime ?? item.time),
-    endTime: toStringValue(item.endTime),
+    startTime: toTrimmedStringValue(item.startTime ?? item.time),
+    endTime: toTrimmedStringValue(item.endTime),
     available: toBooleanValue(item.available, false),
   };
 
@@ -111,18 +86,18 @@ const normalizeCreatedAppointment = (payload: unknown): PatientBookingCreatedApp
   const data = toRecord(root.data) ?? root;
 
   return {
-    id: toStringValue(data.id),
-    patientName: toStringValue(data.patientName),
-    patientCpf: toStringValue(data.patientCpf),
-    professionalName: toStringValue(data.professionalName),
-    professionalSpecialty: toStringValue(data.professionalSpecialty, "") || null,
-    clinicName: toStringValue(data.clinicName),
-    clinicAddress: toStringValue(data.clinicAddress, "") || null,
-    appointmentDate: toStringValue(data.appointmentDate),
-    startTime: toStringValue(data.startTime),
-    endTime: toStringValue(data.endTime),
-    type: toStringValue(data.type),
-    notes: toStringValue(data.notes, "") || null,
+    id: toTrimmedStringValue(data.id),
+    patientName: toTrimmedStringValue(data.patientName),
+    patientCpf: toTrimmedStringValue(data.patientCpf),
+    professionalName: toTrimmedStringValue(data.professionalName),
+    professionalSpecialty: toTrimmedStringValue(data.professionalSpecialty, "") || null,
+    clinicName: toTrimmedStringValue(data.clinicName),
+    clinicAddress: toTrimmedStringValue(data.clinicAddress, "") || null,
+    appointmentDate: toTrimmedStringValue(data.appointmentDate),
+    startTime: toTrimmedStringValue(data.startTime),
+    endTime: toTrimmedStringValue(data.endTime),
+    type: toTrimmedStringValue(data.type),
+    notes: toTrimmedStringValue(data.notes, "") || null,
   };
 };
 
@@ -163,8 +138,8 @@ export const getPatientBookingSlots = async (
   const slotList = Array.isArray(nested.slots) ? nested.slots : [];
 
   return {
-    date: toStringValue(nested.date, date),
-    professionalId: toStringValue(nested.professionalId, professionalId),
+    date: toTrimmedStringValue(nested.date, date),
+    professionalId: toTrimmedStringValue(nested.professionalId, professionalId),
     duration: toNumberValue(nested.duration, 30),
     bufferTime: toNumberValue(nested.bufferTime, 0),
     slots: slotList
