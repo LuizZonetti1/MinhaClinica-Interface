@@ -282,61 +282,6 @@ export const EmptyState = styled.div`
   text-align: center;
 `;
 
-export const ModalOverlay = styled.div`
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.72);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  z-index: 60;
-`;
-
-export const ModalCard = styled.div`
-  width: 100%;
-  max-width: 760px;
-  background-color: ${theme.colors.surface};
-  border-radius: ${theme.borderRadius.lg};
-  border: 1px solid ${theme.colors.border.light};
-  box-shadow: ${theme.shadows.lg};
-  padding: 22px;
-`;
-
-export const ModalHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
-`;
-
-export const ModalTitle = styled.h2`
-  margin: 0;
-  font-family: "Roboto", sans-serif;
-  font-size: 21px;
-  font-weight: 700;
-  color: ${theme.colors.text.primary};
-`;
-
-export const ModalCloseButton = styled.button`
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: 1px solid ${theme.colors.border.default};
-  background: ${theme.colors.surface};
-  color: ${theme.colors.text.secondary};
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-
-  &:hover {
-    border-color: ${theme.colors.border.focus};
-    color: ${theme.colors.text.primary};
-  }
-`;
-
 export const ModalGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -369,14 +314,6 @@ export const ModalValue = styled.span`
   font-size: 14px;
   font-weight: 500;
   color: ${theme.colors.text.primary};
-`;
-
-export const ModalActions = styled.div`
-  margin-top: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
 `;
 
 export const BookingForm = styled.div`
@@ -476,9 +413,12 @@ export const ClinicResultsList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-height: 140px;
+  max-height: 168px;
   overflow-y: auto;
-  padding-right: 4px;
+  padding: 6px;
+  border: 1px solid ${theme.colors.border.light};
+  border-radius: ${theme.borderRadius.md};
+  background: ${theme.colors.surfaceMuted};
 `;
 
 export const ClinicResultButton = styled.button<{ $selected: boolean }>`
@@ -487,17 +427,51 @@ export const ClinicResultButton = styled.button<{ $selected: boolean }>`
   background: ${({ $selected }) => ($selected ? theme.colors.featureBg.blue : theme.colors.surface)};
   color: ${({ $selected }) => ($selected ? theme.colors.primary : theme.colors.text.primary)};
   border-radius: ${theme.borderRadius.md};
-  min-height: 40px;
-  padding: 8px 10px;
+  min-height: 46px;
+  padding: 9px 11px;
   text-align: left;
   cursor: pointer;
   display: flex;
-  flex-direction: column;
-  gap: 3px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   font-family: "Roboto", sans-serif;
+  transition: all 0.16s ease;
+  box-shadow: ${({ $selected }) => ($selected ? theme.shadows.sm : "none")};
+
+  .clinic-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .clinic-info > * {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  svg {
+    flex-shrink: 0;
+    color: ${({ $selected }) => ($selected ? theme.colors.primary : theme.colors.text.muted)};
+  }
 
   &:hover {
     border-color: ${theme.colors.primary};
+    background: ${theme.colors.featureBg.blue};
+    color: ${theme.colors.primary};
+    transform: translateY(-1px) scale(1.002);
+    box-shadow: ${theme.shadows.sm};
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px ${theme.colors.border.focus};
   }
 `;
 

@@ -32,6 +32,7 @@ const RegisterComplete = () => {
   const { setUser } = useAuth();
   const [activeTab, setActiveTab] = useState<TabId>("personal");
   const [completedTabs, setCompletedTabs] = useState<Set<TabId>>(new Set());
+  const [attemptedTabs, setAttemptedTabs] = useState<Set<TabId>>(new Set());
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -104,10 +105,18 @@ const RegisterComplete = () => {
   const isLastTab = activeTab === "medical";
 
   const handleContinue = () => {
-    if (!isCurrentTabValid()) return;
+    if (!isCurrentTabValid()) {
+      setAttemptedTabs((prev) => new Set(prev).add(activeTab));
+      return;
+    }
 
     const currentIndex = TAB_ORDER.indexOf(activeTab);
     setCompletedTabs((prev) => new Set(prev).add(activeTab));
+    setAttemptedTabs((prev) => {
+      const next = new Set(prev);
+      next.delete(activeTab);
+      return next;
+    });
 
     if (!isLastTab) {
       setActiveTab(TAB_ORDER[currentIndex + 1]);
@@ -116,7 +125,10 @@ const RegisterComplete = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isCurrentTabValid()) return;
+    if (!isCurrentTabValid()) {
+      setAttemptedTabs((prev) => new Set(prev).add(activeTab));
+      return;
+    }
     setLoading(true);
     try {
       const response = await registerComplete({
@@ -200,7 +212,11 @@ const RegisterComplete = () => {
               onTabChange={(tabId) => setActiveTab(tabId as TabId)}
             >
               {activeTab === "personal" && (
-                <PersonalDataTab formData={formData} onChange={handleChange} />
+                <PersonalDataTab
+                  formData={formData}
+                  onChange={handleChange}
+                  showRequirementsHint={attemptedTabs.has("personal") && !isPersonalValid()}
+                />
               )}
               {activeTab === "address" && (
                 <AddressTab formData={formData} onChange={handleChange} />
@@ -231,7 +247,7 @@ const RegisterComplete = () => {
                 icon={<ArrowRight />}
                 iconPosition="right"
                 onClick={handleContinue}
-                disabled={!isCurrentTabValid()}
+                disabled={loading}
               >
                 Continuar
               </Button>

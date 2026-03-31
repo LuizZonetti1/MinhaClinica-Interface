@@ -127,7 +127,7 @@ const Login = () => {
 
           <Footer>
             <FooterText>
-              Nao tem uma conta? <FooterLink to="/register/start">Cadastre-se</FooterLink>
+              Nao tem uma conta? <FooterLink to="/registro/inicial">Cadastre-se</FooterLink>
             </FooterText>
           </Footer>
         </Container>

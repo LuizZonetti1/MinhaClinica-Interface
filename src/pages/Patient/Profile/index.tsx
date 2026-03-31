@@ -11,9 +11,11 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
+import { Skeleton } from "../../../components/Skeleton";
 import { useAuth } from "../../../contexts";
 import { getPatientProfile } from "../../../services/patient-profile.service";
 import type { PatientProfileData } from "../../../types/patient-profile";
+import { formatIsoDateToBr } from "../../../utils/dateParsers";
 import { formatPhoneNumber } from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError } from "../../../utils/toast";
@@ -32,7 +34,6 @@ import {
   InfoLeft,
   InfoRow,
   InfoValue,
-  LoadingMessage,
   PageWrapper,
   Tag,
   TagsWrap,
@@ -79,18 +80,17 @@ const toDash = (value: string | null | undefined) => {
   return normalized.length > 0 ? normalized : "-";
 };
 
-const formatDateBr = (value: string | null | undefined) => {
-  if (!value) return "-";
-  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (!match) return "-";
-  return `${match[3]}/${match[2]}/${match[1]}`;
-};
+const formatDateBr = (value: string | null | undefined) =>
+  formatIsoDateToBr(value, "-", { strictIsoOnly: true });
 
-const splitTags = (...sources: Array<string | null | undefined>): string[] =>
-  sources
+const splitTags = (...sources: Array<string | null | undefined>): string[] => {
+  const tags = sources
     .flatMap((source) => (source ?? "").split(","))
     .map((item) => item.trim())
     .filter((item) => item.length > 0);
+
+  return [...new Set(tags)];
+};
 
 const PatientProfilePage = () => {
   const { user } = useAuth();
@@ -151,17 +151,21 @@ const PatientProfilePage = () => {
     <PageWrapper>
       <HeroBanner>
         <AvatarCircle>
-          {avatarUrl ? <img src={avatarUrl} alt={fullName} /> : getInitials(fullName) || "U"}
+          {loading ? (
+            <Skeleton variant="circle" width={70} height={70} />
+          ) : avatarUrl ? (
+            <img src={avatarUrl} alt={fullName} />
+          ) : (
+            getInitials(fullName) || "U"
+          )}
         </AvatarCircle>
-        <HeroName>{fullName}</HeroName>
-        <HeroRole>Paciente</HeroRole>
+        <HeroName>{loading ? <Skeleton width={220} height={34} /> : fullName}</HeroName>
+        <HeroRole>{loading ? <Skeleton width={78} height={14} /> : "Paciente"}</HeroRole>
         <EditButton type="button" onClick={() => navigate("/paciente/perfil/editar")} disabled={loading}>
           <Pencil size={15} />
           Editar Perfil
         </EditButton>
       </HeroBanner>
-
-      {loading && <LoadingMessage>Carregando perfil...</LoadingMessage>}
 
       <CardGrid>
         <InfoCard>
@@ -171,35 +175,35 @@ const PatientProfilePage = () => {
               <User size={16} />
               <InfoLabel>Nome Completo</InfoLabel>
             </InfoLeft>
-            <InfoValue>{fullName}</InfoValue>
+            <InfoValue>{loading ? <Skeleton width={170} height={14} /> : fullName}</InfoValue>
           </InfoRow>
           <InfoRow>
             <InfoLeft>
               <Mail size={16} />
               <InfoLabel>Email</InfoLabel>
             </InfoLeft>
-            <InfoValue>{email}</InfoValue>
+            <InfoValue>{loading ? <Skeleton width={200} height={14} /> : email}</InfoValue>
           </InfoRow>
           <InfoRow>
             <InfoLeft>
               <Phone size={16} />
               <InfoLabel>Telefone</InfoLabel>
             </InfoLeft>
-            <InfoValue>{phone}</InfoValue>
+            <InfoValue>{loading ? <Skeleton width={122} height={14} /> : phone}</InfoValue>
           </InfoRow>
           <InfoRow>
             <InfoLeft>
               <CalendarDays size={16} />
               <InfoLabel>Data de Nascimento</InfoLabel>
             </InfoLeft>
-            <InfoValue>{birthDate}</InfoValue>
+            <InfoValue>{loading ? <Skeleton width={92} height={14} /> : birthDate}</InfoValue>
           </InfoRow>
           <InfoRow>
             <InfoLeft>
               <MapPin size={16} />
               <InfoLabel>Endereco</InfoLabel>
             </InfoLeft>
-            <InfoValue>{address}</InfoValue>
+            <InfoValue>{loading ? <Skeleton width={240} height={14} /> : address}</InfoValue>
           </InfoRow>
         </InfoCard>
 
@@ -210,38 +214,44 @@ const PatientProfilePage = () => {
               <Droplet size={16} />
               <InfoLabel>Tipo Sanguineo</InfoLabel>
             </InfoLeft>
-            <InfoValue>{toDash(medical.bloodType)}</InfoValue>
+            <InfoValue>{loading ? <Skeleton width={56} height={14} /> : toDash(medical.bloodType)}</InfoValue>
           </InfoRow>
           <InfoRow>
             <InfoLeft>
               <UserRoundCheck size={16} />
               <InfoLabel>Contato de Emergencia</InfoLabel>
             </InfoLeft>
-            <InfoValue>{emergencyContact}</InfoValue>
+            <InfoValue>{loading ? <Skeleton width={220} height={14} /> : emergencyContact}</InfoValue>
           </InfoRow>
           <InfoRow>
             <InfoLeft>
               <NotebookPen size={16} />
               <InfoLabel>Medicacoes</InfoLabel>
             </InfoLeft>
-            <InfoValue>{toDash(medical.medications)}</InfoValue>
+            <InfoValue>{loading ? <Skeleton width={180} height={14} /> : toDash(medical.medications)}</InfoValue>
           </InfoRow>
           <InfoRow>
             <InfoLeft>
               <NotebookPen size={16} />
               <InfoLabel>Observacoes</InfoLabel>
             </InfoLeft>
-            <InfoValue>{toDash(medical.observations)}</InfoValue>
+            <InfoValue>{loading ? <Skeleton width={180} height={14} /> : toDash(medical.observations)}</InfoValue>
           </InfoRow>
         </InfoCard>
       </CardGrid>
 
       <FullWidthCard>
         <CardTitle>Condicoes e Alergias</CardTitle>
-        {conditionTags.length > 0 ? (
+        {loading ? (
           <TagsWrap>
-            {conditionTags.map((tag) => (
-              <Tag key={tag}>{tag}</Tag>
+            {Array.from({ length: 3 }).map((_, index) => (
+              <Skeleton key={`condition-skeleton-${index}`} width={110} height={24} radius={999} />
+            ))}
+          </TagsWrap>
+        ) : conditionTags.length > 0 ? (
+            <TagsWrap>
+            {conditionTags.map((tag, index) => (
+              <Tag key={`${tag}-${index}`}>{tag}</Tag>
             ))}
           </TagsWrap>
         ) : (

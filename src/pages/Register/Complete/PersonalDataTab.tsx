@@ -1,4 +1,5 @@
-import { Calendar, Lock, Phone, User } from "lucide-react";
+import { Calendar, Eye, EyeOff, Lock, Phone, User } from "lucide-react";
+import { useState } from "react";
 import { Input } from "../../../components/Input";
 import { FieldGroup, Label, RadioButton, RadioGroup, RequirementsText, Row } from "./styles";
 
@@ -13,6 +14,7 @@ interface PersonalDataTabProps {
   };
   onChange: (field: string, value: string) => void;
   cpfError?: string;
+  showRequirementsHint?: boolean;
 }
 
 const maskCPF = (value: string) =>
@@ -30,7 +32,15 @@ const maskPhone = (value: string) =>
     .replace(/(\d{2})(\d)/, "($1) $2")
     .replace(/(\d{5})(\d{1,4})$/, "$1-$2");
 
-export const PersonalDataTab = ({ formData, onChange, cpfError }: PersonalDataTabProps) => {
+export const PersonalDataTab = ({
+  formData,
+  onChange,
+  cpfError,
+  showRequirementsHint = false,
+}: PersonalDataTabProps) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   return (
     <FieldGroup>
       <Row>
@@ -61,31 +71,37 @@ export const PersonalDataTab = ({ formData, onChange, cpfError }: PersonalDataTa
       <Row>
         <Input
           label="Senha *"
-          type="password"
+          type={showPassword ? "text" : "password"}
           placeholder="Crie sua senha"
           value={formData.password}
           onChange={(e) => onChange("password", e.target.value)}
           icon={<Lock />}
+          rightIcon={showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          onRightIconClick={() => setShowPassword((previous) => !previous)}
           fullWidth
           required
         />
 
         <Input
           label="Confirmar Senha *"
-          type="password"
+          type={showConfirmPassword ? "text" : "password"}
           placeholder="Repita a senha"
           value={formData.confirmPassword}
           onChange={(e) => onChange("confirmPassword", e.target.value)}
           icon={<Lock />}
+          rightIcon={showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          onRightIconClick={() => setShowConfirmPassword((previous) => !previous)}
           fullWidth
           required
         />
       </Row>
 
-      <RequirementsText>
-        Para avancar: CPF com 11 digitos, telefone com 10 ou 11 digitos, senha com no minimo 6
-        caracteres (maiuscula, minuscula e numero) e confirmacao igual.
-      </RequirementsText>
+      {showRequirementsHint && (
+        <RequirementsText>
+          Para avancar: CPF com 11 digitos, telefone com 10 ou 11 digitos, senha com no minimo 6
+          caracteres (maiuscula, minuscula e numero) e confirmacao igual.
+        </RequirementsText>
+      )}
 
       <Input
         label="Data de Nascimento *"

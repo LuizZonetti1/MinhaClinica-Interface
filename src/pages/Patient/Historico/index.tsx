@@ -2,11 +2,18 @@ import { Calendar, CalendarCheck2, ChevronRight, Clock3, MapPin, Search, X } fro
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "../../../components/Button";
 import { Input } from "../../../components/Input";
+import { Modal } from "../../../components/Modal";
 import { StatCard } from "../../../components/StatCard";
 import { listPatientAppointments } from "../../../services/patient-appointments.service";
 import { theme } from "../../../themes/themes";
 import type { PatientAppointmentListItem, PatientAppointmentsListResult } from "../../../types/patient";
+import { formatIsoDateToBr, formatIsoDateToLongPtBr } from "../../../utils/dateParsers";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
+import {
+  getNowInTimeZone,
+  hasNoShowWindowElapsedForDate,
+  parseTimeToMinutes,
+} from "../../../utils/timeParsers";
 import { notifyError } from "../../../utils/toast";
 import {
   ActionRow,
@@ -21,15 +28,9 @@ import {
   HeaderRow,
   HistoryCard,
   HistoryList,
-  ModalActions,
-  ModalCard,
-  ModalCloseButton,
   ModalGrid,
-  ModalHeader,
   ModalItem,
   ModalLabel,
-  ModalOverlay,
-  ModalTitle,
   ModalValue,
   PageTitle,
   PageWrapper,
@@ -45,9 +46,6 @@ import {
 } from "./styles";
 
 type FilterKey = "ALL" | "COMPLETED" | "NO_SHOW" | "CANCELLED";
-
-const DEFAULT_TIMEZONE = "America/Sao_Paulo";
-const NO_SHOW_GRACE_MINUTES = 30;
 
 const EMPTY_RESULT: PatientAppointmentsListResult = {
   total: 0,
@@ -89,53 +87,8 @@ const normalizeSearch = (value: string): string =>
     .toLowerCase()
     .trim();
 
-const parseTimeToMinutes = (timeValue: string): number | null => {
-  const match = timeValue.match(/^(\d{2}):(\d{2})$/);
-  if (!match) return null;
-
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  if (!Number.isInteger(hours) || !Number.isInteger(minutes)) return null;
-  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
-
-  return hours * 60 + minutes;
-};
-
-const getNowInSaoPaulo = (): { dateIso: string; minutesOfDay: number } => {
-  const now = new Date();
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: DEFAULT_TIMEZONE,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).formatToParts(now);
-
-  const map = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-  const year = map.year ?? "0000";
-  const month = map.month ?? "01";
-  const day = map.day ?? "01";
-  const hour = Number(map.hour ?? "0");
-  const minute = Number(map.minute ?? "0");
-
-  return {
-    dateIso: `${year}-${month}-${day}`,
-    minutesOfDay: hour * 60 + minute,
-  };
-};
-
 const hasNoShowWindowElapsed = (appointmentDate: string, startTime: string): boolean => {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(appointmentDate)) return false;
-  const startMinutes = parseTimeToMinutes(startTime);
-  if (startMinutes === null) return false;
-
-  const now = getNowInSaoPaulo();
-  if (appointmentDate < now.dateIso) return true;
-  if (appointmentDate > now.dateIso) return false;
-
-  return now.minutesOfDay >= startMinutes + NO_SHOW_GRACE_MINUTES;
+  return hasNoShowWindowElapsedForDate(appointmentDate, startTime);
 };
 
 const resolveDisplayStatus = (appointment: PatientAppointmentListItem): string => {
@@ -153,7 +106,7 @@ const isHistoricalAppointment = (appointment: PatientAppointmentListItem): boole
   const displayStatus = resolveDisplayStatus(appointment);
   if (["COMPLETED", "NO_SHOW", "CANCELLED", "RESCHEDULED"].includes(displayStatus)) return true;
 
-  const now = getNowInSaoPaulo();
+  const now = getNowInTimeZone();
   if (appointment.appointmentDate < now.dateIso) return true;
   if (appointment.appointmentDate > now.dateIso) return false;
 
@@ -194,21 +147,11 @@ const toSortStamp = (appointment: PatientAppointmentListItem): number => {
 };
 
 const formatDateBr = (value: string): string => {
-  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (match) return `${match[3]}/${match[2]}/${match[1]}`;
-  return "--/--/----";
+  return formatIsoDateToBr(value, "--/--/----", { strictIsoOnly: true });
 };
 
 const formatLongDate = (value: string): string => {
-  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (!match) return "--";
-
-  const asDate = new Date(`${match[1]}-${match[2]}-${match[3]}T00:00:00`);
-  return asDate.toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
+  return formatIsoDateToLongPtBr(value, "--");
 };
 
 const mapTypeLabel = (type: string): string => {
@@ -439,19 +382,16 @@ const PatientHistoryPage = () => {
       )}
 
       {selectedAppointment && (
-        <ModalOverlay onClick={() => setSelectedAppointment(null)}>
-          <ModalCard onClick={(event) => event.stopPropagation()}>
-            <ModalHeader>
-              <ModalTitle>Detalhes da consulta</ModalTitle>
-              <ModalCloseButton
-                type="button"
-                onClick={() => setSelectedAppointment(null)}
-                aria-label="Fechar"
-              >
-                <X size={18} />
-              </ModalCloseButton>
-            </ModalHeader>
-
+        <Modal
+          isOpen={Boolean(selectedAppointment)}
+          onClose={() => setSelectedAppointment(null)}
+          title="Detalhes da consulta"
+          actions={
+            <Button variant="outline" size="small" onClick={() => setSelectedAppointment(null)}>
+              Fechar
+            </Button>
+          }
+        >
             <ModalGrid>
               <ModalItem>
                 <ModalLabel>Profissional</ModalLabel>
@@ -488,14 +428,7 @@ const PatientHistoryPage = () => {
                 <ModalValue>{selectedAppointment.notes ?? "Sem observacoes."}</ModalValue>
               </ModalItem>
             </ModalGrid>
-
-            <ModalActions>
-              <Button variant="outline" size="small" onClick={() => setSelectedAppointment(null)}>
-                Fechar
-              </Button>
-            </ModalActions>
-          </ModalCard>
-        </ModalOverlay>
+        </Modal>
       )}
     </PageWrapper>
   );

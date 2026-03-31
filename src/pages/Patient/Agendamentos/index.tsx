@@ -5,11 +5,11 @@ import {
   MapPin,
   Plus,
   Search,
-  X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "../../../components/Button";
 import { Input } from "../../../components/Input";
+import { Modal } from "../../../components/Modal";
 import {
   createPatientBookingAppointment,
   getPatientBookingSlots,
@@ -26,7 +26,9 @@ import type {
   PatientBookingProfessionalItem,
   PatientBookingSlotItem,
 } from "../../../types/patient";
+import { formatDateToIsoDate, formatIsoDateToBr, formatIsoDateToLongPtBr } from "../../../utils/dateParsers";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
+import { hasNoShowWindowElapsedForDate } from "../../../utils/timeParsers";
 import { notifyError, notifyInfo, notifySuccess } from "../../../utils/toast";
 import {
   ActionRow,
@@ -54,15 +56,9 @@ import {
   EmptyState,
   FilterChip,
   FiltersRow,
-  ModalActions,
-  ModalCard,
-  ModalCloseButton,
   ModalGrid,
-  ModalHeader,
   ModalItem,
   ModalLabel,
-  ModalOverlay,
-  ModalTitle,
   ModalValue,
   PageTitle,
   PageWrapper,
@@ -110,9 +106,6 @@ const STATUS_META: Record<string, { label: string; variant: AppointmentBadgeVari
   CANCELLED: { label: "Cancelado", variant: "cancelled" },
 };
 
-const DEFAULT_TIMEZONE = "America/Sao_Paulo";
-const NO_SHOW_GRACE_MINUTES = 30;
-
 const BOOKING_TYPE_OPTIONS: Array<{ value: PatientBookingAppointmentType; label: string }> = [
   { value: "CONSULTATION", label: "Consulta" },
   { value: "RETURN", label: "Retorno" },
@@ -120,46 +113,9 @@ const BOOKING_TYPE_OPTIONS: Array<{ value: PatientBookingAppointmentType; label:
   { value: "EMERGENCY", label: "Emergencia" },
 ];
 
-const formatDateBr = (value: string): string => {
-  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (match) return `${match[3]}/${match[2]}/${match[1]}`;
+const formatDateBr = (value: string): string => formatIsoDateToBr(value, "--/--/----");
 
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "--/--/----";
-
-  return date.toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-};
-
-const formatLongDate = (value: string): string => {
-  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (match) {
-    const asDate = new Date(`${match[1]}-${match[2]}-${match[3]}T00:00:00`);
-    return asDate.toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    });
-  }
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return "--";
-  return parsed.toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
-};
-
-const getLocalDateISO = (date: Date): string => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
+const formatLongDate = (value: string): string => formatIsoDateToLongPtBr(value, "--");
 
 const mapTypeLabel = (type: string): string => {
   const normalized = type.trim().toUpperCase();
@@ -212,54 +168,8 @@ const normalizeAppointmentStatus = (status: string): string => {
   return STATUS_ALIASES[normalized] ?? normalized;
 };
 
-const parseTimeToMinutes = (timeValue: string): number | null => {
-  const match = timeValue.match(/^(\d{2}):(\d{2})$/);
-  if (!match) return null;
-
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  if (!Number.isInteger(hours) || !Number.isInteger(minutes)) return null;
-  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
-
-  return hours * 60 + minutes;
-};
-
-const getNowInSaoPaulo = (): { dateIso: string; minutesOfDay: number } => {
-  const now = new Date();
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: DEFAULT_TIMEZONE,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).formatToParts(now);
-
-  const map = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-  const year = map.year ?? "0000";
-  const month = map.month ?? "01";
-  const day = map.day ?? "01";
-  const hour = Number(map.hour ?? "0");
-  const minute = Number(map.minute ?? "0");
-
-  return {
-    dateIso: `${year}-${month}-${day}`,
-    minutesOfDay: hour * 60 + minute,
-  };
-};
-
 const hasNoShowWindowElapsed = (appointmentDate: string, startTime: string): boolean => {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(appointmentDate)) return false;
-
-  const appointmentMinutes = parseTimeToMinutes(startTime);
-  if (appointmentMinutes === null) return false;
-
-  const nowInSaoPaulo = getNowInSaoPaulo();
-  if (appointmentDate < nowInSaoPaulo.dateIso) return true;
-  if (appointmentDate > nowInSaoPaulo.dateIso) return false;
-
-  return nowInSaoPaulo.minutesOfDay >= appointmentMinutes + NO_SHOW_GRACE_MINUTES;
+  return hasNoShowWindowElapsedForDate(appointmentDate, startTime);
 };
 
 const resolveDisplayStatus = (appointment: PatientAppointmentListItem): string => {
@@ -303,7 +213,7 @@ const getStatusMeta = (status: string) =>
 const isPendingStatus = (status: string) => normalizeAppointmentStatus(status) === "SCHEDULED";
 
 const PatientAppointmentsPage = () => {
-  const todayIso = useMemo(() => getLocalDateISO(new Date()), []);
+  const todayIso = useMemo(() => formatDateToIsoDate(new Date()), []);
   const allClinicsCacheRef = useRef<PatientBookingClinicItem[] | null>(null);
 
   const [result, setResult] = useState<PatientAppointmentsListResult>(EMPTY_RESULT);
@@ -371,29 +281,23 @@ const PatientAppointmentsPage = () => {
       return;
     }
 
-    let active = true;
-    const timer = window.setTimeout(async () => {
-      setBookingClinicsLoading(true);
+    const cachedClinics = allClinicsCacheRef.current;
 
+    if (cachedClinics) {
+      setBookingClinics(filterClinicsIgnoringAccents(cachedClinics, query));
+      setBookingClinicsLoading(false);
+      return;
+    }
+
+    let active = true;
+    const loadAllClinics = async () => {
+      setBookingClinicsLoading(true);
       try {
-        const clinics = await searchPatientBookingClinics(query);
+        const allClinics = await searchPatientBookingClinics("");
         if (!active) return;
 
-        if (clinics.length > 0) {
-          setBookingClinics(clinics);
-          return;
-        }
-
-        if (!allClinicsCacheRef.current) {
-          allClinicsCacheRef.current = await searchPatientBookingClinics("");
-          if (!active) return;
-        }
-
-        const fallbackClinics = filterClinicsIgnoringAccents(
-          allClinicsCacheRef.current ?? [],
-          query,
-        );
-        setBookingClinics(fallbackClinics);
+        allClinicsCacheRef.current = allClinics;
+        setBookingClinics(filterClinicsIgnoringAccents(allClinics, query));
       } catch (error: unknown) {
         if (!active) return;
         setBookingClinics([]);
@@ -401,13 +305,19 @@ const PatientAppointmentsPage = () => {
       } finally {
         if (active) setBookingClinicsLoading(false);
       }
-    }, 300);
+    };
+
+    const timer = window.setTimeout(() => {
+      void loadAllClinics();
+    }, 180);
 
     return () => {
       active = false;
       window.clearTimeout(timer);
     };
   }, [bookingClinicQuery, isBookingOpen]);
+
+  const shouldShowClinicSuggestions = bookingClinicQuery.trim().length > 0;
 
   useEffect(() => {
     if (!isBookingOpen || !selectedClinic?.id) {
@@ -658,19 +568,16 @@ const PatientAppointmentsPage = () => {
       )}
 
       {selectedAppointment && (
-        <ModalOverlay onClick={() => setSelectedAppointment(null)}>
-          <ModalCard onClick={(event) => event.stopPropagation()}>
-            <ModalHeader>
-              <ModalTitle>Detalhes do agendamento</ModalTitle>
-              <ModalCloseButton
-                type="button"
-                onClick={() => setSelectedAppointment(null)}
-                aria-label="Fechar"
-              >
-                <X size={18} />
-              </ModalCloseButton>
-            </ModalHeader>
-
+        <Modal
+          isOpen={Boolean(selectedAppointment)}
+          onClose={() => setSelectedAppointment(null)}
+          title="Detalhes do agendamento"
+          actions={
+            <Button variant="outline" size="small" onClick={() => setSelectedAppointment(null)}>
+              Fechar
+            </Button>
+          }
+        >
             <ModalGrid>
               <ModalItem>
                 <ModalLabel>Profissional</ModalLabel>
@@ -707,26 +614,30 @@ const PatientAppointmentsPage = () => {
                 <ModalValue>{selectedAppointment.notes ?? "Sem observacoes."}</ModalValue>
               </ModalItem>
             </ModalGrid>
-
-            <ModalActions>
-              <Button variant="outline" size="small" onClick={() => setSelectedAppointment(null)}>
-                Fechar
-              </Button>
-            </ModalActions>
-          </ModalCard>
-        </ModalOverlay>
+        </Modal>
       )}
 
       {isBookingOpen && (
-        <ModalOverlay onClick={closeBookingModal}>
-          <ModalCard onClick={(event) => event.stopPropagation()}>
-            <ModalHeader>
-              <ModalTitle>Novo Agendamento</ModalTitle>
-              <ModalCloseButton type="button" onClick={closeBookingModal} aria-label="Fechar">
-                <X size={18} />
-              </ModalCloseButton>
-            </ModalHeader>
-
+        <Modal
+          isOpen={isBookingOpen}
+          onClose={closeBookingModal}
+          title="Novo Agendamento"
+          actions={
+            <>
+              <Button variant="outline" size="small" onClick={closeBookingModal}>
+                Cancelar
+              </Button>
+              <Button
+                variant="primary"
+                size="small"
+                onClick={() => void handleCreateBooking()}
+                disabled={bookingSubmitting}
+              >
+                {bookingSubmitting ? "Agendando..." : "Confirmar Agendamento"}
+              </Button>
+            </>
+          }
+        >
             <BookingForm>
               <BookingField>
                 <BookingLabel>Buscar clinica</BookingLabel>
@@ -744,9 +655,7 @@ const PatientAppointmentsPage = () => {
                 <BookingHint>Selecione uma clinica para carregar os profissionais.</BookingHint>
               </BookingField>
 
-              {bookingClinicsLoading ? (
-                <BookingEmpty>Buscando clinicas...</BookingEmpty>
-              ) : (
+              {shouldShowClinicSuggestions && (
                 <ClinicResultsList>
                   {bookingClinics.map((clinic) => (
                     <ClinicResultButton
@@ -756,18 +665,26 @@ const PatientAppointmentsPage = () => {
                       onClick={() => {
                         setSelectedClinic(clinic);
                         setBookingClinicQuery(clinic.tradeName);
+                        setBookingClinics([]);
+                        setBookingClinicsLoading(false);
                         setSelectedProfessionalId("");
                         setSelectedSlotStartTime("");
                       }}
                     >
-                      <ClinicResultTitle>{clinic.tradeName}</ClinicResultTitle>
-                      <ClinicResultMeta>
-                        {clinic.city}/{clinic.state}
-                      </ClinicResultMeta>
+                      <div className="clinic-info">
+                        <ClinicResultTitle>{clinic.tradeName}</ClinicResultTitle>
+                        <ClinicResultMeta>
+                          {clinic.city}/{clinic.state}
+                        </ClinicResultMeta>
+                      </div>
+                      <ChevronRight size={15} />
                     </ClinicResultButton>
                   ))}
-                  {!bookingClinics.length && bookingClinicQuery.trim().length > 0 && (
+                  {!bookingClinics.length && !bookingClinicsLoading && (
                     <BookingEmpty>Nenhuma clinica encontrada para este termo.</BookingEmpty>
+                  )}
+                  {!bookingClinics.length && bookingClinicsLoading && (
+                    <BookingEmpty>Buscando clinicas...</BookingEmpty>
                   )}
                 </ClinicResultsList>
               )}
@@ -867,22 +784,7 @@ const PatientAppointmentsPage = () => {
                 />
               </BookingField>
             </BookingForm>
-
-            <ModalActions>
-              <Button variant="outline" size="small" onClick={closeBookingModal}>
-                Cancelar
-              </Button>
-              <Button
-                variant="primary"
-                size="small"
-                onClick={() => void handleCreateBooking()}
-                disabled={bookingSubmitting}
-              >
-                {bookingSubmitting ? "Agendando..." : "Confirmar Agendamento"}
-              </Button>
-            </ModalActions>
-          </ModalCard>
-        </ModalOverlay>
+        </Modal>
       )}
     </PageWrapper>
   );
