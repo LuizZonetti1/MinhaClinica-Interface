@@ -4,6 +4,8 @@ import { ActionIconButton } from "../../../components/ActionIconButton";
 import { Badge } from "../../../components/Badge";
 import { Button } from "../../../components/Button";
 import { Input } from "../../../components/Input";
+import { Modal } from "../../../components/Modal";
+import { Skeleton } from "../../../components/Skeleton";
 import {
   deactivateProfessional,
   deactivateReceptionist,
@@ -36,13 +38,9 @@ import {
   FieldError,
   FilterSelect,
   FiltersRow,
-  ModalActions,
-  ModalCard,
   ModalFieldGroup,
   ModalForm,
-  ModalOverlay,
   ModalSelect,
-  ModalTitle,
   PageTitle,
   PageWrapper,
   PhoneText,
@@ -263,7 +261,7 @@ const ProfessionalsPage = () => {
     const nextErrors: Partial<Record<keyof NewStaffFormData, string>> = {};
     if (!createFormData.name.trim()) nextErrors.name = "Nome obrigatorio.";
     if (!createFormData.email.trim()) nextErrors.email = "Email obrigatorio.";
-    if (!createFormData.role) nextErrors.role = "Selecione uma funcao.";
+    if (!createFormData.role) nextErrors.role = "Selecione uma função.";
     if (createFormData.role === "PROFESSIONAL" && !createFormData.specialty.trim()) {
       nextErrors.specialty = "Especialidade obrigatoria.";
     }
@@ -293,7 +291,7 @@ const ProfessionalsPage = () => {
       handleCloseCreateModal();
       await fetchData();
     } catch (err: unknown) {
-      notifyError(getApiErrorMessage(err, "Nao foi possivel enviar o convite."));
+      notifyError(getApiErrorMessage(err, "Não foi possível enviar o convite."));
     } finally {
       setIsSubmittingInvite(false);
     }
@@ -415,7 +413,7 @@ const ProfessionalsPage = () => {
       closeEditModal();
       await fetchData();
     } catch (err: unknown) {
-      notifyError(getApiErrorMessage(err, "Nao foi possivel salvar as alteracoes."));
+      notifyError(getApiErrorMessage(err, "Não foi possível salvar as alterações."));
     } finally {
       setIsSavingEdit(false);
     }
@@ -454,7 +452,7 @@ const ProfessionalsPage = () => {
       setDeleteTarget(null);
       await fetchData();
     } catch (err: unknown) {
-      notifyError(getApiErrorMessage(err, "Nao foi possivel remover o registro."));
+      notifyError(getApiErrorMessage(err, "Não foi possível remover o registro."));
     } finally {
       setBusyId(null);
       setIsDeleting(false);
@@ -515,7 +513,74 @@ const ProfessionalsPage = () => {
         )}
       </FiltersRow>
 
-      {loading && <StatusMessage>Carregando...</StatusMessage>}
+      {loading && !error && (
+        <TableCard>
+          <TableElement>
+            <thead>
+              {activeTab === "professionals" ? (
+                <TableHeaderRow>
+                  <TableHeaderCell>PROFISSIONAL</TableHeaderCell>
+                  <TableHeaderCell>ESPECIALIDADES</TableHeaderCell>
+                  <TableHeaderCell>CONSELHO</TableHeaderCell>
+                  <TableHeaderCell>CONSULTAS (MES)</TableHeaderCell>
+                  <TableHeaderCell>STATUS</TableHeaderCell>
+                  <TableHeaderCell>ACOES</TableHeaderCell>
+                </TableHeaderRow>
+              ) : (
+                <TableHeaderRow>
+                  <TableHeaderCell>RECEPCIONISTA</TableHeaderCell>
+                  <TableHeaderCell>TELEFONE</TableHeaderCell>
+                  <TableHeaderCell>FUNCAO</TableHeaderCell>
+                  <TableHeaderCell>CONSULTAS (MES)</TableHeaderCell>
+                  <TableHeaderCell>STATUS</TableHeaderCell>
+                  <TableHeaderCell>ACOES</TableHeaderCell>
+                </TableHeaderRow>
+              )}
+            </thead>
+            <tbody>
+              {Array.from({ length: 6 }).map((_, index) => (
+                <TableRow key={`staff-skeleton-${index}`}>
+                  <td>
+                    <ProfessionalCell>
+                      <Skeleton variant="circle" width={38} height={38} />
+                      <ProfessionalMeta>
+                        <Skeleton width={150} height={14} />
+                        <Skeleton width={190} height={12} />
+                      </ProfessionalMeta>
+                    </ProfessionalCell>
+                  </td>
+                  <td>
+                    {activeTab === "professionals" ? (
+                      <div style={{ display: "inline-flex", gap: 8 }}>
+                        <Skeleton width={88} height={24} radius={999} />
+                        <Skeleton width={72} height={24} radius={999} />
+                      </div>
+                    ) : (
+                      <Skeleton width={112} height={14} />
+                    )}
+                  </td>
+                  <td>
+                    <Skeleton width={96} height={14} />
+                  </td>
+                  <td>
+                    <Skeleton width={24} height={14} />
+                  </td>
+                  <td>
+                    <Skeleton width={78} height={24} radius={999} />
+                  </td>
+                  <td>
+                    <ActionsGroup>
+                      <Skeleton variant="circle" width={32} height={32} />
+                      <Skeleton variant="circle" width={32} height={32} />
+                      <Skeleton variant="circle" width={32} height={32} />
+                    </ActionsGroup>
+                  </td>
+                </TableRow>
+              ))}
+            </tbody>
+          </TableElement>
+        </TableCard>
+      )}
       {error && <StatusMessage $variant="error">{error}</StatusMessage>}
 
       {!loading && !error && activeTab === "professionals" && (
@@ -528,7 +593,7 @@ const ProfessionalsPage = () => {
                 <TableHeaderCell>CONSELHO</TableHeaderCell>
                 <TableHeaderCell>CONSULTAS (MES)</TableHeaderCell>
                 <TableHeaderCell>STATUS</TableHeaderCell>
-                <TableHeaderCell>ACOES</TableHeaderCell>
+                <TableHeaderCell>AÇÕES</TableHeaderCell>
               </TableHeaderRow>
             </thead>
             <tbody>
@@ -617,10 +682,10 @@ const ProfessionalsPage = () => {
               <TableHeaderRow>
                 <TableHeaderCell>RECEPCIONISTA</TableHeaderCell>
                 <TableHeaderCell>TELEFONE</TableHeaderCell>
-                <TableHeaderCell>FUNCAO</TableHeaderCell>
+                <TableHeaderCell>FUNÇÃO</TableHeaderCell>
                 <TableHeaderCell>CONSULTAS (MES)</TableHeaderCell>
                 <TableHeaderCell>STATUS</TableHeaderCell>
-                <TableHeaderCell>ACOES</TableHeaderCell>
+                <TableHeaderCell>AÇÕES</TableHeaderCell>
               </TableHeaderRow>
             </thead>
             <tbody>
@@ -693,311 +758,309 @@ const ProfessionalsPage = () => {
       )}
 
       {isCreateModalOpen && (
-        <ModalOverlay onClick={handleCloseCreateModal}>
-          <ModalCard onClick={(event) => event.stopPropagation()}>
-            <ModalTitle>
-              {createFormData.role === "PROFESSIONAL" ? "Novo Profissional" : "Novo Recepcionista"}
-            </ModalTitle>
+        <Modal
+          isOpen={isCreateModalOpen}
+          onClose={handleCloseCreateModal}
+          title={createFormData.role === "PROFESSIONAL" ? "Novo Profissional" : "Novo Recepcionista"}
+          actions={
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                size="small"
+                icon={<X size={14} />}
+                onClick={handleCloseCreateModal}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                form="create-staff-form"
+                size="small"
+                icon={<Save size={14} />}
+                disabled={isSubmittingInvite}
+              >
+                {isSubmittingInvite ? "Enviando..." : "Salvar"}
+              </Button>
+            </>
+          }
+        >
+          <ModalForm id="create-staff-form" onSubmit={handleCreateSubmit}>
+            <Input
+              label="Nome Completo"
+              fullWidth
+              value={createFormData.name}
+              onChange={(event) => handleCreateFieldChange("name", event.target.value)}
+              error={createFormErrors.name}
+            />
 
-            <ModalForm onSubmit={handleCreateSubmit}>
+            <Input
+              label="Email"
+              type="email"
+              fullWidth
+              value={createFormData.email}
+              onChange={(event) => handleCreateFieldChange("email", event.target.value)}
+              error={createFormErrors.email}
+            />
+
+            <ModalFieldGroup>
+              <label htmlFor="new-staff-role">Função</label>
+              <ModalSelect
+                id="new-staff-role"
+                value={createFormData.role}
+                onChange={(event) => handleCreateFieldChange("role", event.target.value as StaffRole)}
+              >
+                <option value="PROFESSIONAL">Profissional</option>
+                <option value="RECEPTIONIST">Recepção</option>
+              </ModalSelect>
+              {createFormErrors.role && <FieldError>{createFormErrors.role}</FieldError>}
+            </ModalFieldGroup>
+
+            {createFormData.role === "PROFESSIONAL" && (
               <Input
-                label="Nome Completo"
+                label="Especialidade"
                 fullWidth
-                value={createFormData.name}
-                onChange={(event) => handleCreateFieldChange("name", event.target.value)}
-                error={createFormErrors.name}
+                value={createFormData.specialty}
+                onChange={(event) => handleCreateFieldChange("specialty", event.target.value)}
+                error={createFormErrors.specialty}
               />
-
-              <Input
-                label="Email"
-                type="email"
-                fullWidth
-                value={createFormData.email}
-                onChange={(event) => handleCreateFieldChange("email", event.target.value)}
-                error={createFormErrors.email}
-              />
-
-              <ModalFieldGroup>
-                <label htmlFor="new-staff-role">Funcao</label>
-                <ModalSelect
-                  id="new-staff-role"
-                  value={createFormData.role}
-                  onChange={(event) =>
-                    handleCreateFieldChange("role", event.target.value as StaffRole)
-                  }
-                >
-                  <option value="PROFESSIONAL">Profissional</option>
-                  <option value="RECEPTIONIST">Recepção</option>
-                </ModalSelect>
-                {createFormErrors.role && <FieldError>{createFormErrors.role}</FieldError>}
-              </ModalFieldGroup>
-
-              {createFormData.role === "PROFESSIONAL" && (
-                <Input
-                  label="Especialidade"
-                  fullWidth
-                  value={createFormData.specialty}
-                  onChange={(event) => handleCreateFieldChange("specialty", event.target.value)}
-                  error={createFormErrors.specialty}
-                />
-              )}
-
-              <ModalActions>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="small"
-                  icon={<X size={14} />}
-                  onClick={handleCloseCreateModal}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  size="small"
-                  icon={<Save size={14} />}
-                  disabled={isSubmittingInvite}
-                >
-                  {isSubmittingInvite ? "Enviando..." : "Salvar"}
-                </Button>
-              </ModalActions>
-            </ModalForm>
-          </ModalCard>
-        </ModalOverlay>
+            )}
+          </ModalForm>
+        </Modal>
       )}
 
       {isViewOpen && (
-        <ModalOverlay onClick={closeViewModal}>
-          <ModalCard onClick={(event) => event.stopPropagation()}>
-            <ModalTitle>
-              {viewType === "professional" ? "Detalhes do profissional" : "Detalhes da recepção"}
-            </ModalTitle>
-            {viewType === "professional" && viewProfessional && (
-              <DetailsGrid>
-                <DetailItem>
-                  <DetailLabel>Nome</DetailLabel>
-                  <DetailValue>{viewProfessional.name}</DetailValue>
-                </DetailItem>
-                <DetailItem>
-                  <DetailLabel>Email</DetailLabel>
-                  <DetailValue>{viewProfessional.email}</DetailValue>
-                </DetailItem>
-                <DetailItem>
-                  <DetailLabel>Especialidade</DetailLabel>
-                  <DetailValue>{getSpecialty(viewProfessional) || "-"}</DetailValue>
-                </DetailItem>
-                <DetailItem>
-                  <DetailLabel>Status</DetailLabel>
-                  <DetailValue>{statusLabel(viewProfessional.status)}</DetailValue>
-                </DetailItem>
-              </DetailsGrid>
-            )}
-            {viewType === "receptionist" && viewReceptionist && (
-              <DetailsGrid>
-                <DetailItem>
-                  <DetailLabel>Nome</DetailLabel>
-                  <DetailValue>{viewReceptionist.name}</DetailValue>
-                </DetailItem>
-                <DetailItem>
-                  <DetailLabel>Email</DetailLabel>
-                  <DetailValue>{viewReceptionist.email}</DetailValue>
-                </DetailItem>
-                <DetailItem>
-                  <DetailLabel>Telefone</DetailLabel>
-                  <DetailValue>{formatPhoneNumber(viewReceptionist.phone)}</DetailValue>
-                </DetailItem>
-                <DetailItem>
-                  <DetailLabel>Status</DetailLabel>
-                  <DetailValue>{statusLabel(viewReceptionist.status)}</DetailValue>
-                </DetailItem>
-              </DetailsGrid>
-            )}
-            <ModalActions>
-              <Button type="button" variant="outline" size="small" onClick={closeViewModal}>
-                Fechar
-              </Button>
-            </ModalActions>
-          </ModalCard>
-        </ModalOverlay>
+        <Modal
+          isOpen={isViewOpen}
+          onClose={closeViewModal}
+          title={viewType === "professional" ? "Detalhes do profissional" : "Detalhes da recepção"}
+          actions={
+            <Button type="button" variant="outline" size="small" onClick={closeViewModal}>
+              Fechar
+            </Button>
+          }
+        >
+          {viewType === "professional" && viewProfessional && (
+            <DetailsGrid>
+              <DetailItem>
+                <DetailLabel>Nome</DetailLabel>
+                <DetailValue>{viewProfessional.name}</DetailValue>
+              </DetailItem>
+              <DetailItem>
+                <DetailLabel>Email</DetailLabel>
+                <DetailValue>{viewProfessional.email}</DetailValue>
+              </DetailItem>
+              <DetailItem>
+                <DetailLabel>Especialidade</DetailLabel>
+                <DetailValue>{getSpecialty(viewProfessional) || "-"}</DetailValue>
+              </DetailItem>
+              <DetailItem>
+                <DetailLabel>Status</DetailLabel>
+                <DetailValue>{statusLabel(viewProfessional.status)}</DetailValue>
+              </DetailItem>
+            </DetailsGrid>
+          )}
+
+          {viewType === "receptionist" && viewReceptionist && (
+            <DetailsGrid>
+              <DetailItem>
+                <DetailLabel>Nome</DetailLabel>
+                <DetailValue>{viewReceptionist.name}</DetailValue>
+              </DetailItem>
+              <DetailItem>
+                <DetailLabel>Email</DetailLabel>
+                <DetailValue>{viewReceptionist.email}</DetailValue>
+              </DetailItem>
+              <DetailItem>
+                <DetailLabel>Telefone</DetailLabel>
+                <DetailValue>{formatPhoneNumber(viewReceptionist.phone)}</DetailValue>
+              </DetailItem>
+              <DetailItem>
+                <DetailLabel>Status</DetailLabel>
+                <DetailValue>{statusLabel(viewReceptionist.status)}</DetailValue>
+              </DetailItem>
+            </DetailsGrid>
+          )}
+        </Modal>
       )}
 
       {isEditOpen && (
-        <ModalOverlay onClick={closeEditModal}>
-          <ModalCard onClick={(event) => event.stopPropagation()}>
-            <ModalTitle>
-              {editType === "professional" ? "Editar profissional" : "Editar recepção"}
-            </ModalTitle>
-            <ModalForm onSubmit={submitEdit}>
-              {editType === "professional" && (
-                <>
-                  <Input
-                    label="Nome"
-                    fullWidth
-                    value={professionalEdit.name}
-                    onChange={(event) =>
-                      setProfessionalEdit((prev) => ({ ...prev, name: event.target.value }))
-                    }
-                    error={editErrors.name}
-                  />
-                  <Input
-                    label="Email"
-                    type="email"
-                    fullWidth
-                    value={professionalEdit.email}
-                    onChange={(event) =>
-                      setProfessionalEdit((prev) => ({ ...prev, email: event.target.value }))
-                    }
-                    error={editErrors.email}
-                  />
-                  <Input
-                    label="Especialidade"
-                    fullWidth
-                    value={professionalEdit.specialty}
-                    onChange={(event) =>
-                      setProfessionalEdit((prev) => ({ ...prev, specialty: event.target.value }))
-                    }
-                    error={editErrors.specialty}
-                  />
-                  <Input
-                    label="Conselho profissional"
-                    fullWidth
-                    value={professionalEdit.professionalCouncil}
+        <Modal
+          isOpen={isEditOpen}
+          onClose={closeEditModal}
+          title={editType === "professional" ? "Editar profissional" : "Editar recepção"}
+          actions={
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                size="small"
+                icon={<X size={14} />}
+                onClick={closeEditModal}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                form="edit-staff-form"
+                size="small"
+                icon={<Save size={14} />}
+                disabled={isSavingEdit}
+              >
+                {isSavingEdit ? "Salvando..." : "Salvar"}
+              </Button>
+            </>
+          }
+        >
+          <ModalForm id="edit-staff-form" onSubmit={submitEdit}>
+            {editType === "professional" && (
+              <>
+                <Input
+                  label="Nome"
+                  fullWidth
+                  value={professionalEdit.name}
+                  onChange={(event) =>
+                    setProfessionalEdit((prev) => ({ ...prev, name: event.target.value }))
+                  }
+                  error={editErrors.name}
+                />
+                <Input
+                  label="Email"
+                  type="email"
+                  fullWidth
+                  value={professionalEdit.email}
+                  onChange={(event) =>
+                    setProfessionalEdit((prev) => ({ ...prev, email: event.target.value }))
+                  }
+                  error={editErrors.email}
+                />
+                <Input
+                  label="Especialidade"
+                  fullWidth
+                  value={professionalEdit.specialty}
+                  onChange={(event) =>
+                    setProfessionalEdit((prev) => ({ ...prev, specialty: event.target.value }))
+                  }
+                  error={editErrors.specialty}
+                />
+                <Input
+                  label="Conselho profissional"
+                  fullWidth
+                  value={professionalEdit.professionalCouncil}
+                  onChange={(event) =>
+                    setProfessionalEdit((prev) => ({
+                      ...prev,
+                      professionalCouncil: event.target.value,
+                    }))
+                  }
+                  error={editErrors.professionalCouncil}
+                />
+                <Input
+                  label="Numero do registro"
+                  fullWidth
+                  value={professionalEdit.registrationNumber}
+                  onChange={(event) =>
+                    setProfessionalEdit((prev) => ({
+                      ...prev,
+                      registrationNumber: event.target.value,
+                    }))
+                  }
+                  error={editErrors.registrationNumber}
+                />
+                <Input
+                  label="UF do registro"
+                  maxLength={2}
+                  fullWidth
+                  value={professionalEdit.registrationState}
+                  onChange={(event) =>
+                    setProfessionalEdit((prev) => ({
+                      ...prev,
+                      registrationState: event.target.value.toUpperCase(),
+                    }))
+                  }
+                  error={editErrors.registrationState}
+                />
+                <Input
+                  label="Duracao padrao (min)"
+                  inputMode="numeric"
+                  fullWidth
+                  value={professionalEdit.defaultAppointmentDuration}
+                  onChange={(event) =>
+                    setProfessionalEdit((prev) => ({
+                      ...prev,
+                      defaultAppointmentDuration: event.target.value,
+                    }))
+                  }
+                />
+                <ModalFieldGroup>
+                  <label htmlFor="professional-status">Status</label>
+                  <ModalSelect
+                    id="professional-status"
+                    value={professionalEdit.isActive ? "ACTIVE" : "INACTIVE"}
                     onChange={(event) =>
                       setProfessionalEdit((prev) => ({
                         ...prev,
-                        professionalCouncil: event.target.value,
+                        isActive: event.target.value === "ACTIVE",
                       }))
                     }
-                    error={editErrors.professionalCouncil}
-                  />
-                  <Input
-                    label="Numero do registro"
-                    fullWidth
-                    value={professionalEdit.registrationNumber}
+                  >
+                    <option value="ACTIVE">Ativo</option>
+                    <option value="INACTIVE">Inativo</option>
+                  </ModalSelect>
+                </ModalFieldGroup>
+              </>
+            )}
+
+            {editType === "receptionist" && (
+              <>
+                <Input
+                  label="Nome"
+                  fullWidth
+                  value={receptionEdit.name}
+                  onChange={(event) =>
+                    setReceptionEdit((prev) => ({ ...prev, name: event.target.value }))
+                  }
+                  error={editErrors.name}
+                />
+                <Input
+                  label="Email"
+                  type="email"
+                  fullWidth
+                  value={receptionEdit.email}
+                  onChange={(event) =>
+                    setReceptionEdit((prev) => ({ ...prev, email: event.target.value }))
+                  }
+                  error={editErrors.email}
+                />
+                <ModalFieldGroup>
+                  <label htmlFor="reception-status">Status</label>
+                  <ModalSelect
+                    id="reception-status"
+                    value={receptionEdit.isActive ? "ACTIVE" : "INACTIVE"}
                     onChange={(event) =>
-                      setProfessionalEdit((prev) => ({
+                      setReceptionEdit((prev) => ({
                         ...prev,
-                        registrationNumber: event.target.value,
+                        isActive: event.target.value === "ACTIVE",
                       }))
                     }
-                    error={editErrors.registrationNumber}
-                  />
-                  <Input
-                    label="UF do registro"
-                    maxLength={2}
-                    fullWidth
-                    value={professionalEdit.registrationState}
-                    onChange={(event) =>
-                      setProfessionalEdit((prev) => ({
-                        ...prev,
-                        registrationState: event.target.value.toUpperCase(),
-                      }))
-                    }
-                    error={editErrors.registrationState}
-                  />
-                  <Input
-                    label="Duracao padrao (min)"
-                    inputMode="numeric"
-                    fullWidth
-                    value={professionalEdit.defaultAppointmentDuration}
-                    onChange={(event) =>
-                      setProfessionalEdit((prev) => ({
-                        ...prev,
-                        defaultAppointmentDuration: event.target.value,
-                      }))
-                    }
-                  />
-                  <ModalFieldGroup>
-                    <label htmlFor="professional-status">Status</label>
-                    <ModalSelect
-                      id="professional-status"
-                      value={professionalEdit.isActive ? "ACTIVE" : "INACTIVE"}
-                      onChange={(event) =>
-                        setProfessionalEdit((prev) => ({
-                          ...prev,
-                          isActive: event.target.value === "ACTIVE",
-                        }))
-                      }
-                    >
-                      <option value="ACTIVE">Ativo</option>
-                      <option value="INACTIVE">Inativo</option>
-                    </ModalSelect>
-                  </ModalFieldGroup>
-                </>
-              )}
-              {editType === "receptionist" && (
-                <>
-                  <Input
-                    label="Nome"
-                    fullWidth
-                    value={receptionEdit.name}
-                    onChange={(event) =>
-                      setReceptionEdit((prev) => ({ ...prev, name: event.target.value }))
-                    }
-                    error={editErrors.name}
-                  />
-                  <Input
-                    label="Email"
-                    type="email"
-                    fullWidth
-                    value={receptionEdit.email}
-                    onChange={(event) =>
-                      setReceptionEdit((prev) => ({ ...prev, email: event.target.value }))
-                    }
-                    error={editErrors.email}
-                  />
-                  <ModalFieldGroup>
-                    <label htmlFor="reception-status">Status</label>
-                    <ModalSelect
-                      id="reception-status"
-                      value={receptionEdit.isActive ? "ACTIVE" : "INACTIVE"}
-                      onChange={(event) =>
-                        setReceptionEdit((prev) => ({
-                          ...prev,
-                          isActive: event.target.value === "ACTIVE",
-                        }))
-                      }
-                    >
-                      <option value="ACTIVE">Ativo</option>
-                      <option value="INACTIVE">Inativo</option>
-                    </ModalSelect>
-                  </ModalFieldGroup>
-                </>
-              )}
-              <ModalActions>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="small"
-                  icon={<X size={14} />}
-                  onClick={closeEditModal}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  size="small"
-                  icon={<Save size={14} />}
-                  disabled={isSavingEdit}
-                >
-                  {isSavingEdit ? "Salvando..." : "Salvar"}
-                </Button>
-              </ModalActions>
-            </ModalForm>
-          </ModalCard>
-        </ModalOverlay>
+                  >
+                    <option value="ACTIVE">Ativo</option>
+                    <option value="INACTIVE">Inativo</option>
+                  </ModalSelect>
+                </ModalFieldGroup>
+              </>
+            )}
+          </ModalForm>
+        </Modal>
       )}
 
       {isDeleteOpen && deleteTarget && (
-        <ModalOverlay onClick={closeDeleteModal}>
-          <ModalCard onClick={(event) => event.stopPropagation()}>
-            <ModalTitle>Confirmar exclusao</ModalTitle>
-            <StatusMessage>
-              {`Deseja excluir ${
-                deleteTarget.type === "professional" ? "o profissional" : "a recepção"
-              } ${deleteTarget.name}?`}
-            </StatusMessage>
-            <ModalActions>
+        <Modal
+          isOpen={isDeleteOpen}
+          onClose={closeDeleteModal}
+          title="Confirmar exclusao"
+          actions={
+            <>
               <Button
                 type="button"
                 variant="outline"
@@ -1017,9 +1080,15 @@ const ProfessionalsPage = () => {
               >
                 {isDeleting ? "Excluindo..." : "Excluir"}
               </Button>
-            </ModalActions>
-          </ModalCard>
-        </ModalOverlay>
+            </>
+          }
+        >
+          <p style={{ margin: 0 }}>
+            {`Deseja excluir ${
+              deleteTarget.type === "professional" ? "o profissional" : "a recepção"
+            } ${deleteTarget.name}?`}
+          </p>
+        </Modal>
       )}
     </PageWrapper>
   );

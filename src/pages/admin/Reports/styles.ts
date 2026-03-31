@@ -327,45 +327,6 @@ export const StatusMessage = styled.p`
   margin: 0;
 `;
 
-export const ModalOverlay = styled.div`
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.75);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  z-index: 40;
-  overflow-y: auto;
-`;
-
-export const ModalCard = styled.div`
-  width: 100%;
-  max-width: 600px;
-  background-color: ${theme.colors.surface};
-  border-radius: ${theme.borderRadius.lg};
-  padding: 28px 30px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  margin: auto;
-`;
-
-export const ModalTitle = styled.h2`
-  margin: 0;
-  font-family: 'Roboto', sans-serif;
-  font-size: 22px;
-  font-weight: 700;
-  color: ${theme.colors.text.primary};
-`;
-
-export const ModalHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-`;
-
 export const ModalForm = styled.form`
   display: flex;
   flex-direction: column;
@@ -457,26 +418,3 @@ export const FormTextarea = styled.textarea`
   }
 `;
 
-export const ModalActions = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-`;
-
-export const CloseButton = styled.button`
-  background: none;
-  border: none;
-  padding: 4px;
-  cursor: pointer;
-  color: ${theme.colors.text.muted};
-  display: flex;
-  align-items: center;
-  border-radius: ${theme.borderRadius.sm};
-  transition: color 0.15s, background-color 0.15s;
-
-  &:hover {
-    color: ${theme.colors.text.primary};
-    background-color: ${theme.colors.surfaceHover};
-  }
-`;

@@ -1,4 +1,4 @@
-import { Bell, Building2, Clock, ExternalLink, Save, Shield } from "lucide-react";
+import { Bell, Building2, Clock, ExternalLink, MapPin, Save, Shield } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "../../../components/Button";
 import { Input } from "../../../components/Input";
@@ -11,8 +11,8 @@ import {
   updateClinicSettingsSecurity,
 } from "../../../services/clinic-settings.service";
 import type { ClinicSettingsResponse } from "../../../types/clinic";
-import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { maskPhoneInput, normalizePhoneDigits } from "../../../utils/formatters";
+import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import {
   CardGrid,
@@ -20,6 +20,7 @@ import {
   FieldLabel,
   FieldSelect,
   FormFields,
+  FormFieldsGrid,
   GerenciarButton,
   PageSubtitle,
   PageTitle,
@@ -46,7 +47,13 @@ type SettingsState = {
   cnpj: string;
   phone: string;
   email: string;
-  address: string;
+  zipCode: string;
+  street: string;
+  number: string;
+  complement: string;
+  neighborhood: string;
+  city: string;
+  state: string;
   openTime: string;
   closeTime: string;
   appointmentInterval: string;
@@ -65,7 +72,13 @@ const DEFAULT_SETTINGS: SettingsState = {
   cnpj: "",
   phone: "",
   email: "",
-  address: "",
+  zipCode: "",
+  street: "",
+  number: "",
+  complement: "",
+  neighborhood: "",
+  city: "",
+  state: "",
   openTime: "",
   closeTime: "",
   appointmentInterval: "30",
@@ -80,7 +93,7 @@ const DEFAULT_SETTINGS: SettingsState = {
 };
 
 const APPOINTMENT_INTERVAL_VALUES = new Set(["15", "20", "30", "45", "60"]);
-const SESSION_TIMEOUT_VALUES = new Set(["0", "15", "30", "60", "120"]);
+const SESSION_TIMEOUT_VALUES = new Set(["15", "30", "60", "120", "240"]);
 const WORKING_DAY_VALUES = new Set(["seg-sex", "seg-sab", "seg-dom", "seg-qui"]);
 
 const asRecord = (value: unknown): Record<string, unknown> | null => {
@@ -147,24 +160,26 @@ const parseInteger = (value: string, fallback: number): number => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-const formatAddress = (rawAddress: unknown): string => {
-  if (typeof rawAddress === "string") return rawAddress;
+const normalizeDigits = (value: string): string => value.replace(/\D/g, "");
 
-  const addressObj = asRecord(rawAddress);
-  if (!addressObj) return "";
+const normalizeZipCodeDigits = (value: string): string => normalizeDigits(value).slice(0, 8);
 
-  const street = readString([addressObj], ["street", "logradouro"], "");
-  const number = readString([addressObj], ["number", "numero"], "");
-  const complement = readString([addressObj], ["complement", "complemento"], "");
-  const neighborhood = readString([addressObj], ["neighborhood", "bairro"], "");
-  const city = readString([addressObj], ["city", "cidade"], "");
-  const state = readString([addressObj], ["state", "uf"], "");
+const maskZipCodeInput = (value: string): string => {
+  const digits = normalizeZipCodeDigits(value);
+  if (!digits) return "";
+  if (digits.length <= 5) return digits;
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+};
 
-  const line1 = [street, number].filter(Boolean).join(", ");
-  const line2 = [complement, neighborhood].filter(Boolean).join(" - ");
-  const line3 = [city, state].filter(Boolean).join(", ");
+const toOptionalString = (value: string): string | undefined => {
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+};
 
-  return [line1, line2, line3].filter(Boolean).join(" | ");
+const toWorkingDaysPreset = (value: string): "WEEKDAYS" | "MON_TO_SAT" | "ALL_WEEK" => {
+  if (value === "seg-sab") return "MON_TO_SAT";
+  if (value === "seg-dom") return "ALL_WEEK";
+  return "WEEKDAYS";
 };
 
 const normalizeWorkingDays = (value: unknown): string => {
@@ -173,6 +188,9 @@ const normalizeWorkingDays = (value: unknown): string => {
     if (WORKING_DAY_VALUES.has(normalized)) return normalized;
 
     const mapped: Record<string, string> = {
+      weekdays: "seg-sex",
+      mon_to_sat: "seg-sab",
+      all_week: "seg-dom",
       "mon-fri": "seg-sex",
       "monday-friday": "seg-sex",
       monday_friday: "seg-sex",
@@ -210,8 +228,9 @@ const normalizeWorkingDays = (value: unknown): string => {
 };
 
 const normalizeSettingsResponse = (response: ClinicSettingsResponse): SettingsState => {
-  const root = asRecord(response) ?? {};
-  const info = asRecord(root.info);
+  const rootData = asRecord(response) ?? {};
+  const root = asRecord(rootData.data) ?? rootData;
+  const info = asRecord(root.info) ?? asRecord(root.clinic);
   const schedule = asRecord(root.schedule);
   const notifications = asRecord(root.notifications);
   const security = asRecord(root.security);
@@ -220,6 +239,8 @@ const normalizeSettingsResponse = (response: ClinicSettingsResponse): SettingsSt
   const scheduleSources = [schedule, root];
   const notificationSources = [notifications, root];
   const securitySources = [security, root];
+  const address = asRecord(readValue(infoSources, ["address", "clinicAddress"]));
+  const addressSources = [address, ...infoSources];
 
   const interval = readNumberString(
     scheduleSources,
@@ -229,7 +250,7 @@ const normalizeSettingsResponse = (response: ClinicSettingsResponse): SettingsSt
 
   const sessionTimeout = readNumberString(
     securitySources,
-    ["sessionTimeout", "timeout", "timeoutMinutes", "inactivityTimeout"],
+    ["sessionTimeout", "timeout", "timeoutMinutes", "sessionTimeoutMinutes", "inactivityTimeout"],
     DEFAULT_SETTINGS.sessionTimeout,
   );
 
@@ -241,17 +262,39 @@ const normalizeSettingsResponse = (response: ClinicSettingsResponse): SettingsSt
     ),
     cnpj: readString(infoSources, ["cnpj"], DEFAULT_SETTINGS.cnpj),
     phone: maskPhoneInput(readString(infoSources, ["phone", "telephone"], DEFAULT_SETTINGS.phone)),
-    email: readString(infoSources, ["email", "clinicEmail", "contactEmail"], DEFAULT_SETTINGS.email),
-    address:
-      formatAddress(readValue(infoSources, ["address"])) ||
-      readString(infoSources, ["address", "fullAddress"], DEFAULT_SETTINGS.address),
+    email: readString(
+      infoSources,
+      ["email", "clinicEmail", "contactEmail"],
+      DEFAULT_SETTINGS.email,
+    ),
+    zipCode: maskZipCodeInput(
+      readString(addressSources, ["zipCode", "cep", "postalCode"], DEFAULT_SETTINGS.zipCode),
+    ),
+    street: readString(addressSources, ["street", "logradouro"], DEFAULT_SETTINGS.street),
+    number: readString(addressSources, ["number", "numero"], DEFAULT_SETTINGS.number),
+    complement: readString(
+      addressSources,
+      ["complement", "complemento"],
+      DEFAULT_SETTINGS.complement,
+    ),
+    neighborhood: readString(
+      addressSources,
+      ["neighborhood", "bairro"],
+      DEFAULT_SETTINGS.neighborhood,
+    ),
+    city: readString(addressSources, ["city", "cidade"], DEFAULT_SETTINGS.city),
+    state: readString(addressSources, ["state", "uf"], DEFAULT_SETTINGS.state).toUpperCase(),
     openTime: readString(scheduleSources, ["openTime", "openingTime"], DEFAULT_SETTINGS.openTime),
-    closeTime: readString(scheduleSources, ["closeTime", "closingTime"], DEFAULT_SETTINGS.closeTime),
+    closeTime: readString(
+      scheduleSources,
+      ["closeTime", "closingTime"],
+      DEFAULT_SETTINGS.closeTime,
+    ),
     appointmentInterval: APPOINTMENT_INTERVAL_VALUES.has(interval)
       ? interval
       : DEFAULT_SETTINGS.appointmentInterval,
     workingDays: normalizeWorkingDays(
-      readValue(scheduleSources, ["workingDays", "days", "workingDaysLabel"]),
+      readValue(scheduleSources, ["workingDays", "days", "workingDaysLabel", "workingDaysPreset"]),
     ),
     appointmentReminder: readBoolean(
       notificationSources,
@@ -265,7 +308,7 @@ const normalizeSettingsResponse = (response: ClinicSettingsResponse): SettingsSt
     ),
     newPatient: readBoolean(
       notificationSources,
-      ["newPatient", "newPatientAlert", "notifyNewPatient"],
+      ["newPatient", "newPatientAlert", "notifyNewPatient", "sendNewPatientAlert"],
       DEFAULT_SETTINGS.newPatient,
     ),
     dailyReport: readBoolean(
@@ -321,30 +364,40 @@ const SettingsPage = () => {
 
     setIsSaving(true);
     try {
+      const phoneDigits = normalizePhoneDigits(settings.phone);
+      const cnpjDigits = normalizeDigits(settings.cnpj).slice(0, 14);
+      const zipCodeDigits = normalizeZipCodeDigits(settings.zipCode);
+
       await Promise.all([
         updateClinicSettingsInfo({
-          name: settings.clinicName.trim(),
-          cnpj: settings.cnpj.trim(),
-          phone: normalizePhoneDigits(settings.phone),
-          email: settings.email.trim(),
-          address: settings.address.trim(),
+          tradeName: toOptionalString(settings.clinicName),
+          cnpj: cnpjDigits || undefined,
+          phone: phoneDigits || undefined,
+          email: toOptionalString(settings.email)?.toLowerCase(),
+          zipCode: zipCodeDigits || undefined,
+          street: toOptionalString(settings.street),
+          number: toOptionalString(settings.number),
+          complement: toOptionalString(settings.complement),
+          neighborhood: toOptionalString(settings.neighborhood),
+          city: toOptionalString(settings.city),
+          state: toOptionalString(settings.state)?.toUpperCase(),
         }),
         updateClinicSettingsSchedule({
           openTime: settings.openTime,
           closeTime: settings.closeTime,
-          appointmentInterval: parseInteger(settings.appointmentInterval, 30),
-          workingDays: settings.workingDays,
+          minIntervalBetweenAppointments: parseInteger(settings.appointmentInterval, 30),
+          workingDaysPreset: toWorkingDaysPreset(settings.workingDays),
         }),
         updateClinicSettingsNotifications({
-          appointmentReminder: settings.appointmentReminder,
-          cancellationAlert: settings.cancellationAlert,
-          newPatient: settings.newPatient,
-          dailyReport: settings.dailyReport,
+          sendAppointmentReminder: settings.appointmentReminder,
+          sendCancellationAlert: settings.cancellationAlert,
+          sendNewPatientAlert: settings.newPatient,
+          sendDailyReport: settings.dailyReport,
         }),
         updateClinicSettingsSecurity({
-          twoFactor: settings.twoFactor,
-          accessLog: settings.accessLog,
-          sessionTimeout: parseInteger(settings.sessionTimeout, 30),
+          twoFactorEnabled: settings.twoFactor,
+          accessLogEnabled: settings.accessLog,
+          sessionTimeoutMinutes: parseInteger(settings.sessionTimeout, 30),
         }),
       ]);
 
@@ -407,14 +460,6 @@ const SettingsPage = () => {
               placeholder="contato@clinica.com.br"
               disabled={isBusy}
             />
-            <Input
-              label="Endereco"
-              fullWidth
-              value={settings.address}
-              onChange={(e) => set("address", e.target.value)}
-              placeholder="Rua, numero - Cidade, UF"
-              disabled={isBusy}
-            />
           </FormFields>
         </SectionCard>
 
@@ -466,10 +511,74 @@ const SettingsPage = () => {
                 <option value="seg-sex">Segunda a Sexta</option>
                 <option value="seg-sab">Segunda a Sabado</option>
                 <option value="seg-dom">Segunda a Domingo</option>
-                <option value="seg-qui">Segunda a Quinta</option>
               </FieldSelect>
             </FieldGroup>
           </FormFields>
+        </SectionCard>
+
+        <SectionCard $fullWidth>
+          <SectionHeader>
+            <MapPin size={18} />
+            <SectionHeaderTitle>Endereco da Clinica</SectionHeaderTitle>
+          </SectionHeader>
+          <FormFieldsGrid>
+            <Input
+              label="CEP"
+              fullWidth
+              value={settings.zipCode}
+              onChange={(e) => set("zipCode", maskZipCodeInput(e.target.value))}
+              placeholder="00000-000"
+              disabled={isBusy}
+            />
+            <Input
+              label="Rua"
+              fullWidth
+              value={settings.street}
+              onChange={(e) => set("street", e.target.value)}
+              placeholder="Rua / Avenida"
+              disabled={isBusy}
+            />
+            <Input
+              label="Numero"
+              fullWidth
+              value={settings.number}
+              onChange={(e) => set("number", e.target.value)}
+              placeholder="123"
+              disabled={isBusy}
+            />
+            <Input
+              label="Complemento"
+              fullWidth
+              value={settings.complement}
+              onChange={(e) => set("complement", e.target.value)}
+              placeholder="Apto, Sala, Bloco"
+              disabled={isBusy}
+            />
+            <Input
+              label="Bairro"
+              fullWidth
+              value={settings.neighborhood}
+              onChange={(e) => set("neighborhood", e.target.value)}
+              placeholder="Bairro"
+              disabled={isBusy}
+            />
+            <Input
+              label="Cidade"
+              fullWidth
+              value={settings.city}
+              onChange={(e) => set("city", e.target.value)}
+              placeholder="Cidade"
+              disabled={isBusy}
+            />
+            <Input
+              label="Estado (UF)"
+              fullWidth
+              value={settings.state}
+              onChange={(e) => set("state", e.target.value.toUpperCase().slice(0, 2))}
+              placeholder="SP"
+              disabled={isBusy}
+            />
+          </FormFieldsGrid>
         </SectionCard>
 
         <SectionCard>
@@ -564,7 +673,7 @@ const SettingsPage = () => {
               <option value="30">30 min</option>
               <option value="60">60 min</option>
               <option value="120">2 horas</option>
-              <option value="0">Nunca</option>
+              <option value="240">4 horas</option>
             </TimeoutSelect>
           </TimeoutRow>
           <PlanRow>

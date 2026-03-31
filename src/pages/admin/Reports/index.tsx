@@ -1,5 +1,5 @@
-import { Ban, CalendarDays, FileDown, Pencil, Plus, TrendingDown, TrendingUp, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Ban, CalendarDays, FileDown, Pencil, Plus, TrendingDown, TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
 import {
   Cell,
   Legend,
@@ -14,6 +14,8 @@ import {
 } from "recharts";
 import { Button } from "../../../components/Button";
 import { GroupedBarChart } from "../../../components/GroupedBarChart";
+import { Modal } from "../../../components/Modal";
+import { Skeleton } from "../../../components/Skeleton";
 import { StatCard } from "../../../components/StatCard";
 import { useAuth } from "../../../contexts";
 import {
@@ -31,6 +33,7 @@ import {
 import { theme } from "../../../themes/themes";
 import type { BarSeries } from "../../../types/components";
 import type { ReportData } from "../../../types/dashboard";
+import { toInputDate } from "../../../utils/dateParsers";
 import { formatCurrencyBRL, formatDateDayMonthYear } from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError, notifySuccess } from "../../../utils/toast";
@@ -38,7 +41,6 @@ import {
   ChartCard,
   ChartHeader,
   ChartTitle,
-  CloseButton,
   ExportButton,
   FinancialSummary,
   FinancialSummaryItem,
@@ -52,12 +54,7 @@ import {
   FormTextarea,
   Grid2Col,
   HeaderControls,
-  ModalActions,
-  ModalCard,
   ModalForm,
-  ModalHeader,
-  ModalOverlay,
-  ModalTitle,
   EmptyStateCell,
   PageHeader,
   PageSubtitle,
@@ -82,10 +79,10 @@ import {
 } from "./styles";
 
 const PERIOD_OPTIONS = [
-  { value: "1m", label: "Ultimo mes" },
-  { value: "3m", label: "Ultimo trimestre" },
-  { value: "6m", label: "Ultimos 6 meses" },
-  { value: "12m", label: "Ultimo ano" },
+  { value: "1m", label: "Último mês" },
+  { value: "3m", label: "Último trimestre" },
+  { value: "6m", label: "Últimos 6 meses" },
+  { value: "12m", label: "Último ano" },
 ];
 const REVENUE_TREND_FIXED_PERIOD = "6m";
 
@@ -93,7 +90,7 @@ type ActiveTab = "analytics" | "transactions";
 
 const TRANSACTION_TYPE_LABEL: Record<TransactionType, string> = {
   INCOME: "Entrada",
-  EXPENSE: "Saida",
+  EXPENSE: "Saída",
 };
 
 const PERIOD_TO_MONTHS: Record<string, number> = {
@@ -395,7 +392,7 @@ const MONTHLY_SERIES: BarSeries[] = [
 
 const FINANCIAL_SERIES: BarSeries[] = [
   { dataKey: "entradas", name: "Entradas", color: theme.colors.success },
-  { dataKey: "saidas", name: "Saidas", color: "#374151" },
+  { dataKey: "saidas", name: "Saídas", color: "#374151" },
   { dataKey: "lucro", name: "Lucro", color: theme.colors.primary },
 ];
 
@@ -440,31 +437,9 @@ type EditTransactionForm = {
   referenceDate: string;
 };
 
-const toInputDate = (value: string) => {
-  if (!value) return "";
-
-  const trimmed = value.trim();
-  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
-
-  const brMatch = trimmed.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-  if (brMatch) {
-    const [, day, month, year] = brMatch;
-    return `${year}-${month}-${day}`;
-  }
-
-  const parsed = new Date(trimmed);
-  if (Number.isNaN(parsed.getTime())) return "";
-
-  const year = parsed.getFullYear();
-  const month = String(parsed.getMonth() + 1).padStart(2, "0");
-  const day = String(parsed.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
-
 const TransactionModal = ({ onClose, onCreated }: TransactionModalProps) => {
   const [form, setForm] = useState<TransactionFormState>(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
-  const overlayRef = useRef<HTMLDivElement>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -513,132 +488,123 @@ const TransactionModal = ({ onClose, onCreated }: TransactionModalProps) => {
   };
 
   return (
-    <ModalOverlay
-      ref={overlayRef}
-      onClick={(e) => {
-        if (e.target === overlayRef.current) onClose();
-      }}
+    <Modal
+      isOpen
+      onClose={onClose}
+      title="Nova Transação"
+      actions={
+        <>
+          <Button variant="outline" type="button" onClick={onClose} disabled={submitting}>
+            Cancelar
+          </Button>
+          <Button variant="primary" type="submit" form="new-transaction-form" disabled={submitting}>
+            {submitting ? "Salvando..." : "Salvar transação"}
+          </Button>
+        </>
+      }
     >
-      <ModalCard>
-        <ModalHeader>
-          <ModalTitle>Nova Transação</ModalTitle>
-          <CloseButton type="button" onClick={onClose} aria-label="Fechar">
-            <X size={20} />
-          </CloseButton>
-        </ModalHeader>
-
-        <ModalForm onSubmit={(e) => void handleSubmit(e)}>
-          <FormRow>
-            <FormField>
-              <FormLabel htmlFor="type">Tipo *</FormLabel>
-              <FormSelect id="type" name="type" value={form.type} onChange={handleChange} required>
-                <option value="INCOME">Entrada</option>
-                <option value="EXPENSE">Saída</option>
-              </FormSelect>
-            </FormField>
-
-            <FormField>
-              <FormLabel htmlFor="paymentStatus">Status do pagamento</FormLabel>
-              <FormSelect id="paymentStatus" name="paymentStatus" value={form.paymentStatus} onChange={handleChange}>
-                <option value="PENDING">Pendente</option>
-                <option value="PAID">Pago</option>
-                <option value="CANCELLED">Cancelado</option>
-                <option value="REFUNDED">Reembolsado</option>
-              </FormSelect>
-            </FormField>
-          </FormRow>
+      <ModalForm id="new-transaction-form" onSubmit={(e) => void handleSubmit(e)}>
+        <FormRow>
+          <FormField>
+            <FormLabel htmlFor="type">Tipo *</FormLabel>
+            <FormSelect id="type" name="type" value={form.type} onChange={handleChange} required>
+              <option value="INCOME">Entrada</option>
+              <option value="EXPENSE">Saída</option>
+            </FormSelect>
+          </FormField>
 
           <FormField>
-            <FormLabel htmlFor="title">Título *</FormLabel>
+            <FormLabel htmlFor="paymentStatus">Status do pagamento</FormLabel>
+            <FormSelect id="paymentStatus" name="paymentStatus" value={form.paymentStatus} onChange={handleChange}>
+              <option value="PENDING">Pendente</option>
+              <option value="PAID">Pago</option>
+              <option value="CANCELLED">Cancelado</option>
+              <option value="REFUNDED">Reembolsado</option>
+            </FormSelect>
+          </FormField>
+        </FormRow>
+
+        <FormField>
+          <FormLabel htmlFor="title">Título *</FormLabel>
+          <FormInput
+            id="title"
+            name="title"
+            value={form.title}
+            onChange={handleChange}
+            placeholder="Ex: Consulta Dr. Silva"
+            minLength={3}
+            maxLength={200}
+            required
+          />
+        </FormField>
+
+        <FormRow>
+          <FormField>
+            <FormLabel htmlFor="amount">Valor (R$) *</FormLabel>
             <FormInput
-              id="title"
-              name="title"
-              value={form.title}
+              id="amount"
+              name="amount"
+              type="text"
+              inputMode="numeric"
+              value={form.amount}
               onChange={handleChange}
-              placeholder="Ex: Consulta Dr. Silva"
-              minLength={3}
-              maxLength={200}
+              placeholder="0,00"
               required
             />
           </FormField>
 
-          <FormRow>
-            <FormField>
-              <FormLabel htmlFor="amount">Valor (R$) *</FormLabel>
-              <FormInput
-                id="amount"
-                name="amount"
-                type="text"
-                inputMode="numeric"
-                value={form.amount}
-                onChange={handleChange}
-                placeholder="0,00"
-                required
-              />
-            </FormField>
-
-            <FormField>
-              <FormLabel htmlFor="category">Categoria</FormLabel>
-              <FormInput
-                id="category"
-                name="category"
-                value={form.category}
-                onChange={handleChange}
-                placeholder="Ex: Consultas"
-                maxLength={100}
-              />
-            </FormField>
-          </FormRow>
-
-          <FormRow>
-            <FormField>
-              <FormLabel htmlFor="paymentMethod">Forma de pagamento</FormLabel>
-              <FormSelect id="paymentMethod" name="paymentMethod" value={form.paymentMethod} onChange={handleChange}>
-                <option value="">Não informado</option>
-                <option value="CASH">Dinheiro</option>
-                <option value="DEBIT_CARD">Cartão de débito</option>
-                <option value="CREDIT_CARD">Cartão de crédito</option>
-                <option value="PIX">Pix</option>
-                <option value="BANK_TRANSFER">Transferência bancária</option>
-                <option value="CHECK">Cheque</option>
-              </FormSelect>
-            </FormField>
-
-            <FormField>
-              <FormLabel htmlFor="referenceDate">Data de referência</FormLabel>
-              <FormInput
-                id="referenceDate"
-                name="referenceDate"
-                type="date"
-                value={form.referenceDate}
-                onChange={handleChange}
-              />
-            </FormField>
-          </FormRow>
-
           <FormField>
-            <FormLabel htmlFor="notes">Observacoes</FormLabel>
-            <FormTextarea
-              id="notes"
-              name="notes"
-              value={form.notes}
+            <FormLabel htmlFor="category">Categoria</FormLabel>
+            <FormInput
+              id="category"
+              name="category"
+              value={form.category}
               onChange={handleChange}
-              placeholder="Observacoes adicionais..."
-              maxLength={1000}
+              placeholder="Ex: Consultas"
+              maxLength={100}
             />
           </FormField>
+        </FormRow>
 
-          <ModalActions>
-            <Button variant="outline" type="button" onClick={onClose} disabled={submitting}>
-              Cancelar
-            </Button>
-            <Button variant="primary" type="submit" disabled={submitting}>
-              {submitting ? "Salvando..." : "Salvar transação"}
-            </Button>
-          </ModalActions>
-        </ModalForm>
-      </ModalCard>
-    </ModalOverlay>
+        <FormRow>
+          <FormField>
+            <FormLabel htmlFor="paymentMethod">Forma de pagamento</FormLabel>
+            <FormSelect id="paymentMethod" name="paymentMethod" value={form.paymentMethod} onChange={handleChange}>
+              <option value="">Não informado</option>
+              <option value="CASH">Dinheiro</option>
+              <option value="DEBIT_CARD">Cartao de debito</option>
+              <option value="CREDIT_CARD">Cartao de credito</option>
+              <option value="PIX">Pix</option>
+              <option value="BANK_TRANSFER">Transferencia bancaria</option>
+              <option value="CHECK">Cheque</option>
+            </FormSelect>
+          </FormField>
+
+          <FormField>
+            <FormLabel htmlFor="referenceDate">Data de referência</FormLabel>
+            <FormInput
+              id="referenceDate"
+              name="referenceDate"
+              type="date"
+              value={form.referenceDate}
+              onChange={handleChange}
+            />
+          </FormField>
+        </FormRow>
+
+        <FormField>
+          <FormLabel htmlFor="notes">Observações</FormLabel>
+          <FormTextarea
+            id="notes"
+            name="notes"
+            value={form.notes}
+            onChange={handleChange}
+            placeholder="Observações adicionais..."
+            maxLength={1000}
+          />
+        </FormField>
+      </ModalForm>
+    </Modal>
   );
 };
 
@@ -651,7 +617,6 @@ const TransactionEditModal = ({ transaction, onClose, onUpdated }: TransactionEd
     referenceDate: toInputDate(transaction.date),
   });
   const [submitting, setSubmitting] = useState(false);
-  const overlayRef = useRef<HTMLDivElement>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -680,109 +645,100 @@ const TransactionEditModal = ({ transaction, onClose, onUpdated }: TransactionEd
     setSubmitting(true);
     try {
       await updateTransaction(transaction.id, payload);
-      notifySuccess("Transacao atualizada com sucesso!");
+      notifySuccess("Transação atualizada com sucesso!");
       onUpdated();
       onClose();
     } catch (err) {
-      notifyError(getApiErrorMessage(err, "Erro ao atualizar transacao."));
+      notifyError(getApiErrorMessage(err, "Erro ao atualizar transação."));
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <ModalOverlay
-      ref={overlayRef}
-      onClick={(e) => {
-        if (e.target === overlayRef.current) onClose();
-      }}
+    <Modal
+      isOpen
+      onClose={onClose}
+      title="Editar Transação"
+      actions={
+        <>
+          <Button variant="outline" type="button" onClick={onClose} disabled={submitting}>
+            Cancelar
+          </Button>
+          <Button variant="primary" type="submit" form="edit-transaction-form" disabled={submitting}>
+            {submitting ? "Salvando..." : "Salvar alterações"}
+          </Button>
+        </>
+      }
     >
-      <ModalCard>
-        <ModalHeader>
-          <ModalTitle>Editar Transacao</ModalTitle>
-          <CloseButton type="button" onClick={onClose} aria-label="Fechar">
-            <X size={20} />
-          </CloseButton>
-        </ModalHeader>
-
-        <ModalForm onSubmit={(e) => void handleSubmit(e)}>
-          <FormRow>
-            <FormField>
-              <FormLabel htmlFor="edit-type">Tipo *</FormLabel>
-              <FormSelect id="edit-type" name="type" value={form.type} onChange={handleChange} required>
-                <option value="INCOME">Entrada</option>
-                <option value="EXPENSE">Saida</option>
-              </FormSelect>
-            </FormField>
-
-            <FormField>
-              <FormLabel htmlFor="edit-paymentStatus">Status do pagamento *</FormLabel>
-              <FormSelect
-                id="edit-paymentStatus"
-                name="paymentStatus"
-                value={form.paymentStatus}
-                onChange={handleChange}
-                required
-              >
-                <option value="PENDING">Pendente</option>
-                <option value="PAID">Pago</option>
-                <option value="CANCELLED">Cancelado</option>
-                <option value="REFUNDED">Reembolsado</option>
-              </FormSelect>
-            </FormField>
-          </FormRow>
+      <ModalForm id="edit-transaction-form" onSubmit={(e) => void handleSubmit(e)}>
+        <FormRow>
+          <FormField>
+            <FormLabel htmlFor="edit-type">Tipo *</FormLabel>
+            <FormSelect id="edit-type" name="type" value={form.type} onChange={handleChange} required>
+              <option value="INCOME">Entrada</option>
+              <option value="EXPENSE">Saída</option>
+            </FormSelect>
+          </FormField>
 
           <FormField>
-            <FormLabel htmlFor="edit-title">Titulo *</FormLabel>
-            <FormInput
-              id="edit-title"
-              name="title"
-              value={form.title}
+            <FormLabel htmlFor="edit-paymentStatus">Status do pagamento *</FormLabel>
+            <FormSelect
+              id="edit-paymentStatus"
+              name="paymentStatus"
+              value={form.paymentStatus}
               onChange={handleChange}
-              minLength={3}
-              maxLength={200}
+              required
+            >
+              <option value="PENDING">Pendente</option>
+              <option value="PAID">Pago</option>
+              <option value="CANCELLED">Cancelado</option>
+              <option value="REFUNDED">Reembolsado</option>
+            </FormSelect>
+          </FormField>
+        </FormRow>
+
+        <FormField>
+          <FormLabel htmlFor="edit-title">Título *</FormLabel>
+          <FormInput
+            id="edit-title"
+            name="title"
+            value={form.title}
+            onChange={handleChange}
+            minLength={3}
+            maxLength={200}
+            required
+          />
+        </FormField>
+
+        <FormRow>
+          <FormField>
+            <FormLabel htmlFor="edit-amount">Valor (R$) *</FormLabel>
+            <FormInput
+              id="edit-amount"
+              name="amount"
+              type="number"
+              min="0.01"
+              step="0.01"
+              value={form.amount}
+              onChange={handleChange}
               required
             />
           </FormField>
 
-          <FormRow>
-            <FormField>
-              <FormLabel htmlFor="edit-amount">Valor (R$) *</FormLabel>
-              <FormInput
-                id="edit-amount"
-                name="amount"
-                type="number"
-                min="0.01"
-                step="0.01"
-                value={form.amount}
-                onChange={handleChange}
-                required
-              />
-            </FormField>
-
-            <FormField>
-              <FormLabel htmlFor="edit-referenceDate">Data de referencia</FormLabel>
-              <FormInput
-                id="edit-referenceDate"
-                name="referenceDate"
-                type="date"
-                value={form.referenceDate}
-                onChange={handleChange}
-              />
-            </FormField>
-          </FormRow>
-
-          <ModalActions>
-            <Button variant="outline" type="button" onClick={onClose} disabled={submitting}>
-              Cancelar
-            </Button>
-            <Button variant="primary" type="submit" disabled={submitting}>
-              {submitting ? "Salvando..." : "Salvar alteracoes"}
-            </Button>
-          </ModalActions>
-        </ModalForm>
-      </ModalCard>
-    </ModalOverlay>
+          <FormField>
+            <FormLabel htmlFor="edit-referenceDate">Data de referência</FormLabel>
+            <FormInput
+              id="edit-referenceDate"
+              name="referenceDate"
+              type="date"
+              value={form.referenceDate}
+              onChange={handleChange}
+            />
+          </FormField>
+        </FormRow>
+      </ModalForm>
+    </Modal>
   );
 };
 
@@ -795,7 +751,7 @@ const buildStats = (
   {
     icon: <CalendarDays size={24} color="#2563EB" />,
     iconBg: theme.colors.featureBg.blue,
-    label: "Consultas no periodo",
+    label: "Consultas no período",
     value: totalConsultas.toLocaleString("pt-BR"),
   },
   {
@@ -807,18 +763,18 @@ const buildStats = (
   {
     icon: <TrendingUp size={24} color="#16A34A" />,
     iconBg: theme.colors.featureBg.green,
-    label: "Entradas no periodo",
+    label: "Entradas no período",
     value: formatCurrency(totalEntradas),
   },
   {
     icon: <TrendingDown size={24} color={EXPENSE_ACCENT_COLOR} />,
     iconBg: EXPENSE_BG_COLOR,
-    label: "Saidas no periodo",
+    label: "Saídas no período",
     value: formatCurrency(totalSaidas),
   },
 ];
 
-const formatTransactionDate = (value: string) => formatDateDayMonthYear(value, "-");
+  const formatTransactionDate = (value: string) => formatDateDayMonthYear(value, "-");
 
 const formatTransactionAmount = (amount: number, type: TransactionType) => {
   const formatted = formatCurrencyBRL(Math.abs(amount));
@@ -890,7 +846,7 @@ const ReportsPage = () => {
       setTransactionsHistory(historyResult.value);
     } else {
       setTransactionsHistory([]);
-      setHistoryError("Erro ao carregar historico de transacoes.");
+      setHistoryError("Erro ao carregar histórico de transações.");
     }
 
     if (fixedTrendResult.status === "fulfilled") {
@@ -910,7 +866,61 @@ const ReportsPage = () => {
   if (loading) {
     return (
       <PageWrapper>
-        <StatusMessage>Carregando relatorio...</StatusMessage>
+        <PageHeader>
+          <div>
+            <Skeleton width={260} height={32} />
+            <div style={{ marginTop: 8 }}>
+              <Skeleton width={180} height={14} />
+            </div>
+          </div>
+          <HeaderControls>
+            <Skeleton width={120} height={40} />
+            <Skeleton width={140} height={40} />
+            <Skeleton width={120} height={40} />
+          </HeaderControls>
+        </PageHeader>
+
+        <TabRow>
+          <TabButton type="button" $active>
+            <Skeleton width={96} height={14} />
+          </TabButton>
+          <TabButton type="button" $active={false}>
+            <Skeleton width={150} height={14} />
+          </TabButton>
+        </TabRow>
+
+        <StatsGrid>
+          {Array.from({ length: 4 }).map((_, index) => (
+            <ChartCard key={`report-stat-skeleton-${index}`}>
+              <Skeleton width="55%" height={12} />
+              <div style={{ marginTop: 12 }}>
+                <Skeleton width="42%" height={30} />
+              </div>
+            </ChartCard>
+          ))}
+        </StatsGrid>
+
+        <ChartCard>
+          <Skeleton width={260} height={16} />
+          <div style={{ marginTop: 20 }}>
+            <Skeleton width="100%" height={260} radius={12} />
+          </div>
+        </ChartCard>
+
+        <Grid2Col>
+          <ChartCard>
+            <Skeleton width={220} height={16} />
+            <div style={{ marginTop: 20 }}>
+              <Skeleton width="100%" height={220} radius={12} />
+            </div>
+          </ChartCard>
+          <ChartCard>
+            <Skeleton width={220} height={16} />
+            <div style={{ marginTop: 20 }}>
+              <Skeleton width="100%" height={220} radius={12} />
+            </div>
+          </ChartCard>
+        </Grid2Col>
       </PageWrapper>
     );
   }
@@ -949,7 +959,7 @@ const ReportsPage = () => {
   const recentFinancial = getMostRecentFinancialItem(reportData.financial);
   const monthlyEvolutionData = buildMonthlyEvolutionData(reportData, period);
 
-  // Para "ultimo mes", usa o mes mais recente do proprio dataset financeiro.
+  // Para "último mês", usa o mês mais recente do próprio dataset financeiro.
   const financialEntradas = period === "1m" ? (recentFinancial?.entradas ?? fallbackEntradas) : fallbackEntradas;
   const financialSaidas = period === "1m" ? (recentFinancial?.saidas ?? fallbackSaidas) : fallbackSaidas;
   const financialLucro = period === "1m" ? (recentFinancial?.lucro ?? fallbackLucro) : fallbackLucro;
@@ -1006,7 +1016,7 @@ const ReportsPage = () => {
           Relatorios
         </TabButton>
         <TabButton $active={activeTab === "transactions"} onClick={() => setActiveTab("transactions")}>
-          Historico de transacoes ({transactionsHistory.length})
+          Histórico de transações ({transactionsHistory.length})
         </TabButton>
       </TabRow>
 
@@ -1030,23 +1040,23 @@ const ReportsPage = () => {
 
           <ChartCard>
             <ChartHeader>
-              <ChartTitle style={{ margin: 0 }}>Fluxo financeiro - Entradas, Saidas e Lucro (R$)</ChartTitle>
+              <ChartTitle style={{ margin: 0 }}>Fluxo financeiro - Entradas, Saídas e Lucro (R$)</ChartTitle>
 
               <FinancialSummary>
                 <FinancialSummaryItem>
-                  <FinancialSummaryLabel>Entradas no periodo</FinancialSummaryLabel>
+                  <FinancialSummaryLabel>Entradas no período</FinancialSummaryLabel>
                   <FinancialSummaryValue $color={theme.colors.success}>
                     {formatCurrency(totalEntradas)}
                   </FinancialSummaryValue>
                 </FinancialSummaryItem>
 
                 <FinancialSummaryItem>
-                  <FinancialSummaryLabel>Saidas no periodo</FinancialSummaryLabel>
+                  <FinancialSummaryLabel>Saídas no período</FinancialSummaryLabel>
                   <FinancialSummaryValue $color="#374151">{formatCurrency(totalSaidas)}</FinancialSummaryValue>
                 </FinancialSummaryItem>
 
                 <FinancialSummaryItem>
-                  <FinancialSummaryLabel>Lucro no periodo</FinancialSummaryLabel>
+                  <FinancialSummaryLabel>Lucro no período</FinancialSummaryLabel>
                   <FinancialSummaryValue $color={theme.colors.primary}>
                     {formatCurrency(totalLucro)}
                   </FinancialSummaryValue>
@@ -1096,7 +1106,7 @@ const ReportsPage = () => {
             </ChartCard>
 
             <ChartCard>
-              <ChartTitle>Tendencia de Receita (R$) - Ultimos 6 meses</ChartTitle>
+              <ChartTitle>Tendência de Receita (R$) - Últimos 6 meses</ChartTitle>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={revenueTrendData} margin={{ top: 8, right: 24, left: 8, bottom: 0 }}>
                   <XAxis
@@ -1180,18 +1190,36 @@ const ReportsPage = () => {
               <tr>
                 <th>RESPONSAVEL</th>
                 <th>TIPO</th>
-                <th>TITULO</th>
+                <th>TÍTULO</th>
                 <th>VALOR</th>
                 <th>DATA</th>
-                <th>ACOES</th>
+                <th>AÇÕES</th>
               </tr>
             </thead>
             <tbody>
-              {historyLoading && (
-                <tr>
-                  <EmptyStateCell colSpan={6}>Carregando historico de transacoes...</EmptyStateCell>
-                </tr>
-              )}
+              {historyLoading &&
+                Array.from({ length: 4 }).map((_, index) => (
+                  <tr key={`history-skeleton-${index}`}>
+                    <td>
+                      <Skeleton width={120} height={14} />
+                    </td>
+                    <td>
+                      <Skeleton width={68} height={24} radius={999} />
+                    </td>
+                    <td>
+                      <Skeleton width={180} height={14} />
+                    </td>
+                    <td>
+                      <Skeleton width={88} height={14} />
+                    </td>
+                    <td>
+                      <Skeleton width={92} height={14} />
+                    </td>
+                    <td>
+                      <Skeleton width={70} height={30} radius={8} />
+                    </td>
+                  </tr>
+                ))}
 
               {!historyLoading && historyError && (
                 <tr>
@@ -1201,7 +1229,7 @@ const ReportsPage = () => {
 
               {!historyLoading && !historyError && transactionsHistory.length === 0 && (
                 <tr>
-                  <EmptyStateCell colSpan={6}>Nenhuma transacao encontrada no periodo.</EmptyStateCell>
+                  <EmptyStateCell colSpan={6}>Nenhuma transação encontrada no período.</EmptyStateCell>
                 </tr>
               )}
 

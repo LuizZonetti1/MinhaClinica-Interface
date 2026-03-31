@@ -4,6 +4,8 @@ import { ActionIconButton } from "../../../components/ActionIconButton";
 import { Badge } from "../../../components/Badge";
 import { Button } from "../../../components/Button";
 import { Input } from "../../../components/Input";
+import { Modal } from "../../../components/Modal";
+import { Skeleton } from "../../../components/Skeleton";
 import { getPatientSummary, listPatientsAdmin } from "../../../services/patient-admin.service";
 import type { PatientListItem, PatientSummary } from "../../../types/patient";
 import {
@@ -21,10 +23,6 @@ import {
   DetailValue,
   EmptyStateCell,
   FiltersRow,
-  ModalActions,
-  ModalCard,
-  ModalOverlay,
-  ModalTitle,
   PageTitle,
   PageWrapper,
   PatientCell,
@@ -47,6 +45,7 @@ import {
 } from "./styles";
 
 const AVATAR_COLORS = ["#2563EB", "#16A34A", "#9333EA", "#EA580C", "#4B5563"];
+const SUMMARY_SKELETON_COLORS = ["#3B82F6", "#22C55E", "#94A3B8", "#9333EA"];
 
 const getInitials = (name: string) =>
   name
@@ -126,7 +125,18 @@ const PatientsPage = () => {
         <PageTitle>Pacientes</PageTitle>
       </TopRow>
 
-      {summary && (
+      {loading && !error && (
+        <SummaryGrid>
+          {SUMMARY_SKELETON_COLORS.map((color) => (
+            <SummaryCard key={`summary-skeleton-${color}`} $borderColor={color}>
+              <Skeleton width="55%" height={12} />
+              <Skeleton width="42%" height={30} />
+            </SummaryCard>
+          ))}
+        </SummaryGrid>
+      )}
+
+      {!loading && summary && (
         <SummaryGrid>
           <SummaryCard $borderColor="#3B82F6">
             <SummaryLabel>Total Cadastrado</SummaryLabel>
@@ -159,7 +169,54 @@ const PatientsPage = () => {
         </SearchField>
       </FiltersRow>
 
-      {loading && <StatusMessage>Carregando...</StatusMessage>}
+      {loading && !error && (
+        <TableCard>
+          <TableElement>
+            <thead>
+              <TableHeaderRow>
+                <TableHeaderCell>PACIENTE</TableHeaderCell>
+                <TableHeaderCell>TELEFONE</TableHeaderCell>
+                <TableHeaderCell>ULTIMA VISITA</TableHeaderCell>
+                <TableHeaderCell>TOTAL DE VISITAS</TableHeaderCell>
+                <TableHeaderCell>STATUS</TableHeaderCell>
+                <TableHeaderCell>ACOES</TableHeaderCell>
+              </TableHeaderRow>
+            </thead>
+            <tbody>
+              {Array.from({ length: 6 }).map((_, index) => (
+                <TableRow key={`patient-skeleton-${index}`}>
+                  <td>
+                    <PatientCell>
+                      <Skeleton variant="circle" width={38} height={38} />
+                      <PatientMeta>
+                        <Skeleton width={140} height={14} />
+                        <Skeleton width={190} height={12} />
+                      </PatientMeta>
+                    </PatientCell>
+                  </td>
+                  <td>
+                    <Skeleton width={110} height={14} />
+                  </td>
+                  <td>
+                    <Skeleton width={92} height={14} />
+                  </td>
+                  <td>
+                    <Skeleton width={26} height={14} />
+                  </td>
+                  <td>
+                    <Skeleton width={78} height={24} radius={999} />
+                  </td>
+                  <td>
+                    <ActionsGroup>
+                      <Skeleton variant="circle" width={32} height={32} />
+                    </ActionsGroup>
+                  </td>
+                </TableRow>
+              ))}
+            </tbody>
+          </TableElement>
+        </TableCard>
+      )}
       {error && <StatusMessage $variant="error">{error}</StatusMessage>}
 
       {!loading && !error && (
@@ -230,42 +287,43 @@ const PatientsPage = () => {
       )}
 
       {isViewOpen && viewPatient && (
-        <ModalOverlay onClick={closeView}>
-          <ModalCard onClick={(event) => event.stopPropagation()}>
-            <ModalTitle>{viewPatient.name}</ModalTitle>
-            <DetailsGrid>
-              <DetailItem>
-                <DetailLabel>Email</DetailLabel>
-                <DetailValue>{viewPatient.email}</DetailValue>
-              </DetailItem>
-              <DetailItem>
-                <DetailLabel>Telefone</DetailLabel>
-                <DetailValue>{formatPhoneNumber(viewPatient.phone)}</DetailValue>
-              </DetailItem>
-              <DetailItem>
-                <DetailLabel>Status</DetailLabel>
-                <DetailValue>{statusLabel(viewPatient.status)}</DetailValue>
-              </DetailItem>
-              <DetailItem>
-                <DetailLabel>Última Visita</DetailLabel>
-                <DetailValue>{formatDateDayMonthYear(viewPatient.lastVisit)}</DetailValue>
-              </DetailItem>
-              <DetailItem>
-                <DetailLabel>Total de Visitas</DetailLabel>
-                <DetailValue>{viewPatient.totalAppointments}</DetailValue>
-              </DetailItem>
-              <DetailItem>
-                <DetailLabel>Cadastrado em</DetailLabel>
-                <DetailValue>{formatDateDayMonthYear(viewPatient.createdAt)}</DetailValue>
-              </DetailItem>
-            </DetailsGrid>
-            <ModalActions>
-              <Button size="small" variant="outline" onClick={closeView}>
-                Fechar
-              </Button>
-            </ModalActions>
-          </ModalCard>
-        </ModalOverlay>
+        <Modal
+          isOpen={isViewOpen}
+          onClose={closeView}
+          title={viewPatient.name}
+          actions={
+            <Button size="small" variant="outline" onClick={closeView}>
+              Fechar
+            </Button>
+          }
+        >
+          <DetailsGrid>
+            <DetailItem>
+              <DetailLabel>Email</DetailLabel>
+              <DetailValue>{viewPatient.email}</DetailValue>
+            </DetailItem>
+            <DetailItem>
+              <DetailLabel>Telefone</DetailLabel>
+              <DetailValue>{formatPhoneNumber(viewPatient.phone)}</DetailValue>
+            </DetailItem>
+            <DetailItem>
+              <DetailLabel>Status</DetailLabel>
+              <DetailValue>{statusLabel(viewPatient.status)}</DetailValue>
+            </DetailItem>
+            <DetailItem>
+              <DetailLabel>Última Visita</DetailLabel>
+              <DetailValue>{formatDateDayMonthYear(viewPatient.lastVisit)}</DetailValue>
+            </DetailItem>
+            <DetailItem>
+              <DetailLabel>Total de Visitas</DetailLabel>
+              <DetailValue>{viewPatient.totalAppointments}</DetailValue>
+            </DetailItem>
+            <DetailItem>
+              <DetailLabel>Cadastrado em</DetailLabel>
+              <DetailValue>{formatDateDayMonthYear(viewPatient.createdAt)}</DetailValue>
+            </DetailItem>
+          </DetailsGrid>
+        </Modal>
       )}
     </PageWrapper>
   );

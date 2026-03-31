@@ -184,33 +184,6 @@ export const EmptyStateCell = styled.td`
   padding: 24px;
 `;
 
-export const ModalOverlay = styled.div`
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.75);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  z-index: 40;
-`;
-
-export const ModalCard = styled.div`
-  width: 100%;
-  max-width: 560px;
-  background-color: ${theme.colors.surface};
-  border-radius: ${theme.borderRadius.lg};
-  padding: 28px 30px;
-`;
-
-export const ModalTitle = styled.h2`
-  margin: 0 0 20px;
-  font-family: "Roboto", sans-serif;
-  font-size: 24px;
-  font-weight: 700;
-  color: ${theme.colors.text.primary};
-`;
-
 export const ModalForm = styled.form`
   display: flex;
   flex-direction: column;
@@ -252,14 +225,6 @@ export const FieldError = styled.span`
   font-size: 12px;
   font-weight: 400;
   color: ${theme.colors.error};
-`;
-
-export const ModalActions = styled.div`
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
 `;
 
 export const TabRow = styled.div`

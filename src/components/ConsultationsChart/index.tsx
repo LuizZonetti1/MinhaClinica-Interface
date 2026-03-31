@@ -55,7 +55,7 @@ const CustomTooltip = ({
             }}
           >
             {entry.name}:{" "}
-            <strong>{entry.name === "Receita" ? formatRevenue(entry.value) : entry.value}</strong>
+            <strong>{entry.name === "Receita" ? formatRevenue(entry.value) : formatConsultations(entry.value)}</strong>
           </p>
         ))}
       </div>

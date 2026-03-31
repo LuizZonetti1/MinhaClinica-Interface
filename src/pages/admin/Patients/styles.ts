@@ -219,41 +219,6 @@ export const PhoneText = styled.span`
   color: ${theme.colors.text.secondary};
 `;
 
-export const ModalOverlay = styled.div`
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.75);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  z-index: 40;
-`;
-
-export const ModalCard = styled.div`
-  width: 100%;
-  max-width: 560px;
-  background-color: ${theme.colors.surface};
-  border-radius: ${theme.borderRadius.lg};
-  padding: 28px 30px;
-`;
-
-export const ModalTitle = styled.h2`
-  margin: 0 0 20px;
-  font-family: "Roboto", sans-serif;
-  font-size: 24px;
-  font-weight: 700;
-  color: ${theme.colors.text.primary};
-`;
-
-export const ModalActions = styled.div`
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-`;
-
 export const DetailsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
