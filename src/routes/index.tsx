@@ -1,27 +1,27 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import { ProfessionalAgendaProvider, ThemeModeProvider } from "../contexts";
 import { AppLayout } from "../layout/AppLayout";
-import AdminDashboard from "../pages/admin/deshboard";
-import EditProfilePage from "../pages/admin/EditProfile";
-import PatientsPage from "../pages/admin/Patients";
-import ProfessionalsPage from "../pages/admin/Professionals";
-import ProfilePage from "../pages/admin/Profile";
-import ReportsPage from "../pages/admin/Reports";
-import SettingsPage from "../pages/admin/Settings";
+import AdminDashboard from "../pages/Admin/Dashboard";
+import EditProfilePage from "../pages/Admin/EditProfile";
+import PatientsPage from "../pages/Admin/Patients";
+import ProfessionalsPage from "../pages/Admin/Professionals";
+import ProfilePage from "../pages/Admin/Profile";
+import ReportsPage from "../pages/Admin/Reports";
+import SettingsPage from "../pages/Admin/Settings";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import PatientAccess from "../pages/Patient/Access";
 import PatientAppointmentsPage from "../pages/Patient/Agendamentos";
-import PatientDashboard from "../pages/Patient/deshboard";
+import PatientDashboard from "../pages/Patient/Dashboard";
 import PatientEditProfilePage from "../pages/Patient/EditProfile";
 import PatientHistoryPage from "../pages/Patient/Historico";
 import PatientNotificationsPage from "../pages/Patient/Notificacoes";
 import PatientProfilePage from "../pages/Patient/Profile";
-import ProfessionalAgendaPage from "../pages/professional/Agenda";
-import ProfessionalCommentsPage from "../pages/professional/Comments";
-import ProfessionalDashboard from "../pages/professional/deshboard";
-import ProfessionalEditProfilePage from "../pages/professional/EditProfile";
-import ProfessionalProfilePage from "../pages/professional/Profile";
+import ProfessionalAgendaPage from "../pages/Professional/Agenda";
+import ProfessionalCommentsPage from "../pages/Professional/Comments";
+import ProfessionalDashboard from "../pages/Professional/Dashboard";
+import ProfessionalEditProfilePage from "../pages/Professional/EditProfile";
+import ProfessionalProfilePage from "../pages/Professional/Profile";
 import RegisterComplete from "../pages/Register/Complete";
 import CompleteRedirect from "../pages/Register/CompleteRedirect";
 import RegisterStart from "../pages/Register/Start";
@@ -32,13 +32,13 @@ import RegisterClinicStart from "../pages/RegisterClinic/Start";
 import RegisterClinicVerify from "../pages/RegisterClinic/Verify";
 import RegisterProfessionalComplete from "../pages/RegisterProfessional/Complete";
 import RegisterReceptionComplete from "../pages/RegisterReception/Complete";
-import ReceptionAgendasPage from "../pages/reception/Agendas";
-import ReceptionCadastrarPacientePage from "../pages/reception/CadastrarPaciente";
-import ReceptionCheckinPage from "../pages/reception/Checkin";
-import ReceptionDashboard from "../pages/reception/deshboard";
-import ReceptionEditProfilePage from "../pages/reception/EditProfile";
-import ReceptionMarcarConsultaPage from "../pages/reception/MarcarConsulta";
-import ReceptionProfilePage from "../pages/reception/Profile";
+import ReceptionAgendasPage from "../pages/Reception/Agendas";
+import ReceptionCadastrarPacientePage from "../pages/Reception/CadastrarPaciente";
+import ReceptionCheckinPage from "../pages/Reception/Checkin";
+import ReceptionDashboard from "../pages/Reception/Dashboard";
+import ReceptionEditProfilePage from "../pages/Reception/EditProfile";
+import ReceptionMarcarConsultaPage from "../pages/Reception/MarcarConsulta";
+import ReceptionProfilePage from "../pages/Reception/Profile";
 import { Unauthorized } from "../pages/Unauthorized";
 import { UserRole } from "../types/enums";
 import { ClinicRegisterCompleteGuard } from "./ClinicRegisterCompleteGuard";
@@ -48,6 +48,20 @@ import { ReceptionRegisterCompleteGuard } from "./ReceptionRegisterCompleteGuard
 import { RegisterCompleteGuard } from "./RegisterCompleteGuard";
 import { RoleGuard } from "./RoleGuard";
 import { RoleRedirect } from "./RoleRedirect";
+
+/**
+ * Compatibilidade temporaria para links/bookmarks legados.
+ * Remover apos: 2026-09-30.
+ */
+const LEGACY_DASHBOARD_ROUTE_ALIASES: ReadonlyArray<{ from: string; to: string }> = [
+  { from: "/admin/deshboard", to: "/admin/dashboard" },
+  { from: "/paciente/deshboard", to: "/paciente/dashboard" },
+  { from: "/recepcao/deshboard", to: "/recepcao/dashboard" },
+  { from: "/profissional/deshboard", to: "/profissional/dashboard" },
+  { from: "/patient/dashboard", to: "/paciente/dashboard" },
+  { from: "/professional/dashboard", to: "/profissional/dashboard" },
+  { from: "/reception/dashboard", to: "/recepcao/dashboard" },
+];
 
 const AppRoutes = () => {
   return (
@@ -114,6 +128,13 @@ const AppRoutes = () => {
           }
         >
           <Route path="/dashboard" element={<RoleRedirect />} />
+          {LEGACY_DASHBOARD_ROUTE_ALIASES.map((alias) => (
+            <Route
+              key={alias.from}
+              path={alias.from}
+              element={<Navigate to={alias.to} replace />}
+            />
+          ))}
 
           <Route element={<RoleGuard allowedRoles={[UserRole.ADMIN]} />}>
             <Route element={<AppLayout />}>
@@ -171,7 +192,7 @@ const AppRoutes = () => {
           </Route>
         </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
   );
