@@ -22,6 +22,15 @@ import ProfessionalCommentsPage from "../pages/Professional/Comments";
 import ProfessionalDashboard from "../pages/Professional/Dashboard";
 import ProfessionalEditProfilePage from "../pages/Professional/EditProfile";
 import ProfessionalProfilePage from "../pages/Professional/Profile";
+import ReceptionAgendasPage from "../pages/Reception/Agendas";
+import ReceptionCadastrarPacientePage from "../pages/Reception/CadastrarPaciente";
+import ReceptionCheckinPage from "../pages/Reception/Checkin";
+import ReceptionDashboard from "../pages/Reception/Dashboard";
+import ReceptionEditProfilePage from "../pages/Reception/EditProfile";
+import ReceptionHistoricoPage from "../pages/Reception/Historico";
+import ReceptionMarcarConsultaPage from "../pages/Reception/MarcarConsulta";
+import ReceptionProfilePage from "../pages/Reception/Profile";
+import ReceptionTransacoesPage from "../pages/Reception/Transacoes";
 import RegisterComplete from "../pages/Register/Complete";
 import CompleteRedirect from "../pages/Register/CompleteRedirect";
 import RegisterStart from "../pages/Register/Start";
@@ -32,13 +41,6 @@ import RegisterClinicStart from "../pages/RegisterClinic/Start";
 import RegisterClinicVerify from "../pages/RegisterClinic/Verify";
 import RegisterProfessionalComplete from "../pages/RegisterProfessional/Complete";
 import RegisterReceptionComplete from "../pages/RegisterReception/Complete";
-import ReceptionAgendasPage from "../pages/Reception/Agendas";
-import ReceptionCadastrarPacientePage from "../pages/Reception/CadastrarPaciente";
-import ReceptionCheckinPage from "../pages/Reception/Checkin";
-import ReceptionDashboard from "../pages/Reception/Dashboard";
-import ReceptionEditProfilePage from "../pages/Reception/EditProfile";
-import ReceptionMarcarConsultaPage from "../pages/Reception/MarcarConsulta";
-import ReceptionProfilePage from "../pages/Reception/Profile";
 import { Unauthorized } from "../pages/Unauthorized";
 import { UserRole } from "../types/enums";
 import { ClinicRegisterCompleteGuard } from "./ClinicRegisterCompleteGuard";
@@ -169,6 +171,8 @@ const AppRoutes = () => {
               />
               <Route path="/recepcao/agendas" element={<ReceptionAgendasPage />} />
               <Route path="/recepcao/checkin" element={<ReceptionCheckinPage />} />
+              <Route path="/recepcao/historico" element={<ReceptionHistoricoPage />} />
+              <Route path="/recepcao/transacoes" element={<ReceptionTransacoesPage />} />
               <Route path="/recepcao/perfil" element={<ReceptionProfilePage />} />
               <Route path="/recepcao/perfil/editar" element={<ReceptionEditProfilePage />} />
             </Route>
