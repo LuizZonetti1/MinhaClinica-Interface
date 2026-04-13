@@ -53,14 +53,29 @@ export const maskPhoneInput = (value: string): string => {
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
 };
 
+const ISO_DATE_PREFIX_REGEX = /^(\d{4})-(\d{2})-(\d{2})/;
+
+const toLocalDateForFormat = (value: Date | string): Date | null => {
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
+
+  const isoMatch = value.trim().match(ISO_DATE_PREFIX_REGEX);
+  if (isoMatch) {
+    const d = new Date(Number(isoMatch[1]), Number(isoMatch[2]) - 1, Number(isoMatch[3]));
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+};
+
 export const formatDateDayMonthYear = (
   value: Date | string | null | undefined,
   fallback = "-",
 ): string => {
   if (!value) return fallback;
 
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) return fallback;
+  const date = toLocalDateForFormat(value);
+  if (!date) return fallback;
 
   return date.toLocaleDateString("pt-BR", {
     day: "2-digit",
