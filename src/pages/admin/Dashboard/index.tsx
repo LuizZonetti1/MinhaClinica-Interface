@@ -3,7 +3,6 @@ import {
   CalendarDays,
   CheckCircle,
   FileText,
-  LayoutDashboard,
   Settings,
   Stethoscope,
   TrendingUp,
@@ -94,7 +93,7 @@ const QUICK_ACCESS = [
     icon: <Stethoscope size={20} />,
     label: "Gerenciar Profissionais",
     color: "#2563EB",
-    path: "/admin/profissional/dashboard",
+    path: "/admin/profissional",
   },
   {
     icon: <UserPlus size={20} />,
@@ -119,12 +118,6 @@ const QUICK_ACCESS = [
     label: "Meu Perfil",
     color: "#4B5563",
     path: "/admin/perfil",
-  },
-  {
-    icon: <LayoutDashboard size={20} />,
-    label: "Painel da Recepção",
-    color: "#1E40AF",
-    path: "/recepcao/dashboard",
   },
 ];
 
