@@ -2,9 +2,9 @@ import { isAxiosError } from "axios";
 import { api } from "../config/api";
 import type {
   AppointmentConfirmation,
-  AppointmentType,
   AppointmentProfessional,
   AppointmentSlot,
+  AppointmentType,
   CreateAppointmentPayload,
   PatientSearchResult,
 } from "../types/appointment";
@@ -26,14 +26,24 @@ const toBoolOrNull = (v: unknown): boolean | null => {
     if (["1", "true", "yes", "sim", "verified", "confirmado", "confirmed"].includes(normalized)) {
       return true;
     }
-    if (["0", "false", "no", "nao", "unverified", "pending", "not_verified", "nao_verificado"].includes(normalized)) {
+    if (
+      [
+        "0",
+        "false",
+        "no",
+        "nao",
+        "unverified",
+        "pending",
+        "not_verified",
+        "nao_verificado",
+      ].includes(normalized)
+    ) {
       return false;
     }
   }
   return null;
 };
-const toRec = (v: unknown): Rec | null =>
-  typeof v === "object" && v !== null ? (v as Rec) : null;
+const toRec = (v: unknown): Rec | null => (typeof v === "object" && v !== null ? (v as Rec) : null);
 
 const extractArray = (data: unknown): Rec[] => {
   if (Array.isArray(data)) return data as Rec[];
@@ -81,10 +91,26 @@ const mapPatientSearchResult = (raw: Rec): PatientSearchResult | null => {
   const nestedProfile = toRec(raw.profile);
   const nestedAccount = toRec(raw.account);
   const nestedAuth = toRec(raw.auth);
-  const sources = [raw, nestedUser, nestedPatient, nestedPerson, nestedProfile, nestedAccount, nestedAuth];
+  const sources = [
+    raw,
+    nestedUser,
+    nestedPatient,
+    nestedPerson,
+    nestedProfile,
+    nestedAccount,
+    nestedAuth,
+  ];
 
   const id = readStr(sources, ["id", "_id", "patientId", "userId", "patient_id"]);
-  const name = readStr(sources, ["name", "fullName", "full_name", "patientName", "displayName", "nome", "userName"]);
+  const name = readStr(sources, [
+    "name",
+    "fullName",
+    "full_name",
+    "patientName",
+    "displayName",
+    "nome",
+    "userName",
+  ]);
   const cpf = readStr(sources, ["cpf", "document", "documentNumber", "cpfNumber", "cpf_number"]);
 
   if (!id || !name) return null;
@@ -95,11 +121,16 @@ const mapPatientSearchResult = (raw: Rec): PatientSearchResult | null => {
     cpf,
     email: readStr(sources, ["email"]) || null,
     phone: readStr(sources, ["phone", "phoneNumber", "mobile"]) || null,
-    avatarUrl: readStr(sources, ["avatarUrl", "avatar", "photoUrl", "profileImage", "imageUrl"]) || null,
-    isEmailVerified: readBool(
-      sources,
-      ["emailVerified", "isEmailVerified", "verifiedEmail", "emailIsVerified", "isVerified", "emailVerificationStatus"],
-    ),
+    avatarUrl:
+      readStr(sources, ["avatarUrl", "avatar", "photoUrl", "profileImage", "imageUrl"]) || null,
+    isEmailVerified: readBool(sources, [
+      "emailVerified",
+      "isEmailVerified",
+      "verifiedEmail",
+      "emailIsVerified",
+      "isVerified",
+      "emailVerificationStatus",
+    ]),
   };
 };
 
@@ -112,7 +143,8 @@ const normalizePatientSearchResults = (payload: unknown, query: string): Patient
     if (!mapped) continue;
 
     if (normalizedQuery) {
-      const haystack = `${mapped.name} ${mapped.cpf} ${mapped.email ?? ""} ${mapped.phone ?? ""}`.toLowerCase();
+      const haystack =
+        `${mapped.name} ${mapped.cpf} ${mapped.email ?? ""} ${mapped.phone ?? ""}`.toLowerCase();
       if (!haystack.includes(normalizedQuery)) continue;
     }
 
@@ -226,7 +258,7 @@ export const getProfessionalSlots = async (
   });
   return extractArray(data).map((s) => ({
     time: toStr(s.time ?? s.startTime ?? ""),
-    available: toBool(s.available ?? s.isAvailable ?? true),
+    available: toBool(s.available ?? s.isAvailable ?? false),
   }));
 };
 
