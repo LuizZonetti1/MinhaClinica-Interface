@@ -19,16 +19,17 @@ import { Skeleton } from "../../../components/Skeleton";
 import { StatCard } from "../../../components/StatCard";
 import { useAuth } from "../../../contexts";
 import {
+  type CreateTransactionPayload,
   createTransaction,
+  downloadReportPdf,
   getReportData,
   getTransactionsHistory,
-  updateTransaction,
-  type CreateTransactionPayload,
   type PaymentMethod,
   type PaymentStatus,
   type TransactionHistoryItem,
   type TransactionType,
   type UpdateTransactionPayload,
+  updateTransaction,
 } from "../../../services/reports.service";
 import { theme } from "../../../themes/themes";
 import type { BarSeries } from "../../../types/components";
@@ -41,6 +42,7 @@ import {
   ChartCard,
   ChartHeader,
   ChartTitle,
+  EmptyStateCell,
   ExportButton,
   FinancialSummary,
   FinancialSummaryItem,
@@ -55,7 +57,6 @@ import {
   Grid2Col,
   HeaderControls,
   ModalForm,
-  EmptyStateCell,
   PageHeader,
   PageSubtitle,
   PageTitle,
@@ -70,28 +71,30 @@ import {
   RankingSpecialty,
   StatsGrid,
   StatusMessage,
+  TabButton,
   TableCard,
   TableElement,
-  TabButton,
   TabRow,
   TransactionAmount,
   TransactionTypeBadge,
 } from "./styles";
 
-const PERIOD_OPTIONS = [
-  { value: "1m", label: "Último mês" },
-  { value: "3m", label: "Último trimestre" },
-  { value: "6m", label: "Últimos 6 meses" },
-  { value: "12m", label: "Último ano" },
-];
 const REVENUE_TREND_FIXED_PERIOD = "6m";
 
 type ActiveTab = "analytics" | "transactions";
+type ReportPeriod = "1m" | "3m" | "6m" | "12m";
 
 const TRANSACTION_TYPE_LABEL: Record<TransactionType, string> = {
   INCOME: "Entrada",
   EXPENSE: "Saída",
 };
+
+const PERIOD_OPTIONS: Array<{ label: string; value: ReportPeriod }> = [
+  { label: "Último mês", value: "1m" },
+  { label: "Trimestre", value: "3m" },
+  { label: "6 meses", value: "6m" },
+  { label: "Anual", value: "12m" },
+];
 
 const PERIOD_TO_MONTHS: Record<string, number> = {
   "1m": 1,
@@ -111,10 +114,31 @@ const resolveMonthsFromPeriod = (period: string): number => {
   return 6;
 };
 
+const formatDateInputValue = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const getExportDateRangeFromPeriod = (
+  period: ReportPeriod,
+): { startDate: string; endDate: string } => {
+  const now = new Date();
+  const months = resolveMonthsFromPeriod(period);
+  const startDate = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
+
+  return {
+    startDate: formatDateInputValue(startDate),
+    endDate: formatDateInputValue(now),
+  };
+};
+
 const STATUS_COLORS: Record<string, string> = {
-  Confirmados: theme.colors.success,
-  Pendentes: theme.colors.warning,
-  Cancelados: theme.colors.error,
+  Realizadas: theme.colors.success,
+  Agendadas: theme.colors.warning,
+  "Não Compareceu": theme.colors.warning,
+  Canceladas: theme.colors.error,
 };
 
 const EXPENSE_ACCENT_COLOR = "var(--mc-action-delete-text, #DC2626)";
@@ -257,7 +281,9 @@ const formatMonthLabel = (date: Date, referenceDate: Date): string => {
     .toLowerCase();
 
   const shortYear =
-    date.getFullYear() !== referenceDate.getFullYear() ? `/${String(date.getFullYear()).slice(-2)}` : "";
+    date.getFullYear() !== referenceDate.getFullYear()
+      ? `/${String(date.getFullYear()).slice(-2)}`
+      : "";
 
   const base = `${monthName}${shortYear}`;
   return base.charAt(0).toUpperCase() + base.slice(1);
@@ -368,7 +394,10 @@ const getMostRecentFinancialItem = (financial: ReportData["financial"]) => {
       const monthsAgo = (currentMonthIndex - monthIndex + 12) % 12;
       return { item, monthsAgo };
     })
-    .filter((entry): entry is { item: ReportData["financial"][number]; monthsAgo: number } => entry !== null)
+    .filter(
+      (entry): entry is { item: ReportData["financial"][number]; monthsAgo: number } =>
+        entry !== null,
+    )
     .sort((a, b) => a.monthsAgo - b.monthsAgo);
 
   if (scored.length) return scored[0].item;
@@ -515,7 +544,12 @@ const TransactionModal = ({ onClose, onCreated }: TransactionModalProps) => {
 
           <FormField>
             <FormLabel htmlFor="paymentStatus">Status do pagamento</FormLabel>
-            <FormSelect id="paymentStatus" name="paymentStatus" value={form.paymentStatus} onChange={handleChange}>
+            <FormSelect
+              id="paymentStatus"
+              name="paymentStatus"
+              value={form.paymentStatus}
+              onChange={handleChange}
+            >
               <option value="PENDING">Pendente</option>
               <option value="PAID">Pago</option>
               <option value="CANCELLED">Cancelado</option>
@@ -569,7 +603,12 @@ const TransactionModal = ({ onClose, onCreated }: TransactionModalProps) => {
         <FormRow>
           <FormField>
             <FormLabel htmlFor="paymentMethod">Forma de pagamento</FormLabel>
-            <FormSelect id="paymentMethod" name="paymentMethod" value={form.paymentMethod} onChange={handleChange}>
+            <FormSelect
+              id="paymentMethod"
+              name="paymentMethod"
+              value={form.paymentMethod}
+              onChange={handleChange}
+            >
               <option value="">Não informado</option>
               <option value="CASH">Dinheiro</option>
               <option value="DEBIT_CARD">Cartao de debito</option>
@@ -618,9 +657,7 @@ const TransactionEditModal = ({ transaction, onClose, onUpdated }: TransactionEd
   });
   const [submitting, setSubmitting] = useState(false);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
@@ -665,7 +702,12 @@ const TransactionEditModal = ({ transaction, onClose, onUpdated }: TransactionEd
           <Button variant="outline" type="button" onClick={onClose} disabled={submitting}>
             Cancelar
           </Button>
-          <Button variant="primary" type="submit" form="edit-transaction-form" disabled={submitting}>
+          <Button
+            variant="primary"
+            type="submit"
+            form="edit-transaction-form"
+            disabled={submitting}
+          >
             {submitting ? "Salvando..." : "Salvar alterações"}
           </Button>
         </>
@@ -675,7 +717,13 @@ const TransactionEditModal = ({ transaction, onClose, onUpdated }: TransactionEd
         <FormRow>
           <FormField>
             <FormLabel htmlFor="edit-type">Tipo *</FormLabel>
-            <FormSelect id="edit-type" name="type" value={form.type} onChange={handleChange} required>
+            <FormSelect
+              id="edit-type"
+              name="type"
+              value={form.type}
+              onChange={handleChange}
+              required
+            >
               <option value="INCOME">Entrada</option>
               <option value="EXPENSE">Saída</option>
             </FormSelect>
@@ -774,7 +822,7 @@ const buildStats = (
   },
 ];
 
-  const formatTransactionDate = (value: string) => formatDateDayMonthYear(value, "-");
+const formatTransactionDate = (value: string) => formatDateDayMonthYear(value, "-");
 
 const formatTransactionAmount = (amount: number, type: TransactionType) => {
   const formatted = formatCurrencyBRL(Math.abs(amount));
@@ -811,7 +859,7 @@ const getResponsibleDisplayName = (apiName: string, authenticatedName?: string) 
 
 const ReportsPage = () => {
   const { user } = useAuth();
-  const [period, setPeriod] = useState("1m");
+  const [period, setPeriod] = useState<ReportPeriod>("1m");
   const [activeTab, setActiveTab] = useState<ActiveTab>("analytics");
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [fixedRevenueTrend, setFixedRevenueTrend] = useState<ReportData["revenueTrend"]>([]);
@@ -822,6 +870,7 @@ const ReportsPage = () => {
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<TransactionHistoryItem | null>(null);
+  const [exportingPdf, setExportingPdf] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -843,7 +892,18 @@ const ReportsPage = () => {
     }
 
     if (historyResult.status === "fulfilled") {
-      setTransactionsHistory(historyResult.value);
+      const months = resolveMonthsFromPeriod(period);
+      const now = new Date();
+      const startDate = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
+      const filtered = historyResult.value.filter((tx) => {
+        if (!tx.date) return true;
+        const isoMatch = /^(\d{4})-(\d{2})-(\d{2})/.exec(tx.date);
+        const txDate = isoMatch
+          ? new Date(Number(isoMatch[1]), Number(isoMatch[2]) - 1, Number(isoMatch[3]))
+          : new Date(tx.date);
+        return !Number.isNaN(txDate.getTime()) && txDate >= startDate;
+      });
+      setTransactionsHistory(filtered);
     } else {
       setTransactionsHistory([]);
       setHistoryError("Erro ao carregar histórico de transações.");
@@ -857,6 +917,20 @@ const ReportsPage = () => {
 
     setLoading(false);
     setHistoryLoading(false);
+  };
+
+  const handleExportPdf = async () => {
+    const { startDate, endDate } = getExportDateRangeFromPeriod(period);
+
+    setExportingPdf(true);
+    try {
+      await downloadReportPdf(startDate, endDate);
+      notifySuccess("Relatorio PDF gerado com sucesso.");
+    } catch (error) {
+      notifyError(getApiErrorMessage(error, "Erro ao exportar PDF."));
+    } finally {
+      setExportingPdf(false);
+    }
   };
 
   useEffect(() => {
@@ -876,7 +950,7 @@ const ReportsPage = () => {
           <HeaderControls>
             <Skeleton width={120} height={40} />
             <Skeleton width={140} height={40} />
-            <Skeleton width={120} height={40} />
+            <Skeleton width={130} height={40} />
           </HeaderControls>
         </PageHeader>
 
@@ -960,16 +1034,20 @@ const ReportsPage = () => {
   const monthlyEvolutionData = buildMonthlyEvolutionData(reportData, period);
 
   // Para "último mês", usa o mês mais recente do próprio dataset financeiro.
-  const financialEntradas = period === "1m" ? (recentFinancial?.entradas ?? fallbackEntradas) : fallbackEntradas;
-  const financialSaidas = period === "1m" ? (recentFinancial?.saidas ?? fallbackSaidas) : fallbackSaidas;
-  const financialLucro = period === "1m" ? (recentFinancial?.lucro ?? fallbackLucro) : fallbackLucro;
+  const financialEntradas =
+    period === "1m" ? (recentFinancial?.entradas ?? fallbackEntradas) : fallbackEntradas;
+  const financialSaidas =
+    period === "1m" ? (recentFinancial?.saidas ?? fallbackSaidas) : fallbackSaidas;
+  const financialLucro =
+    period === "1m" ? (recentFinancial?.lucro ?? fallbackLucro) : fallbackLucro;
 
   const fallbackConsultas = monthlyEvolutionData.reduce((s, i) => s + i.consultations, 0);
   const fallbackCancelamentos = monthlyEvolutionData.reduce((s, i) => s + i.cancellations, 0);
   const monthlyConsultas = fallbackConsultas;
   const monthlyCancelamentos = fallbackCancelamentos;
 
-  const totalEntradas = period === "1m" ? financialEntradas : (summaryEntradas ?? financialEntradas);
+  const totalEntradas =
+    period === "1m" ? financialEntradas : (summaryEntradas ?? financialEntradas);
   const totalSaidas = period === "1m" ? financialSaidas : (summarySaidas ?? financialSaidas);
   const totalLucro = period === "1m" ? financialLucro : (summaryLucro ?? financialLucro);
   const totalConsultas = monthlyConsultas;
@@ -987,10 +1065,14 @@ const ReportsPage = () => {
         </div>
 
         <HeaderControls>
-          <PeriodSelect value={period} onChange={(e) => setPeriod(e.target.value)}>
-            {PERIOD_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
+          <PeriodSelect
+            aria-label="Selecionar período"
+            value={period}
+            onChange={(event) => setPeriod(event.target.value as ReportPeriod)}
+          >
+            {PERIOD_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </PeriodSelect>
@@ -1004,9 +1086,13 @@ const ReportsPage = () => {
             Nova Transação
           </Button>
 
-          <ExportButton type="button">
+          <ExportButton
+            type="button"
+            onClick={() => void handleExportPdf()}
+            disabled={exportingPdf}
+          >
             <FileDown size={15} />
-            Exportar PDF
+            {exportingPdf ? "Gerando PDF..." : "Exportar PDF"}
           </ExportButton>
         </HeaderControls>
       </PageHeader>
@@ -1015,7 +1101,10 @@ const ReportsPage = () => {
         <TabButton $active={activeTab === "analytics"} onClick={() => setActiveTab("analytics")}>
           Relatorios
         </TabButton>
-        <TabButton $active={activeTab === "transactions"} onClick={() => setActiveTab("transactions")}>
+        <TabButton
+          $active={activeTab === "transactions"}
+          onClick={() => setActiveTab("transactions")}
+        >
           Histórico de transações ({transactionsHistory.length})
         </TabButton>
       </TabRow>
@@ -1040,7 +1129,9 @@ const ReportsPage = () => {
 
           <ChartCard>
             <ChartHeader>
-              <ChartTitle style={{ margin: 0 }}>Fluxo financeiro - Entradas, Saídas e Lucro (R$)</ChartTitle>
+              <ChartTitle style={{ margin: 0 }}>
+                Fluxo financeiro - Entradas, Saídas e Lucro (R$)
+              </ChartTitle>
 
               <FinancialSummary>
                 <FinancialSummaryItem>
@@ -1052,7 +1143,9 @@ const ReportsPage = () => {
 
                 <FinancialSummaryItem>
                   <FinancialSummaryLabel>Saídas no período</FinancialSummaryLabel>
-                  <FinancialSummaryValue $color="#374151">{formatCurrency(totalSaidas)}</FinancialSummaryValue>
+                  <FinancialSummaryValue $color="#374151">
+                    {formatCurrency(totalSaidas)}
+                  </FinancialSummaryValue>
                 </FinancialSummaryItem>
 
                 <FinancialSummaryItem>
@@ -1085,7 +1178,10 @@ const ReportsPage = () => {
                     paddingAngle={3}
                   >
                     {reportData.statusDistribution.map((entry) => (
-                      <Cell key={entry.name} fill={STATUS_COLORS[entry.name] ?? "#CBD5E1"} />
+                      <Cell
+                        key={entry.name}
+                        fill={entry.color ?? STATUS_COLORS[entry.name] ?? "#CBD5E1"}
+                      />
                     ))}
                   </Pie>
 
@@ -1108,7 +1204,10 @@ const ReportsPage = () => {
             <ChartCard>
               <ChartTitle>Tendência de Receita (R$) - Últimos 6 meses</ChartTitle>
               <ResponsiveContainer width="100%" height={220}>
-                <LineChart data={revenueTrendData} margin={{ top: 8, right: 24, left: 8, bottom: 0 }}>
+                <LineChart
+                  data={revenueTrendData}
+                  margin={{ top: 8, right: 24, left: 8, bottom: 0 }}
+                >
                   <XAxis
                     dataKey="month"
                     tick={{ fontFamily: "Inter", fontSize: 12, fill: "#6b7280" }}
@@ -1124,7 +1223,10 @@ const ReportsPage = () => {
                   />
 
                   <Tooltip
-                    formatter={(value: number | undefined) => [formatCompactCurrency(value ?? 0), "Receita"]}
+                    formatter={(value: number | undefined) => [
+                      formatCompactCurrency(value ?? 0),
+                      "Receita",
+                    ]}
                   />
 
                   <Legend
@@ -1229,7 +1331,9 @@ const ReportsPage = () => {
 
               {!historyLoading && !historyError && transactionsHistory.length === 0 && (
                 <tr>
-                  <EmptyStateCell colSpan={6}>Nenhuma transação encontrada no período.</EmptyStateCell>
+                  <EmptyStateCell colSpan={6}>
+                    Nenhuma transação encontrada no período.
+                  </EmptyStateCell>
                 </tr>
               )}
 
@@ -1288,4 +1392,3 @@ const ReportsPage = () => {
 };
 
 export default ReportsPage;
-

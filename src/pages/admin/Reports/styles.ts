@@ -39,6 +39,63 @@ export const HeaderControls = styled.div`
   align-items: center;
   gap: 12px;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+`;
+
+export const DateRangeGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border: 1px solid ${theme.colors.border.default};
+  border-radius: ${theme.borderRadius.md};
+  background-color: ${theme.colors.surfaceMuted};
+  box-shadow: ${theme.shadows.sm};
+
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    width: 100%;
+    justify-content: space-between;
+  }
+`;
+
+export const DateRangeField = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: ${theme.colors.text.secondary};
+  white-space: nowrap;
+`;
+
+export const DateRangeInput = styled.input`
+  height: 34px;
+  min-width: 134px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: ${theme.colors.text.primary};
+  border: 1px solid ${theme.colors.border.light};
+  border-radius: 10px;
+  padding: 0 10px;
+  background-color: ${theme.colors.surface};
+  outline: none;
+
+  &:focus {
+    border-color: ${theme.colors.primary};
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.16);
+  }
+
+  &::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.8;
+  }
+
+  @media (max-width: ${theme.breakpoints.mobile}) {
+    min-width: 122px;
+  }
 `;
 
 export const TabRow = styled.div`
@@ -104,6 +161,11 @@ export const ExportButton = styled.button`
 
   &:active {
     background-color: ${theme.colors.primaryActive};
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
   }
 `;
 
