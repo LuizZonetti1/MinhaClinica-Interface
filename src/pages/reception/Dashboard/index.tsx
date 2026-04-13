@@ -116,13 +116,14 @@ const QUICK_ACCESS = [
 
 const STATUS_CONFIG: Record<
   AppointmentStatus,
-  { label: string; variant: "waiting" | "checkin" | "progress" | "done" | "cancelled" }
+  { label: string; variant: "waiting" | "checkin" | "progress" | "done" | "cancelled" | "noshow" }
 > = {
-  WAITING:    { label: "Aguardando",     variant: "waiting"   },
-  CHECKED_IN: { label: "Check-in OK",   variant: "checkin"   },
-  IN_PROGRESS:{ label: "Em Atendimento",variant: "progress"  },
-  DONE:       { label: "Concluído",      variant: "done"      },
-  CANCELLED:  { label: "Cancelado",      variant: "cancelled" },
+  WAITING: { label: "Aguardando", variant: "waiting" },
+  CHECKED_IN: { label: "Check-in OK", variant: "checkin" },
+  IN_PROGRESS: { label: "Em Atendimento", variant: "progress" },
+  DONE: { label: "Concluído", variant: "done" },
+  CANCELLED: { label: "Cancelado", variant: "cancelled" },
+  NO_SHOW: { label: "Não Compareceu", variant: "noshow" },
 };
 
 const EMPTY_SUMMARY: ReceptionDashboardSummary = {
@@ -186,8 +187,7 @@ const ReceptionDashboard = () => {
         </HeroTitle>
         <HeroSubtitle>
           Painel da recepção — {today}.
-          {dashData &&
-            ` Hoje há ${dashData.summary.consultationsToday} consultas agendadas.`}
+          {dashData && ` Hoje há ${dashData.summary.consultationsToday} consultas agendadas.`}
         </HeroSubtitle>
       </HeroBanner>
 
@@ -234,9 +234,7 @@ const ReceptionDashboard = () => {
                 </tr>
               ) : !dashData || dashData.appointments.length === 0 ? (
                 <tr>
-                  <EmptyStateCell colSpan={4}>
-                    Nenhum paciente agendado para hoje.
-                  </EmptyStateCell>
+                  <EmptyStateCell colSpan={4}>Nenhum paciente agendado para hoje.</EmptyStateCell>
                 </tr>
               ) : (
                 dashData.appointments.map((appt) => {
@@ -251,9 +249,7 @@ const ReceptionDashboard = () => {
                         <DoctorLabel>{appt.doctorName}</DoctorLabel>
                       </TableCell>
                       <TableCell>
-                        <StatusBadge $variant={config.variant}>
-                          {config.label}
-                        </StatusBadge>
+                        <StatusBadge $variant={config.variant}>{config.label}</StatusBadge>
                       </TableCell>
                     </TableRow>
                   );

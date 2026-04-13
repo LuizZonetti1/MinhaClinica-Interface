@@ -140,7 +140,7 @@ export const DoctorLabel = styled.span`
 `;
 
 export const StatusBadge = styled.span<{
-  $variant: "waiting" | "checkin" | "progress" | "done" | "cancelled";
+  $variant: "waiting" | "checkin" | "progress" | "done" | "cancelled" | "noshow";
 }>`
   display: inline-block;
   font-family: 'Inter', sans-serif;
@@ -163,6 +163,8 @@ export const StatusBadge = styled.span<{
         return "background-color: var(--mc-status-done-bg); color: var(--mc-status-done-text); border-color: var(--mc-status-done-border);";
       case "cancelled":
         return "background-color: var(--mc-status-cancelled-bg); color: var(--mc-status-cancelled-text); border-color: var(--mc-status-cancelled-border);";
+      case "noshow":
+        return "background-color: #FEF3C7; color: #92400E; border-color: #FCD34D;";
     }
   }}
 `;
