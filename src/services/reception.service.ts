@@ -10,7 +10,11 @@ import type {
   ReceptionDashboardData,
   TodayAppointmentItem,
 } from "../types/dashboard";
-import type { RegisterPatientByReceptionPayload } from "../types/patient";
+import type {
+  ReceptionAppointmentListResponse,
+  ReceptionPatientListResponse,
+  RegisterPatientByReceptionPayload,
+} from "../types/patient";
 import type {
   ApiListPayload,
   DateLike,
@@ -300,18 +304,14 @@ const normalizeStatus = (v: unknown): AppointmentStatus => {
     return "DONE";
   }
 
+  if (["NO_SHOW", "NOSHOW", "FALTOSO"].includes(status)) {
+    return "NO_SHOW";
+  }
+
   if (
-    [
-      "CANCELLED",
-      "CANCELED",
-      "CANCELADO",
-      "NO_SHOW",
-      "NOSHOW",
-      "RESCHEDULED",
-      "RE_SCHEDULED",
-      "REMARCADO",
-      "FALTOSO",
-    ].includes(status)
+    ["CANCELLED", "CANCELED", "CANCELADO", "RESCHEDULED", "RE_SCHEDULED", "REMARCADO"].includes(
+      status,
+    )
   ) {
     return "CANCELLED";
   }
@@ -334,17 +334,16 @@ const normalizeStatus = (v: unknown): AppointmentStatus => {
     return "WAITING";
   }
 
-  const valid: AppointmentStatus[] = ["WAITING", "CHECKED_IN", "IN_PROGRESS", "DONE", "CANCELLED"];
+  const valid: AppointmentStatus[] = [
+    "WAITING",
+    "CHECKED_IN",
+    "IN_PROGRESS",
+    "DONE",
+    "CANCELLED",
+    "NO_SHOW",
+  ];
   return valid.includes(status as AppointmentStatus) ? (status as AppointmentStatus) : "WAITING";
 };
-
-const toStatusToken = (v: unknown): string =>
-  String(v ?? "")
-    .trim()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toUpperCase()
-    .replace(/[\s-]+/g, "_");
 
 const hasNoShowWindowElapsed = (appointmentTime: string): boolean => {
   return hasTimeElapsedToday(appointmentTime, {
@@ -400,7 +399,6 @@ const normalizeAppointment = (item: unknown): TodayAppointmentItem | null => {
     "checkinStatus",
     "attendanceStatus",
   ]);
-  const rawStatusToken = toStatusToken(rawStatus);
   const time = toStr(
     readValue(sources, [
       "time",
@@ -419,8 +417,13 @@ const normalizeAppointment = (item: unknown): TodayAppointmentItem | null => {
   let normalizedStatus = normalizeStatus(rawStatus);
 
   // NO_SHOW so deve acontecer quando a janela de 30 minutos apos o horario ja passou.
-  if (["NO_SHOW", "NOSHOW"].includes(rawStatusToken) && !hasNoShowWindowElapsed(time)) {
+  if (normalizedStatus === "NO_SHOW" && !hasNoShowWindowElapsed(time)) {
     normalizedStatus = "WAITING";
+  }
+
+  // Inferencia frontend: se ainda WAITING e a janela ja passou, marcar como NO_SHOW.
+  if (normalizedStatus === "WAITING" && hasNoShowWindowElapsed(time)) {
+    normalizedStatus = "NO_SHOW";
   }
 
   const avatarRaw = readValue(
@@ -1003,4 +1006,36 @@ export const updateReceptionProfilePassword = async (
     newPassword: payload.newPassword,
     confirmPassword: payload.confirmPassword,
   });
+};
+
+// ─── Patients (Histórico) ─────────────────────────────────────────────────────
+
+type AnyListResponse<T> = T[] | { items: T[]; count?: number } | { data: T[]; count?: number };
+
+const extractItems = <T>(raw: AnyListResponse<T>): T[] => {
+  if (Array.isArray(raw)) return raw;
+  if ("items" in raw) return raw.items;
+  if ("data" in raw) return raw.data;
+  return [];
+};
+
+// GET /api/reception/patients
+export const listReceptionPatients = async (): Promise<ReceptionPatientListResponse> => {
+  const { data } =
+    await api.get<AnyListResponse<ReceptionPatientListResponse["items"][number]>>(
+      "/reception/patients",
+    );
+  const items = extractItems(data);
+  return { count: items.length, items };
+};
+
+// GET /api/reception/patients/:patientId/appointments
+export const listReceptionPatientAppointments = async (
+  patientId: string,
+): Promise<ReceptionAppointmentListResponse> => {
+  const { data } = await api.get<
+    AnyListResponse<ReceptionAppointmentListResponse["items"][number]>
+  >(`/reception/patients/${patientId}/appointments`);
+  const items = extractItems(data);
+  return { count: items.length, items };
 };
