@@ -46,6 +46,17 @@ export const Modal = ({ isOpen, onClose, title, children, actions }: ModalProps)
       firstFocusable?.focus();
     });
 
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      previouslyFocusedElement?.focus();
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const dialogElement = dialogRef.current;
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -83,8 +94,6 @@ export const Modal = ({ isOpen, onClose, title, children, actions }: ModalProps)
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = previousBodyOverflow;
-      previouslyFocusedElement?.focus();
     };
   }, [isOpen, onClose]);
 
