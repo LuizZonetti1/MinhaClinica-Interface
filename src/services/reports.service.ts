@@ -3,7 +3,13 @@ import type { ReportData } from "../types/dashboard";
 import { toRecord, toTrimmedStringValue } from "../utils/parsers";
 
 export type TransactionType = "INCOME" | "EXPENSE";
-export type PaymentMethod = "CASH" | "DEBIT_CARD" | "CREDIT_CARD" | "PIX" | "BANK_TRANSFER" | "CHECK";
+export type PaymentMethod =
+  | "CASH"
+  | "DEBIT_CARD"
+  | "CREDIT_CARD"
+  | "PIX"
+  | "BANK_TRANSFER"
+  | "CHECK";
 export type PaymentStatus = "PENDING" | "PAID" | "CANCELLED" | "REFUNDED";
 
 export interface CreateTransactionPayload {
@@ -338,12 +344,12 @@ export const getReportData = async (period = "6m"): Promise<ReportData> => {
   return normalizeReportData(data);
 };
 
-export const getTransactionsHistory = async (
-  period = "6m",
-): Promise<TransactionHistoryItem[]> => {
+export const getTransactionsHistory = async (period = "6m"): Promise<TransactionHistoryItem[]> => {
+  const months = resolveMonthsFromPeriod(period);
   const { data } = await api.get<unknown>("/transactions", {
     params: {
       period,
+      months,
     },
   });
 
@@ -385,4 +391,41 @@ export const updateTransaction = async (
   };
 
   await api.put(`/transactions/${transactionId}`, requestBody);
+};
+
+const extractFilenameFromContentDisposition = (value: string | null | undefined): string | null => {
+  if (!value) return null;
+
+  const utf8Match = value.match(/filename\*=UTF-8''([^;]+)/i);
+  if (utf8Match?.[1]) {
+    return decodeURIComponent(utf8Match[1].replace(/["']/g, "").trim());
+  }
+
+  const fallbackMatch = value.match(/filename="?([^"]+)"?/i);
+  if (fallbackMatch?.[1]) {
+    return fallbackMatch[1].trim();
+  }
+
+  return null;
+};
+
+export const downloadReportPdf = async (startDate: string, endDate: string): Promise<void> => {
+  const response = await api.get<Blob>("/reports/export/pdf", {
+    params: { startDate, endDate },
+    responseType: "blob",
+  });
+
+  const blob = new Blob([response.data], { type: "application/pdf" });
+  const objectUrl = window.URL.createObjectURL(blob);
+  const filename =
+    extractFilenameFromContentDisposition(response.headers["content-disposition"]) ??
+    `relatorio-${startDate}-a-${endDate}.pdf`;
+
+  const link = document.createElement("a");
+  link.href = objectUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(objectUrl);
 };
