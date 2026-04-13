@@ -44,6 +44,7 @@ const STATUS_LABELS: Record<AppointmentStatus, string> = {
   IN_PROGRESS: "Em Atendimento",
   DONE: "Concluído",
   CANCELLED: "Cancelado",
+  NO_SHOW: "Não Compareceu",
 };
 
 const STATUS_BADGE_VARIANT: Record<
@@ -55,6 +56,7 @@ const STATUS_BADGE_VARIANT: Record<
   IN_PROGRESS: "progress",
   DONE: "done",
   CANCELLED: "cancelled",
+  NO_SHOW: "cancelled",
 };
 
 type SectionVariant = "waiting" | "active" | "done" | "cancelled";
@@ -115,6 +117,7 @@ const defaultUpdateByVisualStatus: Record<AppointmentStatus, AppointmentStatusUp
   IN_PROGRESS: "IN_PROGRESS",
   DONE: "COMPLETED",
   CANCELLED: "CANCELLED",
+  NO_SHOW: "NO_SHOW",
 };
 
 const getUpdateStatusLabel = (status: AppointmentStatusUpdate): string =>
@@ -233,7 +236,9 @@ const ReceptionCheckinPage = () => {
     const load = async (silent = false) => {
       try {
         const data = await getReceptionTodayAppointments();
-        if (isMounted) setAppointments(data.appointments);
+        if (isMounted) {
+          setAppointments(data.appointments);
+        }
       } catch (err: unknown) {
         if (!silent && isMounted) {
           notifyError(getApiErrorMessage(err, "Erro ao carregar consultas de hoje."));
