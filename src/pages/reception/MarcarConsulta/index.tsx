@@ -1,5 +1,5 @@
 import { isAxiosError } from "axios";
-import { CheckCircle, Search, UserCheck, UserPlus, X } from "lucide-react";
+import { CheckCircle, Search, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "../../../components/Button";
@@ -12,9 +12,9 @@ import {
   searchAppointmentPatients,
 } from "../../../services/appointment.service";
 import {
-  AppointmentType,
   type AppointmentProfessional,
   type AppointmentSlot,
+  AppointmentType,
   type PatientSearchResult,
 } from "../../../types/appointment";
 import type { Step } from "../../../types/components";
@@ -31,34 +31,26 @@ import {
   FormSelect,
   ObservationsSection,
   ObservationsTextarea,
-  OptionCard,
-  OptionIconWrap,
-  OptionLink,
-  OptionsGrid,
-  OptionTitle,
-  PatientAvatar,
   PageTitle,
   PageWrapper,
+  PatientAvatar,
   SearchResultInfo,
   SearchResultItem,
   SearchResultList,
   SearchResultMeta,
   SearchResultName,
   SearchWrapper,
-  SectionCard,
-  SectionQuestion,
-  SectionSubtitle,
   SelectedBadge,
-  SelectedBadgeContent,
   SelectedBadgeClear,
+  SelectedBadgeContent,
   SelectedBadgeInfo,
   SelectedBadgeName,
   SelectedBadgeSub,
   SlotBtn,
   SlotGrid,
-  SlotsEmpty,
   SlotSection,
   SlotSectionTitle,
+  SlotsEmpty,
   StepCard,
   StepperWrapper,
   StepTitle,
@@ -72,9 +64,9 @@ import {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const getStepperConfig = (step: number): Step[] => [
-  { label: "Paciente",    status: step > 1 ? "completed" : step === 1 ? "active" : "inactive" },
+  { label: "Paciente", status: step > 1 ? "completed" : step === 1 ? "active" : "inactive" },
   { label: "Agendamento", status: step > 2 ? "completed" : step === 2 ? "active" : "inactive" },
-  { label: "Confirmar",   status: step === 3 ? "active" : "inactive" },
+  { label: "Confirmar", status: step === 3 ? "active" : "inactive" },
 ];
 
 const formatDateBR = (d: string): string => formatIsoDateToBr(d, "-", { strictIsoOnly: true });
@@ -88,11 +80,7 @@ const maskCPF = (cpf: string): string => {
 };
 
 const getInitials = (name: string): string => {
-  const parts = name
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2);
+  const parts = name.trim().split(/\s+/).filter(Boolean).slice(0, 2);
 
   if (parts.length === 0) return "P";
   return parts.map((part) => part[0]?.toUpperCase() ?? "").join("");
@@ -112,6 +100,29 @@ const normalizeText = (value: string): string =>
     .replace(/[\u0300-\u036f]/g, "")
     .trim()
     .toLowerCase();
+
+const onlyDigits = (value: string): string => value.replace(/\D/g, "");
+
+const isCpfQuery = (value: string): boolean => {
+  const digits = onlyDigits(value);
+  return digits.length > 0 && digits === onlyDigits(value.replace(/[.-]/g, ""));
+};
+
+const toApiQuery = (value: string): string =>
+  isCpfQuery(value) ? onlyDigits(value) : value.trim();
+
+const filterPatientsIgnoringAccents = (
+  patients: PatientSearchResult[],
+  query: string,
+): PatientSearchResult[] => {
+  if (!query.trim()) return patients;
+  if (isCpfQuery(query)) {
+    const digits = onlyDigits(query);
+    return patients.filter((p) => onlyDigits(p.cpf).includes(digits));
+  }
+  const normalizedQuery = normalizeText(query);
+  return patients.filter((p) => normalizeText(`${p.name} ${p.cpf}`).includes(normalizedQuery));
+};
 
 const getLocalDateISO = (date: Date): string => formatDateToIsoDate(date);
 
@@ -144,31 +155,31 @@ const ReceptionMarcarConsultaPage = () => {
   const navigate = useNavigate();
 
   // ── View / Step ─────────────────────────────────────────────────────────────
-  const [view, setView] = useState<"gate" | "wizard">("gate");
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
   // ── Step 1 state ────────────────────────────────────────────────────────────
-  const [query, setQuery]                        = useState("");
-  const [patientResults, setPatientResults]      = useState<PatientSearchResult[]>([]);
-  const [searchLoading, setSearchLoading]        = useState(false);
-  const [showDropdown, setShowDropdown]          = useState(false);
-  const [selectedPatient, setSelectedPatient]    = useState<PatientSearchResult | null>(null);
-  const [consultationType, setConsultationType]  = useState<AppointmentType>(
+  const [query, setQuery] = useState("");
+  const [patientResults, setPatientResults] = useState<PatientSearchResult[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState<PatientSearchResult | null>(null);
+  const [consultationType, setConsultationType] = useState<AppointmentType>(
     AppointmentType.CONSULTATION,
   );
   const searchRef = useRef<HTMLDivElement>(null);
+  const patientQueryCacheRef = useRef<Map<string, PatientSearchResult[]>>(new Map());
 
   // ── Step 2 state ────────────────────────────────────────────────────────────
-  const [professionals, setProfessionals]  = useState<AppointmentProfessional[]>([]);
-  const [profLoading, setProfLoading]      = useState(false);
+  const [professionals, setProfessionals] = useState<AppointmentProfessional[]>([]);
+  const [profLoading, setProfLoading] = useState(false);
   const [selectedProfId, setSelectedProfId] = useState("");
-  const [selectedDate, setSelectedDate]    = useState("");
-  const [slots, setSlots]                  = useState<AppointmentSlot[]>([]);
-  const [slotsLoading, setSlotsLoading]    = useState(false);
-  const [selectedSlot, setSelectedSlot]    = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [slots, setSlots] = useState<AppointmentSlot[]>([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState("");
 
   // ── Step 3 state ────────────────────────────────────────────────────────────
-  const [notes, setNotes]          = useState("");
+  const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [now, setNow] = useState(() => new Date());
 
@@ -180,22 +191,58 @@ const ReceptionMarcarConsultaPage = () => {
 
   // ── Effects ─────────────────────────────────────────────────────────────────
 
-  // Debounced patient search
+  // Debounced patient search with per-query cache + client-side filter
   useEffect(() => {
     if (selectedPatient) return;
-    if (query.trim().length < 2) {
+    const trimmed = query.trim();
+    if (trimmed.length < 2) {
       setPatientResults([]);
       setShowDropdown(false);
       return;
     }
-    const timer = setTimeout(() => {
+
+    const cacheKey = normalizeText(trimmed);
+    const cachedResults = patientQueryCacheRef.current.get(cacheKey);
+    if (cachedResults) {
+      setPatientResults(filterPatientsIgnoringAccents(cachedResults, trimmed));
+      setShowDropdown(true);
+      return;
+    }
+
+    // Look for a shorter prefix already cached and filter client-side
+    for (const [key, results] of patientQueryCacheRef.current) {
+      if (cacheKey.startsWith(key) && key.length >= 2) {
+        const filtered = filterPatientsIgnoringAccents(results, trimmed);
+        setPatientResults(filtered);
+        setShowDropdown(true);
+        return;
+      }
+    }
+
+    let active = true;
+    const timer = window.setTimeout(() => {
       setSearchLoading(true);
-      searchAppointmentPatients(query)
-        .then((r) => { setPatientResults(r); setShowDropdown(true); })
-        .catch(() => { setPatientResults([]); setShowDropdown(true); })
-        .finally(() => setSearchLoading(false));
-    }, 400);
-    return () => clearTimeout(timer);
+      searchAppointmentPatients(toApiQuery(trimmed))
+        .then((results) => {
+          if (!active) return;
+          patientQueryCacheRef.current.set(cacheKey, results);
+          setPatientResults(filterPatientsIgnoringAccents(results, trimmed));
+          setShowDropdown(true);
+        })
+        .catch(() => {
+          if (!active) return;
+          setPatientResults([]);
+          setShowDropdown(true);
+        })
+        .finally(() => {
+          if (active) setSearchLoading(false);
+        });
+    }, 180);
+
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
   }, [query, selectedPatient]);
 
   // Close dropdown on outside click
@@ -229,13 +276,13 @@ const ReceptionMarcarConsultaPage = () => {
 
   // Load professionals when entering step 2
   useEffect(() => {
-    if (view !== "wizard" || step !== 2 || professionals.length > 0) return;
+    if (step !== 2 || professionals.length > 0) return;
     setProfLoading(true);
     listAppointmentProfessionals()
       .then(setProfessionals)
       .catch(() => notifyError("Erro ao carregar profissionais."))
       .finally(() => setProfLoading(false));
-  }, [view, step, professionals.length]);
+  }, [step, professionals.length]);
 
   // Load slots when professional or date changes
   useEffect(() => {
@@ -259,7 +306,11 @@ const ReceptionMarcarConsultaPage = () => {
             : "",
         );
       })
-      .catch(() => { setSlots([]); setSelectedSlot(""); notifyError("Erro ao carregar horarios."); })
+      .catch(() => {
+        setSlots([]);
+        setSelectedSlot("");
+        notifyError("Erro ao carregar horarios.");
+      })
       .finally(() => setSlotsLoading(false));
   }, [selectedProfId, selectedDate]);
 
@@ -278,14 +329,27 @@ const ReceptionMarcarConsultaPage = () => {
   };
 
   const handleStep1Next = () => {
-    if (!selectedPatient) { notifyError("Selecione um paciente."); return; }
+    if (!selectedPatient) {
+      notifyError("Selecione um paciente.");
+      return;
+    }
     setStep(2);
+    setProfessionals([]);
   };
 
   const handleStep2Next = () => {
-    if (!selectedProfId)  { notifyError("Selecione um profissional."); return; }
-    if (!selectedDate)    { notifyError("Selecione uma data."); return; }
-    if (!selectedSlot)    { notifyError("Selecione um horário disponível."); return; }
+    if (!selectedProfId) {
+      notifyError("Selecione um profissional.");
+      return;
+    }
+    if (!selectedDate) {
+      notifyError("Selecione uma data.");
+      return;
+    }
+    if (!selectedSlot) {
+      notifyError("Selecione um horário disponível.");
+      return;
+    }
     const selectedSlotData = slots.find((slot) => slot.time === selectedSlot);
     if (!selectedSlotData || !isSlotSelectable(selectedSlotData)) {
       setSelectedSlot("");
@@ -358,39 +422,6 @@ const ReceptionMarcarConsultaPage = () => {
 
   // ── Render helpers ───────────────────────────────────────────────────────────
 
-  const renderGate = () => (
-    <PageWrapper>
-      <PageTitle>Marcar Consulta</PageTitle>
-      <SectionCard>
-        <SectionQuestion>O paciente já tem cadastro?</SectionQuestion>
-        <SectionSubtitle>
-          Para marcar a consulta, precisamos saber se o paciente já está cadastrado no sistema.
-        </SectionSubtitle>
-        <OptionsGrid>
-          <OptionCard $variant="blue" type="button" onClick={() => { setView("wizard"); setStep(1); }}>
-            <OptionIconWrap $variant="blue">
-              <UserCheck size={28} color="#FFFFFF" strokeWidth={2} />
-            </OptionIconWrap>
-            <OptionTitle>Sim, já tem cadastro</OptionTitle>
-            <OptionLink $variant="blue">Buscar paciente pelo nome</OptionLink>
-          </OptionCard>
-
-          <OptionCard
-            $variant="green"
-            type="button"
-            onClick={() => navigate("/recepcao/cadastrar-paciente")}
-          >
-            <OptionIconWrap $variant="green">
-              <UserPlus size={28} color="#FFFFFF" strokeWidth={2} />
-            </OptionIconWrap>
-            <OptionTitle>Não, é novo paciente</OptionTitle>
-            <OptionLink $variant="green">Realizar cadastro primeiro</OptionLink>
-          </OptionCard>
-        </OptionsGrid>
-      </SectionCard>
-    </PageWrapper>
-  );
-
   const renderStep1 = () => (
     <>
       <StepTitle>Selecionar Paciente</StepTitle>
@@ -421,34 +452,38 @@ const ReceptionMarcarConsultaPage = () => {
             <Input
               placeholder="Digite o nome do paciente..."
               value={query}
-              onChange={(e) => { setQuery(e.target.value); setShowDropdown(true); }}
+              onChange={(e) => {
+                const raw = e.target.value;
+                const digits = onlyDigits(raw);
+                const isCpfInput =
+                  digits.length > 0 && onlyDigits(raw.replace(/[.-]/g, "")) === digits;
+                if (isCpfInput && digits.length > 11) return;
+                const formatted = isCpfInput ? maskCPF(digits) : raw;
+                setQuery(formatted);
+                setShowDropdown(true);
+              }}
               icon={<Search size={16} />}
               iconPosition="left"
               fullWidth
             />
             {showDropdown && (
               <SearchResultList>
-                {searchLoading && (
-                  <SearchResultItem $disabled>Buscando...</SearchResultItem>
-                )}
+                {searchLoading && <SearchResultItem $disabled>Buscando...</SearchResultItem>}
                 {!searchLoading && patientResults.length === 0 && query.trim().length >= 2 && (
                   <SearchResultItem $disabled>Nenhum paciente encontrado.</SearchResultItem>
                 )}
-                {!searchLoading && patientResults.map((p) => (
-                  <SearchResultItem key={p.id} onMouseDown={() => selectPatient(p)}>
-                    <PatientAvatar $size={34}>
-                      {p.avatarUrl ? (
-                        <img src={p.avatarUrl} alt={p.name} />
-                      ) : (
-                        getInitials(p.name)
-                      )}
-                    </PatientAvatar>
-                    <SearchResultInfo>
-                      <SearchResultName>{p.name}</SearchResultName>
-                      <SearchResultMeta>{getPatientMeta(p)}</SearchResultMeta>
-                    </SearchResultInfo>
-                  </SearchResultItem>
-                ))}
+                {!searchLoading &&
+                  patientResults.map((p) => (
+                    <SearchResultItem key={p.id} onMouseDown={() => selectPatient(p)}>
+                      <PatientAvatar $size={34}>
+                        {p.avatarUrl ? <img src={p.avatarUrl} alt={p.name} /> : getInitials(p.name)}
+                      </PatientAvatar>
+                      <SearchResultInfo>
+                        <SearchResultName>{p.name}</SearchResultName>
+                        <SearchResultMeta>{getPatientMeta(p)}</SearchResultMeta>
+                      </SearchResultInfo>
+                    </SearchResultItem>
+                  ))}
               </SearchResultList>
             )}
           </SearchWrapper>
@@ -470,9 +505,6 @@ const ReceptionMarcarConsultaPage = () => {
       </FieldBlock>
 
       <FormActions>
-        <Button variant="outline" type="button" onClick={() => setView("gate")}>
-          ← Voltar
-        </Button>
         <Button variant="primary" type="button" onClick={handleStep1Next}>
           Próximo →
         </Button>
@@ -495,7 +527,8 @@ const ReceptionMarcarConsultaPage = () => {
             <option value="">{profLoading ? "Carregando..." : "Selecione..."}</option>
             {professionals.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.name}{p.specialty ? ` — ${p.specialty}` : ""}
+                {p.name}
+                {p.specialty ? ` — ${p.specialty}` : ""}
               </option>
             ))}
           </FormSelect>
@@ -507,7 +540,10 @@ const ReceptionMarcarConsultaPage = () => {
             type="date"
             value={selectedDate}
             min={today}
-            onChange={(e) => { setSelectedDate(e.target.value); setSelectedSlot(""); }}
+            onChange={(e) => {
+              setSelectedDate(e.target.value);
+              setSelectedSlot("");
+            }}
             fullWidth
           />
         </FieldBlock>
@@ -626,8 +662,6 @@ const ReceptionMarcarConsultaPage = () => {
 
   // ── Main render ──────────────────────────────────────────────────────────────
 
-  if (view === "gate") return renderGate();
-
   return (
     <PageWrapper>
       <PageTitle>Marcar Consulta</PageTitle>
@@ -646,4 +680,3 @@ const ReceptionMarcarConsultaPage = () => {
 };
 
 export default ReceptionMarcarConsultaPage;
-
