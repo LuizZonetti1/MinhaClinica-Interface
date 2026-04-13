@@ -25,6 +25,112 @@ export interface PatientSummary {
   newThisMonth: number;
 }
 
+export interface PatientAuditAddress {
+  zipCode: string | null;
+  street: string | null;
+  number: string | null;
+  complement: string | null;
+  neighborhood: string | null;
+  city: string | null;
+  state: string | null;
+}
+
+export interface PatientAuditMedical {
+  bloodType: string | null;
+  allergies: string | null;
+  medications: string | null;
+  conditions: string | null;
+  observations: string | null;
+  emergencyContactName: string | null;
+  emergencyContactPhone: string | null;
+}
+
+export interface PatientAuditReportItem {
+  id: string;
+  appointmentId: string;
+  appointmentDate: string | null;
+  startTime: string | null;
+  endTime: string | null;
+  appointmentType: string | null;
+  appointmentStatus: string | null;
+  appointmentNotes: string | null;
+  professionalName: string;
+  professionalSpecialty: string | null;
+  chiefComplaint: string | null;
+  symptoms: string | null;
+  diagnosis: string | null;
+  treatment: string | null;
+  prescription: string | null;
+  observations: string | null;
+  attachments: string[];
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
+export interface PatientAuditDetails {
+  patient: {
+    id: string;
+    userId: string;
+    name: string;
+    email: string;
+    phone: string | null;
+    avatarUrl: string | null;
+    status: PatientStatus;
+    isActive: boolean;
+    cpf: string;
+    rg: string | null;
+    dateOfBirth: string | null;
+    gender: string | null;
+    alternativePhone: string | null;
+    noShowCount: number;
+    totalAppointments: number;
+    completedAppointments: number;
+    lastVisit: string | null;
+    createdAt: string | null;
+    updatedAt: string | null;
+    address: PatientAuditAddress;
+    medical: PatientAuditMedical;
+  };
+  reports: PatientAuditReportItem[];
+}
+
+// ─── Reception-specific types ─────────────────────────────────────────────────
+
+export interface ReceptionPatientListItem {
+  id: string;
+  name: string;
+  email: string;
+  cpf: string | null;
+  phone: string | null;
+  avatarUrl: string | null;
+  status: PatientStatus;
+  lastVisit: string | null;
+  totalAppointments: number;
+  createdAt: string;
+}
+
+export interface ReceptionPatientListResponse {
+  count: number;
+  items: ReceptionPatientListItem[];
+}
+
+export interface ReceptionAppointmentItem {
+  id: string;
+  date: string | null;
+  startTime: string | null;
+  endTime: string | null;
+  professionalName: string | null;
+  professionalSpecialty: string | null;
+  appointmentType: string | null;
+  status: string | null;
+  notes: string | null;
+}
+
+export interface ReceptionAppointmentListResponse {
+  count: number;
+  items: ReceptionAppointmentItem[];
+}
+
 export type Gender = "MALE" | "FEMALE" | "OTHER" | "PREFER_NOT_TO_SAY";
 
 export type BloodType = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
@@ -88,11 +194,7 @@ export interface PatientAppointmentsListResult {
   appointments: PatientAppointmentListItem[];
 }
 
-export type PatientBookingAppointmentType =
-  | "CONSULTATION"
-  | "RETURN"
-  | "EXAM"
-  | "EMERGENCY";
+export type PatientBookingAppointmentType = "CONSULTATION" | "RETURN" | "EXAM" | "EMERGENCY";
 
 export interface PatientBookingClinicItem {
   id: string;

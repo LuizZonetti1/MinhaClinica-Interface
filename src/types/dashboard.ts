@@ -30,6 +30,7 @@ export interface FinancialItem {
 export interface AppointmentStatusItem {
   name: string;
   value: number;
+  color?: string;
 }
 
 export interface TopProfessionalItem {
@@ -63,7 +64,13 @@ export interface ReportData {
   referenceLabel: string;
 }
 
-export type AppointmentStatus = "WAITING" | "CHECKED_IN" | "IN_PROGRESS" | "DONE" | "CANCELLED";
+export type AppointmentStatus =
+  | "WAITING"
+  | "CHECKED_IN"
+  | "IN_PROGRESS"
+  | "DONE"
+  | "CANCELLED"
+  | "NO_SHOW";
 
 export type AppointmentStatusUpdate =
   | "SCHEDULED"
