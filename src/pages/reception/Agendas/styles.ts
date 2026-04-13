@@ -14,6 +14,64 @@ export const PageHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+`;
+
+export const ControlsRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+`;
+
+export const AgendaDateInput = styled.input`
+  height: 36px;
+  padding: 0 12px;
+  border: 1.25px solid ${theme.colors.border.light};
+  border-radius: ${theme.borderRadius.md};
+  background: ${theme.colors.surface};
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  color: ${theme.colors.text.primary};
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+
+  &:focus {
+    border-color: ${theme.colors.border.focus};
+  }
+`;
+
+export const TimeFilterWrap = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  height: 36px;
+  border: 1.25px solid ${theme.colors.border.light};
+  border-radius: ${theme.borderRadius.md};
+  background: ${theme.colors.surface};
+  color: ${theme.colors.text.muted};
+  transition: border-color 0.15s;
+
+  &:focus-within {
+    border-color: ${theme.colors.border.focus};
+  }
+`;
+
+export const TimeFilterInput = styled.input`
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  color: ${theme.colors.text.primary};
+  width: 130px;
+
+  &::placeholder {
+    color: ${theme.colors.text.muted};
+  }
 `;
 
 export const PageTitle = styled.h1`
@@ -105,7 +163,7 @@ export const DateLabel = styled.span`
 
 export const ProfessionalsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   align-items: start;
 
@@ -162,7 +220,7 @@ export const ProfInfo = styled.div`
 export const ProfName = styled.p`
   margin: 0;
   font-family: "Roboto", sans-serif;
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 700;
   color: ${theme.colors.text.primary};
   white-space: nowrap;
@@ -173,7 +231,7 @@ export const ProfName = styled.p`
 export const ProfSpecialty = styled.p`
   margin: 0;
   font-family: "Roboto", sans-serif;
-  font-size: 12px;
+  font-size: 14px;
   color: ${theme.colors.text.muted};
   white-space: nowrap;
   overflow: hidden;
@@ -201,16 +259,16 @@ export const SlotRow = styled.div`
 
 export const SlotTime = styled.span`
   font-family: "Roboto", sans-serif;
-  font-size: 13px;
+  font-size: 17px;
   font-weight: 600;
   color: ${theme.colors.primaryHover};
-  width: 44px;
+  width: 58px;
   flex-shrink: 0;
 `;
 
 export const PatientName = styled.span`
   font-family: "Roboto", sans-serif;
-  font-size: 13px;
+  font-size: 17px;
   color: ${theme.colors.text.primary};
   flex: 1;
   min-width: 0;
@@ -221,7 +279,7 @@ export const PatientName = styled.span`
 
 export const FreeLabel = styled.span`
   font-family: "Roboto", sans-serif;
-  font-size: 13px;
+  font-size: 17px;
   color: ${theme.colors.text.muted};
   flex: 1;
 `;
@@ -231,7 +289,7 @@ export const SlotBadge = styled.span<{
 }>`
   display: inline-block;
   font-family: "Roboto", sans-serif;
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 600;
   padding: 3px 10px;
   border-radius: 9999px;

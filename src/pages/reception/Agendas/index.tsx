@@ -1,5 +1,5 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getReceptionAgendas } from "../../../services/reception.service";
 import type {
   AgendaProfessional,
@@ -11,6 +11,8 @@ import { formatDateToIsoDate } from "../../../utils/dateParsers";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError } from "../../../utils/toast";
 import {
+  AgendaDateInput,
+  ControlsRow,
   DateLabel,
   DateNavButton,
   DateNavRow,
@@ -34,6 +36,8 @@ import {
   SlotList,
   SlotRow,
   SlotTime,
+  TimeFilterInput,
+  TimeFilterWrap,
 } from "./styles";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -121,13 +125,14 @@ const formatDateLabel = (date: Date): string => {
 
 const ReceptionAgendasPage = () => {
   const todayNorm = stripTime(new Date());
-  const minDate = new Date(todayNorm.getFullYear(), todayNorm.getMonth() - 1, todayNorm.getDate());
-  const maxDate = new Date(todayNorm.getFullYear(), todayNorm.getMonth() + 1, todayNorm.getDate());
+  const minDate = new Date(todayNorm.getFullYear(), todayNorm.getMonth() - 6, todayNorm.getDate());
+  const maxDate = new Date(todayNorm.getFullYear(), todayNorm.getMonth() + 6, todayNorm.getDate());
 
   const [currentDate, setCurrentDate] = useState<Date>(todayNorm);
   const [data, setData] = useState<AgendasResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedProfId, setSelectedProfId] = useState<string>("all");
+  const [timeFilter, setTimeFilter] = useState("");
 
   const canGoPrev = currentDate > minDate;
   const canGoNext = currentDate < maxDate;
@@ -142,6 +147,7 @@ const ReceptionAgendasPage = () => {
         if (isMounted) {
           setData(result);
           setSelectedProfId("all");
+          setTimeFilter("");
         }
       } catch (err: unknown) {
         if (isMounted) {
@@ -174,10 +180,38 @@ const ReceptionAgendasPage = () => {
         ? data.professionals
         : data.professionals.filter((p) => p.id === selectedProfId);
 
+  const filteredProfessionals = useMemo(() => {
+    const trimmed = timeFilter.trim();
+    if (!trimmed) return visibleProfessionals;
+    return visibleProfessionals.filter((p) => p.slots.some((s) => s.time.startsWith(trimmed)));
+  }, [visibleProfessionals, timeFilter]);
+
   return (
     <PageWrapper>
       <PageHeader>
         <PageTitle>Agenda dos Profissionais</PageTitle>
+        <ControlsRow>
+          <AgendaDateInput
+            type="date"
+            value={toISODate(currentDate)}
+            min={toISODate(minDate)}
+            max={toISODate(maxDate)}
+            onChange={(e) => {
+              if (!e.target.value) return;
+              const [y, m, d] = e.target.value.split("-").map(Number);
+              setCurrentDate(stripTime(new Date(y, m - 1, d)));
+            }}
+          />
+          <TimeFilterWrap>
+            <Clock size={14} />
+            <TimeFilterInput
+              type="text"
+              placeholder="Filtrar horário..."
+              value={timeFilter}
+              onChange={(e) => setTimeFilter(e.target.value)}
+            />
+          </TimeFilterWrap>
+        </ControlsRow>
       </PageHeader>
 
       {/* Professional filter tabs */}
@@ -224,11 +258,11 @@ const ReceptionAgendasPage = () => {
         <LoadingState>Carregando agendas...</LoadingState>
       ) : !data || data.professionals.length === 0 ? (
         <EmptyState>Nenhum profissional com agenda para esta data.</EmptyState>
-      ) : visibleProfessionals.length === 0 ? (
-        <EmptyState>Nenhuma agenda encontrada para o profissional selecionado.</EmptyState>
+      ) : filteredProfessionals.length === 0 ? (
+        <EmptyState>Nenhuma agenda encontrada para o filtro selecionado.</EmptyState>
       ) : (
         <ProfessionalsGrid>
-          {visibleProfessionals.map((prof) => {
+          {filteredProfessionals.map((prof) => {
             const avatarColors = getAvatarColors(prof.name);
             const initials = getInitials(prof.name);
 
@@ -257,28 +291,33 @@ const ReceptionAgendasPage = () => {
                       <FreeLabel>Nenhum horário disponível</FreeLabel>
                     </SlotRow>
                   ) : (
-                    prof.slots.map((slot) => (
-                      <SlotRow key={slot.time}>
-                        <SlotTime>{slot.time}</SlotTime>
+                    prof.slots
+                      .filter((s) => {
+                        const trimmed = timeFilter.trim();
+                        return !trimmed || s.time.startsWith(trimmed);
+                      })
+                      .map((slot) => (
+                        <SlotRow key={slot.time}>
+                          <SlotTime>{slot.time}</SlotTime>
 
-                        {slot.libre ? (
-                          <FreeLabel>Livre</FreeLabel>
-                        ) : (
-                          <>
-                            <PatientName>{slot.patientName ?? "—"}</PatientName>
-                            {slot.status &&
-                              (() => {
-                                const statusMeta = getSlotStatusMeta(slot.status);
-                                return (
-                                  <SlotBadge $variant={statusMeta.variant}>
-                                    {statusMeta.label}
-                                  </SlotBadge>
-                                );
-                              })()}
-                          </>
-                        )}
-                      </SlotRow>
-                    ))
+                          {slot.libre ? (
+                            <FreeLabel>Livre</FreeLabel>
+                          ) : (
+                            <>
+                              <PatientName>{slot.patientName ?? "—"}</PatientName>
+                              {slot.status &&
+                                (() => {
+                                  const statusMeta = getSlotStatusMeta(slot.status);
+                                  return (
+                                    <SlotBadge $variant={statusMeta.variant}>
+                                      {statusMeta.label}
+                                    </SlotBadge>
+                                  );
+                                })()}
+                            </>
+                          )}
+                        </SlotRow>
+                      ))
                   )}
                 </SlotList>
               </ProfessionalCard>
