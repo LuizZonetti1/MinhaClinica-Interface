@@ -66,6 +66,8 @@ const PAGE_TITLES: Record<string, string> = {
   "/recepcao/cadastrar-paciente": "Cadastrar Paciente",
   "/recepcao/agendas": "Ver Agendas",
   "/recepcao/checkin": "Check-in",
+  "/recepcao/historico": "Histórico de Pacientes",
+  "/recepcao/transacoes": "Transações",
   "/recepcao/perfil": "Meu Perfil",
   "/profissional/dashboard": "Inicio",
   "/profissional/agenda": "Agenda",
@@ -142,6 +144,18 @@ const PAGE_BREADCRUMBS: Record<string, BreadcrumbItem> = {
     parentPath: "/recepcao/dashboard",
     current: "Check-in",
     currentPath: "/recepcao/checkin",
+  },
+  "/recepcao/historico": {
+    parent: "Inicio",
+    parentPath: "/recepcao/dashboard",
+    current: "Histórico de Pacientes",
+    currentPath: "/recepcao/historico",
+  },
+  "/recepcao/transacoes": {
+    parent: "Inicio",
+    parentPath: "/recepcao/dashboard",
+    current: "Transações",
+    currentPath: "/recepcao/transacoes",
   },
   "/recepcao/perfil": {
     parent: "Inicio",
@@ -395,17 +409,17 @@ export const AppLayout = () => {
           ? "/profissional/perfil"
           : user?.role === "PATIENT"
             ? "/paciente/perfil"
-          : null;
+            : null;
   const editProfilePath =
     user?.role === "ADMIN"
       ? "/admin/perfil/editar"
       : user?.role === "RECEPTIONIST"
         ? "/recepcao/perfil/editar"
-      : user?.role === "PROFESSIONAL"
-        ? "/profissional/perfil/editar"
-        : user?.role === "PATIENT"
-          ? "/paciente/perfil/editar"
-          : null;
+        : user?.role === "PROFESSIONAL"
+          ? "/profissional/perfil/editar"
+          : user?.role === "PATIENT"
+            ? "/paciente/perfil/editar"
+            : null;
 
   const handleOpenProfile = () => {
     if (!profilePath) return;
@@ -457,7 +471,7 @@ export const AppLayout = () => {
                 {renderCrumb(breadcrumb.current, breadcrumb.currentPath, true)}
               </Breadcrumb>
             ) : (
-              title
+              <BreadcrumbText $current>{title}</BreadcrumbText>
             )}
           </PageTitle>
           <HeaderRight>

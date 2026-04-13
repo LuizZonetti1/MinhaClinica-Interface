@@ -6,6 +6,7 @@ import {
   CalendarPlus2,
   ClipboardCheck,
   Clock3,
+  History,
   LayoutDashboard,
   LogOut,
   MessageSquare,
@@ -14,6 +15,7 @@ import {
   User,
   UserPlus,
   Users,
+  Wallet,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
@@ -51,6 +53,8 @@ const RECEPTION_NAV_LINKS: NavLink[] = [
   { label: "Cadastrar Paciente", path: "/recepcao/cadastrar-paciente", icon: UserPlus },
   { label: "Ver Agendas", path: "/recepcao/agendas", icon: CalendarCheck2 },
   { label: "Check-in", path: "/recepcao/checkin", icon: ClipboardCheck },
+  { label: "Historico", path: "/recepcao/historico", icon: History },
+  { label: "Transações", path: "/recepcao/transacoes", icon: Wallet },
   { label: "Perfil", path: "/recepcao/perfil", icon: User },
 ];
 
