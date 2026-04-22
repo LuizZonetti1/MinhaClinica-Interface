@@ -187,6 +187,8 @@ export interface PatientAppointmentListItem {
   professionalAvatarUrl: string | null;
   primarySpecialty: string | null;
   clinicName: string | null;
+  clinicId?: string | null;
+  professionalId?: string | null;
 }
 
 export interface PatientAppointmentsListResult {
