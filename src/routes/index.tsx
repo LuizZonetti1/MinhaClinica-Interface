@@ -20,6 +20,9 @@ import PatientProfilePage from "../pages/Patient/Profile";
 import ProfessionalAgendaPage from "../pages/Professional/Agenda";
 import ProfessionalCommentsPage from "../pages/Professional/Comments";
 import ProfessionalDashboard from "../pages/Professional/Dashboard";
+import ProfessionalDocumentosPage from "../pages/Professional/Documentos";
+import ProfessionalDocumentoFormPage from "../pages/Professional/Documentos/Form";
+import ProfessionalDocumentoViewPage from "../pages/Professional/Documentos/View";
 import ProfessionalEditProfilePage from "../pages/Professional/EditProfile";
 import ProfessionalProfilePage from "../pages/Professional/Profile";
 import ReceptionAgendasPage from "../pages/Reception/Agendas";
@@ -190,6 +193,15 @@ const AppRoutes = () => {
                 }
               />
               <Route path="/profissional/comentarios" element={<ProfessionalCommentsPage />} />
+              <Route path="/profissional/documentos" element={<ProfessionalDocumentosPage />} />
+              <Route
+                path="/profissional/documentos/formulario"
+                element={<ProfessionalDocumentoFormPage />}
+              />
+              <Route
+                path="/profissional/documentos/visualizar"
+                element={<ProfessionalDocumentoViewPage />}
+              />
               <Route path="/profissional/perfil" element={<ProfessionalProfilePage />} />
               <Route path="/profissional/perfil/editar" element={<ProfessionalEditProfilePage />} />
             </Route>

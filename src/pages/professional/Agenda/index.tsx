@@ -1,5 +1,6 @@
-import { CalendarDays, ChevronLeft, ChevronRight, Clock3, FileText } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Clock3, FolderOpen } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router";
 import { Badge } from "../../../components/Badge";
 import { useProfessionalAgenda } from "../../../contexts";
 import type { AgendaSlotStatus, ProfessionalAgendaDay } from "../../../types/dashboard";
@@ -191,6 +192,7 @@ const formatWeekdayDate = (date: string): string =>
 const sortByTime = (a: { time: string }, b: { time: string }) => a.time.localeCompare(b.time);
 
 const ProfessionalAgendaPage = () => {
+  const navigate = useNavigate();
   const {
     data,
     currentMonth,
@@ -420,9 +422,24 @@ const ProfessionalAgendaPage = () => {
 
                             <AppointmentRowActions>
                               <StatusBadge $variant={status.variant}>{status.label}</StatusBadge>
-                              <ReportButton type="button" title="Laudo em breve">
-                                <FileText size={14} />
-                                Laudo
+                              <ReportButton
+                                type="button"
+                                title="Documentos da consulta"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const params = new URLSearchParams({
+                                    consulta: appointment.id,
+                                    paciente: appointment.patientName,
+                                    profissional: appointment.professionalName ?? "",
+                                    horario: appointment.time,
+                                    data: day.date,
+                                    statusConsulta: appointment.status,
+                                  });
+                                  navigate(`/profissional/documentos?${params.toString()}`);
+                                }}
+                              >
+                                <FolderOpen size={14} />
+                                Documentos
                               </ReportButton>
                             </AppointmentRowActions>
                           </AppointmentRow>
@@ -514,9 +531,24 @@ const ProfessionalAgendaPage = () => {
 
                               <WeekAppointmentFooter>
                                 <StatusBadge $variant={status.variant}>{status.label}</StatusBadge>
-                                <ReportButton type="button" title="Laudo em breve">
-                                  <FileText size={14} />
-                                  Laudo
+                                <ReportButton
+                                  type="button"
+                                  title="Documentos da consulta"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const params = new URLSearchParams({
+                                      consulta: appointment.id,
+                                      paciente: appointment.patientName,
+                                      profissional: appointment.professionalName ?? "",
+                                      horario: appointment.time,
+                                      data: day.date,
+                                      statusConsulta: appointment.status,
+                                    });
+                                    navigate(`/profissional/documentos?${params.toString()}`);
+                                  }}
+                                >
+                                  <FolderOpen size={14} />
+                                  Documentos
                                 </ReportButton>
                               </WeekAppointmentFooter>
                             </WeekAppointmentCard>

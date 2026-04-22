@@ -6,6 +6,7 @@ import {
   CalendarPlus2,
   ClipboardCheck,
   Clock3,
+  FolderOpen,
   History,
   LayoutDashboard,
   LogOut,
@@ -61,6 +62,7 @@ const RECEPTION_NAV_LINKS: NavLink[] = [
 const PROFESSIONAL_NAV_LINKS: NavLink[] = [
   { label: "Inicio", path: "/profissional/dashboard", icon: LayoutDashboard },
   { label: "Agenda", path: "/profissional/agenda", icon: CalendarDays },
+  { label: "Documentos", path: "/profissional/documentos", icon: FolderOpen },
   { label: "Comentarios", path: "/profissional/comentarios", icon: MessageSquare },
   { label: "Perfil", path: "/profissional/perfil", icon: User },
 ];
