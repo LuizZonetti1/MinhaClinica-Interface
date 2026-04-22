@@ -123,3 +123,69 @@ export const formatIsoDateToLongPtBr = (
 
   return toPtBrLongDateString(parsed);
 };
+
+// ─── ISO datetime helpers ────────────────────────────────────────────────────
+
+/**
+ * Formata um ISO datetime (UTC ou com offset) para o fuso especificado.
+ * Retorna "dd/mm/aaaa" (sem hora).
+ */
+export const formatIsoDateTimeDatePart = (
+  value: string | null | undefined,
+  timezone?: string,
+  fallback = "--/--/----",
+): string => {
+  if (!value) return fallback;
+  try {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return fallback;
+    const opts: Intl.DateTimeFormatOptions = {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      timeZone: timezone,
+    };
+    return date.toLocaleDateString("pt-BR", opts);
+  } catch {
+    return fallback;
+  }
+};
+
+/**
+ * Formata um ISO datetime (UTC ou com offset) para o fuso especificado.
+ * Retorna "HH:mm".
+ */
+export const formatIsoDateTimeTimePart = (
+  value: string | null | undefined,
+  timezone?: string,
+  fallback = "--:--",
+): string => {
+  if (!value) return fallback;
+  try {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return fallback;
+    const opts: Intl.DateTimeFormatOptions = {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: timezone,
+    };
+    return date.toLocaleTimeString("pt-BR", opts);
+  } catch {
+    return fallback;
+  }
+};
+
+/**
+ * Formata um ISO datetime para "dd/mm/aaaa às HH:mm" no fuso especificado.
+ */
+export const formatIsoDateTimeToBr = (
+  value: string | null | undefined,
+  timezone?: string,
+  fallback = "--",
+): string => {
+  if (!value) return fallback;
+  const datePart = formatIsoDateTimeDatePart(value, timezone);
+  const timePart = formatIsoDateTimeTimePart(value, timezone);
+  if (datePart === "--/--/----") return fallback;
+  return `${datePart} \u00e0s ${timePart}`;
+};
