@@ -755,15 +755,6 @@ const buildProfessionalMonthlyAgendaData = (
   };
 };
 
-const replaceAgendaDay = (
-  agendaData: ProfessionalMonthlyAgendaData,
-  nextDay: ProfessionalAgendaDay,
-): ProfessionalMonthlyAgendaData =>
-  buildProfessionalMonthlyAgendaData(
-    agendaData.referenceMonth,
-    agendaData.days.map((day) => (day.date === nextDay.date ? nextDay : day)),
-  );
-
 const normalizeCalendarMonthResponse = (
   raw: unknown,
   referenceMonth: string,
@@ -845,7 +836,24 @@ export const getProfessionalMonthlyAgenda = async (
       );
 
       const todayAgendaDay = buildProfessionalAgendaDay(today, mergedTodayAppointments);
-      return replaceAgendaDay(normalizedCalendarData, todayAgendaDay);
+
+      // Remove from other days any appointment already present in today's authoritative list.
+      // This handles cases where the calendar endpoint assigns an appointment to the wrong day
+      // (e.g. off-by-one due to timezone) while the daily agenda endpoint returns it correctly.
+      const todayIdentities = new Set(
+        mergedTodayAppointments.map((app) => getAppointmentIdentity(app)),
+      );
+
+      const patchedDays = normalizedCalendarData.days.map((day) => {
+        if (day.date === today) return todayAgendaDay;
+        const deduplicated = day.appointments.filter(
+          (app) => !todayIdentities.has(getAppointmentIdentity(app)),
+        );
+        if (deduplicated.length === day.appointments.length) return day;
+        return buildProfessionalAgendaDay(day.date, deduplicated);
+      });
+
+      return buildProfessionalMonthlyAgendaData(referenceMonth, patchedDays);
     } catch {
       return normalizedCalendarData;
     }
