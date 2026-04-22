@@ -179,3 +179,25 @@ body {
   color: var(--mc-text-primary);
   transition: background-color 0.2s ease, color 0.2s ease;
 }
+
+/* ── Print styles ─────────────────────────────────────────────────────────── */
+@media print {
+  /* Hide navigation, sidebar and non-print UI */
+  nav,
+  aside,
+  header,
+  footer,
+  [data-no-print] {
+    display: none !important;
+  }
+
+  body {
+    background: #fff !important;
+    color: #111827 !important;
+  }
+
+  /* Ensure print layout fills the page */
+  @page {
+    margin: 12mm 14mm;
+  }
+}
