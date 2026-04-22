@@ -297,3 +297,48 @@ export const createAppointment = async (
     type: (r.type ? toStr(r.type) : null) as AppointmentType | null,
   };
 };
+
+// ─── Appointment status transitions ──────────────────────────────────────────
+
+export interface ConcludeAppointmentResult {
+  status: string;
+  /** IDs de documentos ainda em rascunho apos conclusao */
+  draftDocuments?: string[];
+}
+
+export const concludeAppointment = async (
+  appointmentId: string,
+): Promise<ConcludeAppointmentResult> => {
+  const { data } = await api.post<unknown>(`/appointments/${appointmentId}/conclude`);
+  const r = toRec(data) ?? {};
+  const inner = toRec(r.data) ?? r;
+  return {
+    status: toStr(inner.status ?? inner.appointmentStatus ?? "COMPLETED"),
+    draftDocuments: Array.isArray(inner.draftDocuments)
+      ? (inner.draftDocuments as unknown[]).map(toStr)
+      : undefined,
+  };
+};
+
+export interface CreateAddendumPayload {
+  /** Motivo / observacao do adendo */
+  reason?: string;
+}
+
+export interface CreateAddendumResult {
+  status: string;
+  addendumDocumentId?: string;
+}
+
+export const createAppointmentAddendum = async (
+  appointmentId: string,
+  payload: CreateAddendumPayload = {},
+): Promise<CreateAddendumResult> => {
+  const { data } = await api.post<unknown>(`/appointments/${appointmentId}/addendum`, payload);
+  const r = toRec(data) ?? {};
+  const inner = toRec(r.data) ?? r;
+  return {
+    status: toStr(inner.status ?? inner.appointmentStatus ?? "COMPLETED_WITH_ADDENDUM"),
+    addendumDocumentId: inner.addendumDocumentId ? toStr(inner.addendumDocumentId) : undefined,
+  };
+};
