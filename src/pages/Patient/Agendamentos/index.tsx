@@ -1,35 +1,37 @@
-import {
-  Calendar,
-  ChevronRight,
-  Clock3,
-  MapPin,
-  Plus,
-  Search,
-} from "lucide-react";
+import { Calendar, ChevronRight, Clock3, MapPin, Plus, RotateCcw, Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "../../../components/Button";
 import { Input } from "../../../components/Input";
 import { Modal } from "../../../components/Modal";
+import {
+  cancelAppointment,
+  listPatientAppointments,
+  rescheduleAppointment,
+} from "../../../services/patient-appointments.service";
 import {
   createPatientBookingAppointment,
   getPatientBookingSlots,
   listPatientBookingProfessionals,
   searchPatientBookingClinics,
 } from "../../../services/patient-booking.service";
-import { listPatientAppointments } from "../../../services/patient-appointments.service";
 import type {
   PatientAppointmentListItem,
-  PatientAppointmentsListResult,
   PatientAppointmentStatus,
+  PatientAppointmentsListResult,
   PatientBookingAppointmentType,
   PatientBookingClinicItem,
   PatientBookingProfessionalItem,
   PatientBookingSlotItem,
 } from "../../../types/patient";
-import { formatDateToIsoDate, formatIsoDateToBr, formatIsoDateToLongPtBr } from "../../../utils/dateParsers";
+import {
+  formatDateToIsoDate,
+  formatIsoDateToBr,
+  formatIsoDateToLongPtBr,
+} from "../../../utils/dateParsers";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { hasNoShowWindowElapsedForDate } from "../../../utils/timeParsers";
-import { notifyError, notifyInfo, notifySuccess } from "../../../utils/toast";
+import { notifyError, notifySuccess } from "../../../utils/toast";
+import type { AppointmentBadgeVariant } from "./styles";
 import {
   ActionRow,
   AppointmentBody,
@@ -45,7 +47,6 @@ import {
   BookingLabel,
   BookingSelect,
   BookingTextarea,
-  CancelButton,
   CardCode,
   ClinicResultButton,
   ClinicResultMeta,
@@ -56,14 +57,22 @@ import {
   EmptyState,
   FilterChip,
   FiltersRow,
+  ModalActionRow,
+  ModalActionSection,
+  ModalCancelBtn,
   ModalGrid,
+  ModalInfoBanner,
   ModalItem,
   ModalLabel,
+  ModalNotice,
+  ModalRescheduleBtn,
   ModalValue,
+  ModalWarningBox,
   PageTitle,
   PageWrapper,
   ProfessionalBlock,
   ProfessionalName,
+  RescheduleForm,
   SearchRow,
   SlotButton,
   SlotsGrid,
@@ -73,7 +82,6 @@ import {
   TopRow,
   ViewButton,
 } from "./styles";
-import type { AppointmentBadgeVariant } from "./styles";
 
 type FilterKey = "ALL" | "CONFIRMED" | "PENDING" | "CANCELLED";
 
@@ -99,6 +107,7 @@ const FILTER_TO_STATUS: Record<FilterKey, PatientAppointmentStatus | undefined> 
 const STATUS_META: Record<string, { label: string; variant: AppointmentBadgeVariant }> = {
   CONFIRMED: { label: "Confirmado", variant: "confirmed" },
   SCHEDULED: { label: "Pendente", variant: "pending" },
+  RESCHEDULED: { label: "Remarcado", variant: "rescheduled" },
   WAITING: { label: "Aguardando", variant: "waiting" },
   IN_PROGRESS: { label: "Em atendimento", variant: "progress" },
   COMPLETED: { label: "Compareceu", variant: "completed" },
@@ -210,8 +219,6 @@ const filterClinicsIgnoringAccents = (
 const getStatusMeta = (status: string) =>
   STATUS_META[normalizeAppointmentStatus(status)] ?? { label: status, variant: "default" as const };
 
-const isPendingStatus = (status: string) => normalizeAppointmentStatus(status) === "SCHEDULED";
-
 const PatientAppointmentsPage = () => {
   const todayIso = useMemo(() => formatDateToIsoDate(new Date()), []);
   const allClinicsCacheRef = useRef<PatientBookingClinicItem[] | null>(null);
@@ -221,17 +228,18 @@ const PatientAppointmentsPage = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterKey>("ALL");
-  const [selectedAppointment, setSelectedAppointment] =
-    useState<PatientAppointmentListItem | null>(null);
+  const [selectedAppointment, setSelectedAppointment] = useState<PatientAppointmentListItem | null>(
+    null,
+  );
 
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [bookingClinicQuery, setBookingClinicQuery] = useState("");
   const [bookingClinics, setBookingClinics] = useState<PatientBookingClinicItem[]>([]);
   const [bookingClinicsLoading, setBookingClinicsLoading] = useState(false);
   const [selectedClinic, setSelectedClinic] = useState<PatientBookingClinicItem | null>(null);
-  const [bookingProfessionals, setBookingProfessionals] = useState<PatientBookingProfessionalItem[]>(
-    [],
-  );
+  const [bookingProfessionals, setBookingProfessionals] = useState<
+    PatientBookingProfessionalItem[]
+  >([]);
   const [bookingProfessionalsLoading, setBookingProfessionalsLoading] = useState(false);
   const [selectedProfessionalId, setSelectedProfessionalId] = useState("");
   const [bookingDate, setBookingDate] = useState(todayIso);
@@ -241,6 +249,17 @@ const PatientAppointmentsPage = () => {
   const [bookingType, setBookingType] = useState<PatientBookingAppointmentType>("CONSULTATION");
   const [bookingNotes, setBookingNotes] = useState("");
   const [bookingSubmitting, setBookingSubmitting] = useState(false);
+
+  // ─── Reschedule / Cancel modal state ────────────────────────────────────────
+  const [apptModalMode, setApptModalMode] = useState<"view" | "reschedule" | "confirmCancel">(
+    "view",
+  );
+  const [reschedDate, setReschedDate] = useState(todayIso);
+  const [reschedSlots, setReschedSlots] = useState<PatientBookingSlotItem[]>([]);
+  const [reschedSlotsLoading, setReschedSlotsLoading] = useState(false);
+  const [reschedSelectedSlot, setReschedSelectedSlot] = useState("");
+  const [reschedSubmitting, setReschedSubmitting] = useState(false);
+  const [cancelSubmitting, setCancelSubmitting] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -370,7 +389,9 @@ const PatientAppointmentsPage = () => {
         if (!active) return;
         setBookingSlots(response.slots);
         setSelectedSlotStartTime((current) =>
-          response.slots.some((slot) => slot.available && slot.startTime === current) ? current : "",
+          response.slots.some((slot) => slot.available && slot.startTime === current)
+            ? current
+            : "",
         );
       } catch (error: unknown) {
         if (!active) return;
@@ -388,6 +409,46 @@ const PatientAppointmentsPage = () => {
       active = false;
     };
   }, [bookingDate, isBookingOpen, selectedClinic?.id, selectedProfessionalId]);
+
+  // Carrega os slots ao entrar no modo de remarcacao
+  useEffect(() => {
+    if (apptModalMode !== "reschedule") {
+      setReschedSlots([]);
+      return;
+    }
+
+    const clinicId = selectedAppointment?.clinicId;
+    const professionalId = selectedAppointment?.professionalId;
+
+    if (!clinicId || !professionalId || !reschedDate) {
+      setReschedSlots([]);
+      return;
+    }
+
+    let active = true;
+
+    const loadSlots = async () => {
+      setReschedSlotsLoading(true);
+      try {
+        const response = await getPatientBookingSlots(clinicId, professionalId, reschedDate);
+        if (!active) return;
+        setReschedSlots(response.slots);
+        setReschedSelectedSlot("");
+      } catch {
+        if (!active) return;
+        setReschedSlots([]);
+        notifyError("Nao foi possivel carregar os horarios.");
+      } finally {
+        if (active) setReschedSlotsLoading(false);
+      }
+    };
+
+    void loadSlots();
+
+    return () => {
+      active = false;
+    };
+  }, [apptModalMode, reschedDate, selectedAppointment]);
 
   const visibleAppointments = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
@@ -424,6 +485,63 @@ const PatientAppointmentsPage = () => {
   const closeBookingModal = () => {
     setIsBookingOpen(false);
     resetBookingState();
+  };
+
+  // ─── Detail modal handlers ───────────────────────────────────────────────────
+
+  const handleCloseDetailModal = () => {
+    setSelectedAppointment(null);
+    setApptModalMode("view");
+    setReschedDate(todayIso);
+    setReschedSlots([]);
+    setReschedSelectedSlot("");
+  };
+
+  const openRescheduleMode = () => {
+    setReschedDate(todayIso);
+    setReschedSelectedSlot("");
+    setApptModalMode("reschedule");
+  };
+
+  const handleRescheduleSubmit = async () => {
+    if (!selectedAppointment || !reschedSelectedSlot) return;
+    const clinicId = selectedAppointment.clinicId;
+    const professionalId = selectedAppointment.professionalId;
+    if (!clinicId || !professionalId) return;
+
+    setReschedSubmitting(true);
+    try {
+      await rescheduleAppointment(selectedAppointment.id, {
+        appointmentDate: reschedDate,
+        startTime: reschedSelectedSlot,
+        clinicId,
+        professionalId,
+      });
+      const refreshed = await listPatientAppointments(FILTER_TO_STATUS[activeFilter]);
+      setResult(refreshed);
+      notifySuccess("Agendamento remarcado com sucesso.");
+      handleCloseDetailModal();
+    } catch (err: unknown) {
+      notifyError(getApiErrorMessage(err, "Nao foi possivel remarcar o agendamento."));
+    } finally {
+      setReschedSubmitting(false);
+    }
+  };
+
+  const handleCancelSubmit = async () => {
+    if (!selectedAppointment) return;
+    setCancelSubmitting(true);
+    try {
+      await cancelAppointment(selectedAppointment.id);
+      const refreshed = await listPatientAppointments(FILTER_TO_STATUS[activeFilter]);
+      setResult(refreshed);
+      notifySuccess("Agendamento cancelado.");
+      handleCloseDetailModal();
+    } catch (err: unknown) {
+      notifyError(getApiErrorMessage(err, "Nao foi possivel cancelar o agendamento."));
+    } finally {
+      setCancelSubmitting(false);
+    }
   };
 
   const handleCreateBooking = async () => {
@@ -519,7 +637,9 @@ const PatientAppointmentsPage = () => {
                 const displayStatus = resolveDisplayStatus(appointment);
                 const statusMeta = getStatusMeta(displayStatus);
                 return (
-                  <AppointmentCard key={appointment.id || `${appointment.appointmentDate}-${index}`}>
+                  <AppointmentCard
+                    key={appointment.id || `${appointment.appointmentDate}-${index}`}
+                  >
                     <AppointmentTopBar>
                       <StatusBadge $variant={statusMeta.variant}>{statusMeta.label}</StatusBadge>
                       <CardCode>#{String(index + 1).padStart(4, "0")}</CardCode>
@@ -537,18 +657,16 @@ const PatientAppointmentsPage = () => {
                         </ClinicText>
 
                         <ActionRow>
-                          <ViewButton type="button" onClick={() => setSelectedAppointment(appointment)}>
-                            Ver / Editar
+                          <ViewButton
+                            type="button"
+                            onClick={() => {
+                              setApptModalMode("view");
+                              setSelectedAppointment(appointment);
+                            }}
+                          >
+                            Ver detalhes
                             <ChevronRight size={14} />
                           </ViewButton>
-                          {isPendingStatus(displayStatus) && (
-                            <CancelButton
-                              type="button"
-                              onClick={() => notifyInfo("Cancelamento sera liberado em breve.")}
-                            >
-                              Cancelar
-                            </CancelButton>
-                          )}
                         </ActionRow>
                       </ProfessionalBlock>
 
@@ -567,55 +685,203 @@ const PatientAppointmentsPage = () => {
         </>
       )}
 
-      {selectedAppointment && (
-        <Modal
-          isOpen={Boolean(selectedAppointment)}
-          onClose={() => setSelectedAppointment(null)}
-          title="Detalhes do agendamento"
-          actions={
-            <Button variant="outline" size="small" onClick={() => setSelectedAppointment(null)}>
-              Fechar
-            </Button>
-          }
-        >
-            <ModalGrid>
-              <ModalItem>
-                <ModalLabel>Profissional</ModalLabel>
-                <ModalValue>{selectedAppointment.professionalName}</ModalValue>
-              </ModalItem>
-              <ModalItem>
-                <ModalLabel>Status</ModalLabel>
-                <ModalValue>{getStatusMeta(resolveDisplayStatus(selectedAppointment)).label}</ModalValue>
-              </ModalItem>
-              <ModalItem>
-                <ModalLabel>Data</ModalLabel>
-                <ModalValue>{formatLongDate(selectedAppointment.appointmentDate)}</ModalValue>
-              </ModalItem>
-              <ModalItem>
-                <ModalLabel>Horario</ModalLabel>
-                <ModalValue>
-                  {selectedAppointment.startTime} - {selectedAppointment.endTime}
-                </ModalValue>
-              </ModalItem>
-              <ModalItem>
-                <ModalLabel>Tipo</ModalLabel>
-                <ModalValue>{mapTypeLabel(selectedAppointment.type)}</ModalValue>
-              </ModalItem>
-              <ModalItem>
-                <ModalLabel>Modalidade</ModalLabel>
-                <ModalValue>{mapChannelLabel(selectedAppointment.channel)}</ModalValue>
-              </ModalItem>
-              <ModalItem>
-                <ModalLabel>Clinica</ModalLabel>
-                <ModalValue>{selectedAppointment.clinicName ?? "Clinica nao informada"}</ModalValue>
-              </ModalItem>
-              <ModalItem>
-                <ModalLabel>Observacoes</ModalLabel>
-                <ModalValue>{selectedAppointment.notes ?? "Sem observacoes."}</ModalValue>
-              </ModalItem>
-            </ModalGrid>
-        </Modal>
-      )}
+      {selectedAppointment &&
+        (() => {
+          const canEdit = new Set(["SCHEDULED", "CONFIRMED"]).has(
+            normalizeAppointmentStatus(selectedAppointment.status),
+          );
+          const hasRescheduleIds = Boolean(
+            selectedAppointment.clinicId && selectedAppointment.professionalId,
+          );
+          const modalTitle =
+            apptModalMode === "reschedule"
+              ? "Remarcar agendamento"
+              : apptModalMode === "confirmCancel"
+                ? "Cancelar agendamento"
+                : "Detalhes do agendamento";
+
+          return (
+            <Modal
+              isOpen={Boolean(selectedAppointment)}
+              onClose={handleCloseDetailModal}
+              title={modalTitle}
+              actions={
+                apptModalMode === "reschedule" ? (
+                  <>
+                    <Button variant="outline" size="small" onClick={() => setApptModalMode("view")}>
+                      Voltar
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="small"
+                      onClick={() => void handleRescheduleSubmit()}
+                      disabled={!reschedSelectedSlot || reschedSubmitting}
+                    >
+                      {reschedSubmitting ? "Remarcando..." : "Confirmar Remarcacao"}
+                    </Button>
+                  </>
+                ) : apptModalMode === "confirmCancel" ? (
+                  <>
+                    <Button variant="outline" size="small" onClick={() => setApptModalMode("view")}>
+                      Voltar
+                    </Button>
+                    <ModalCancelBtn
+                      type="button"
+                      onClick={() => void handleCancelSubmit()}
+                      disabled={cancelSubmitting}
+                    >
+                      {cancelSubmitting ? "Cancelando..." : "Confirmar Cancelamento"}
+                    </ModalCancelBtn>
+                  </>
+                ) : (
+                  <Button variant="outline" size="small" onClick={handleCloseDetailModal}>
+                    Fechar
+                  </Button>
+                )
+              }
+            >
+              {apptModalMode === "view" && (
+                <>
+                  <ModalGrid>
+                    <ModalItem>
+                      <ModalLabel>Profissional</ModalLabel>
+                      <ModalValue>{selectedAppointment.professionalName}</ModalValue>
+                    </ModalItem>
+                    <ModalItem>
+                      <ModalLabel>Status</ModalLabel>
+                      <ModalValue>
+                        {getStatusMeta(resolveDisplayStatus(selectedAppointment)).label}
+                      </ModalValue>
+                    </ModalItem>
+                    <ModalItem>
+                      <ModalLabel>Data</ModalLabel>
+                      <ModalValue>{formatLongDate(selectedAppointment.appointmentDate)}</ModalValue>
+                    </ModalItem>
+                    <ModalItem>
+                      <ModalLabel>Horario</ModalLabel>
+                      <ModalValue>
+                        {selectedAppointment.startTime} - {selectedAppointment.endTime}
+                      </ModalValue>
+                    </ModalItem>
+                    <ModalItem>
+                      <ModalLabel>Tipo</ModalLabel>
+                      <ModalValue>{mapTypeLabel(selectedAppointment.type)}</ModalValue>
+                    </ModalItem>
+                    <ModalItem>
+                      <ModalLabel>Modalidade</ModalLabel>
+                      <ModalValue>{mapChannelLabel(selectedAppointment.channel)}</ModalValue>
+                    </ModalItem>
+                    <ModalItem>
+                      <ModalLabel>Clinica</ModalLabel>
+                      <ModalValue>
+                        {selectedAppointment.clinicName ?? "Clinica nao informada"}
+                      </ModalValue>
+                    </ModalItem>
+                    <ModalItem>
+                      <ModalLabel>Observacoes</ModalLabel>
+                      <ModalValue>{selectedAppointment.notes ?? "Sem observacoes."}</ModalValue>
+                    </ModalItem>
+                  </ModalGrid>
+
+                  {canEdit && (
+                    <ModalActionSection>
+                      <ModalNotice>
+                        Voce pode apenas remarcar ou cancelar este agendamento.
+                      </ModalNotice>
+                      <ModalActionRow>
+                        <ModalRescheduleBtn
+                          type="button"
+                          onClick={openRescheduleMode}
+                          disabled={!hasRescheduleIds}
+                          title={
+                            !hasRescheduleIds
+                              ? "Remarcacao indisponivel para este agendamento"
+                              : undefined
+                          }
+                        >
+                          <RotateCcw size={15} />
+                          Remarcar
+                        </ModalRescheduleBtn>
+                        <ModalCancelBtn
+                          type="button"
+                          onClick={() => setApptModalMode("confirmCancel")}
+                        >
+                          Cancelar consulta
+                        </ModalCancelBtn>
+                      </ModalActionRow>
+                    </ModalActionSection>
+                  )}
+                </>
+              )}
+
+              {apptModalMode === "reschedule" && (
+                <RescheduleForm>
+                  <ModalInfoBanner>
+                    <strong>{selectedAppointment.professionalName}</strong>
+                    <span>
+                      Agendado para {formatLongDate(selectedAppointment.appointmentDate)} às{" "}
+                      {selectedAppointment.startTime}
+                    </span>
+                  </ModalInfoBanner>
+
+                  <BookingField>
+                    <BookingLabel>Nova data</BookingLabel>
+                    <BookingInput
+                      type="date"
+                      min={todayIso}
+                      value={reschedDate}
+                      onChange={(event) => {
+                        setReschedDate(event.target.value);
+                        setReschedSelectedSlot("");
+                      }}
+                    />
+                  </BookingField>
+
+                  <BookingField>
+                    <BookingLabel>Novo horario</BookingLabel>
+                    {reschedSlotsLoading ? (
+                      <BookingEmpty>Carregando horarios...</BookingEmpty>
+                    ) : reschedSlots.length ? (
+                      <SlotsGrid>
+                        {reschedSlots.map((slot) => (
+                          <SlotButton
+                            key={slot.startTime}
+                            type="button"
+                            $available={slot.available}
+                            $selected={reschedSelectedSlot === slot.startTime && slot.available}
+                            disabled={!slot.available}
+                            onClick={() => slot.available && setReschedSelectedSlot(slot.startTime)}
+                          >
+                            {slot.startTime}
+                          </SlotButton>
+                        ))}
+                      </SlotsGrid>
+                    ) : (
+                      <BookingEmpty>
+                        Selecione a data para ver os horarios disponiveis.
+                      </BookingEmpty>
+                    )}
+                  </BookingField>
+                </RescheduleForm>
+              )}
+
+              {apptModalMode === "confirmCancel" && (
+                <ModalWarningBox>
+                  Tem certeza que deseja cancelar este agendamento?
+                  <br />
+                  <br />
+                  <strong>{selectedAppointment.professionalName}</strong>
+                  <br />
+                  {formatLongDate(selectedAppointment.appointmentDate)} às{" "}
+                  {selectedAppointment.startTime}
+                  <br />
+                  <br />
+                  Esta acao nao pode ser desfeita.
+                </ModalWarningBox>
+              )}
+            </Modal>
+          );
+        })()}
 
       {isBookingOpen && (
         <Modal
@@ -638,152 +904,152 @@ const PatientAppointmentsPage = () => {
             </>
           }
         >
-            <BookingForm>
+          <BookingForm>
+            <BookingField>
+              <BookingLabel>Buscar clinica</BookingLabel>
+              <BookingInput
+                type="text"
+                placeholder="Digite nome da clinica ou cidade..."
+                value={bookingClinicQuery}
+                onChange={(event) => {
+                  setBookingClinicQuery(event.target.value);
+                  setSelectedClinic(null);
+                  setSelectedProfessionalId("");
+                  setSelectedSlotStartTime("");
+                }}
+              />
+              <BookingHint>Selecione uma clinica para carregar os profissionais.</BookingHint>
+            </BookingField>
+
+            {shouldShowClinicSuggestions && (
+              <ClinicResultsList>
+                {bookingClinics.map((clinic) => (
+                  <ClinicResultButton
+                    key={clinic.id}
+                    type="button"
+                    $selected={selectedClinic?.id === clinic.id}
+                    onClick={() => {
+                      setSelectedClinic(clinic);
+                      setBookingClinicQuery(clinic.tradeName);
+                      setBookingClinics([]);
+                      setBookingClinicsLoading(false);
+                      setSelectedProfessionalId("");
+                      setSelectedSlotStartTime("");
+                    }}
+                  >
+                    <div className="clinic-info">
+                      <ClinicResultTitle>{clinic.tradeName}</ClinicResultTitle>
+                      <ClinicResultMeta>
+                        {clinic.city}/{clinic.state}
+                      </ClinicResultMeta>
+                    </div>
+                    <ChevronRight size={15} />
+                  </ClinicResultButton>
+                ))}
+                {!bookingClinics.length && !bookingClinicsLoading && (
+                  <BookingEmpty>Nenhuma clinica encontrada para este termo.</BookingEmpty>
+                )}
+                {!bookingClinics.length && bookingClinicsLoading && (
+                  <BookingEmpty>Buscando clinicas...</BookingEmpty>
+                )}
+              </ClinicResultsList>
+            )}
+
+            <BookingGrid>
               <BookingField>
-                <BookingLabel>Buscar clinica</BookingLabel>
-                <BookingInput
-                  type="text"
-                  placeholder="Digite nome da clinica ou cidade..."
-                  value={bookingClinicQuery}
+                <BookingLabel>Profissional</BookingLabel>
+                <BookingSelect
+                  value={selectedProfessionalId}
                   onChange={(event) => {
-                    setBookingClinicQuery(event.target.value);
-                    setSelectedClinic(null);
-                    setSelectedProfessionalId("");
+                    setSelectedProfessionalId(event.target.value);
+                    setSelectedSlotStartTime("");
+                  }}
+                  disabled={!selectedClinic || bookingProfessionalsLoading}
+                >
+                  <option value="">
+                    {bookingProfessionalsLoading ? "Carregando..." : "Selecione"}
+                  </option>
+                  {bookingProfessionals.map((professional) => (
+                    <option key={professional.id} value={professional.id}>
+                      {professional.name}
+                      {professional.specialty ? ` - ${professional.specialty}` : ""}
+                    </option>
+                  ))}
+                </BookingSelect>
+              </BookingField>
+
+              <BookingField>
+                <BookingLabel>Data</BookingLabel>
+                <BookingInput
+                  type="date"
+                  min={todayIso}
+                  value={bookingDate}
+                  onChange={(event) => {
+                    setBookingDate(event.target.value);
                     setSelectedSlotStartTime("");
                   }}
                 />
-                <BookingHint>Selecione uma clinica para carregar os profissionais.</BookingHint>
               </BookingField>
+            </BookingGrid>
 
-              {shouldShowClinicSuggestions && (
-                <ClinicResultsList>
-                  {bookingClinics.map((clinic) => (
-                    <ClinicResultButton
-                      key={clinic.id}
-                      type="button"
-                      $selected={selectedClinic?.id === clinic.id}
-                      onClick={() => {
-                        setSelectedClinic(clinic);
-                        setBookingClinicQuery(clinic.tradeName);
-                        setBookingClinics([]);
-                        setBookingClinicsLoading(false);
-                        setSelectedProfessionalId("");
-                        setSelectedSlotStartTime("");
-                      }}
-                    >
-                      <div className="clinic-info">
-                        <ClinicResultTitle>{clinic.tradeName}</ClinicResultTitle>
-                        <ClinicResultMeta>
-                          {clinic.city}/{clinic.state}
-                        </ClinicResultMeta>
-                      </div>
-                      <ChevronRight size={15} />
-                    </ClinicResultButton>
-                  ))}
-                  {!bookingClinics.length && !bookingClinicsLoading && (
-                    <BookingEmpty>Nenhuma clinica encontrada para este termo.</BookingEmpty>
+            <BookingField>
+              <BookingLabel>Horario</BookingLabel>
+              {bookingSlotsLoading ? (
+                <BookingEmpty>Carregando horarios...</BookingEmpty>
+              ) : (
+                <>
+                  {!!bookingSlots.length && (
+                    <SlotsGrid>
+                      {bookingSlots.map((slot) => (
+                        <SlotButton
+                          key={`${slot.startTime}-${slot.endTime}`}
+                          type="button"
+                          $available={slot.available}
+                          $selected={selectedSlotStartTime === slot.startTime && slot.available}
+                          disabled={!slot.available}
+                          onClick={() => slot.available && setSelectedSlotStartTime(slot.startTime)}
+                        >
+                          {slot.startTime}
+                        </SlotButton>
+                      ))}
+                    </SlotsGrid>
                   )}
-                  {!bookingClinics.length && bookingClinicsLoading && (
-                    <BookingEmpty>Buscando clinicas...</BookingEmpty>
+                  {!bookingSlots.length && (
+                    <BookingEmpty>
+                      Selecione clinica, profissional e data para ver os horarios.
+                    </BookingEmpty>
                   )}
-                </ClinicResultsList>
+                </>
               )}
+            </BookingField>
 
-              <BookingGrid>
-                <BookingField>
-                  <BookingLabel>Profissional</BookingLabel>
-                  <BookingSelect
-                    value={selectedProfessionalId}
-                    onChange={(event) => {
-                      setSelectedProfessionalId(event.target.value);
-                      setSelectedSlotStartTime("");
-                    }}
-                    disabled={!selectedClinic || bookingProfessionalsLoading}
-                  >
-                    <option value="">
-                      {bookingProfessionalsLoading ? "Carregando..." : "Selecione"}
+            <BookingGrid>
+              <BookingField>
+                <BookingLabel>Tipo de consulta</BookingLabel>
+                <BookingSelect
+                  value={bookingType}
+                  onChange={(event) =>
+                    setBookingType(event.target.value as PatientBookingAppointmentType)
+                  }
+                >
+                  {BOOKING_TYPE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
                     </option>
-                    {bookingProfessionals.map((professional) => (
-                      <option key={professional.id} value={professional.id}>
-                        {professional.name}
-                        {professional.specialty ? ` - ${professional.specialty}` : ""}
-                      </option>
-                    ))}
-                  </BookingSelect>
-                </BookingField>
-
-                <BookingField>
-                  <BookingLabel>Data</BookingLabel>
-                  <BookingInput
-                    type="date"
-                    min={todayIso}
-                    value={bookingDate}
-                    onChange={(event) => {
-                      setBookingDate(event.target.value);
-                      setSelectedSlotStartTime("");
-                    }}
-                  />
-                </BookingField>
-              </BookingGrid>
-
-              <BookingField>
-                <BookingLabel>Horario</BookingLabel>
-                {bookingSlotsLoading ? (
-                  <BookingEmpty>Carregando horarios...</BookingEmpty>
-                ) : (
-                  <>
-                    {!!bookingSlots.length && (
-                      <SlotsGrid>
-                        {bookingSlots.map((slot) => (
-                          <SlotButton
-                            key={`${slot.startTime}-${slot.endTime}`}
-                            type="button"
-                            $available={slot.available}
-                            $selected={selectedSlotStartTime === slot.startTime && slot.available}
-                            disabled={!slot.available}
-                            onClick={() => slot.available && setSelectedSlotStartTime(slot.startTime)}
-                          >
-                            {slot.startTime}
-                          </SlotButton>
-                        ))}
-                      </SlotsGrid>
-                    )}
-                    {!bookingSlots.length && (
-                      <BookingEmpty>
-                        Selecione clinica, profissional e data para ver os horarios.
-                      </BookingEmpty>
-                    )}
-                  </>
-                )}
+                  ))}
+                </BookingSelect>
               </BookingField>
+            </BookingGrid>
 
-              <BookingGrid>
-                <BookingField>
-                  <BookingLabel>Tipo de consulta</BookingLabel>
-                  <BookingSelect
-                    value={bookingType}
-                    onChange={(event) =>
-                      setBookingType(event.target.value as PatientBookingAppointmentType)
-                    }
-                  >
-                    {BOOKING_TYPE_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </BookingSelect>
-                </BookingField>
-              </BookingGrid>
-
-              <BookingField>
-                <BookingLabel>Observacoes (opcional)</BookingLabel>
-                <BookingTextarea
-                  placeholder="Adicione observacoes se necessario..."
-                  value={bookingNotes}
-                  onChange={(event) => setBookingNotes(event.target.value)}
-                />
-              </BookingField>
-            </BookingForm>
+            <BookingField>
+              <BookingLabel>Observacoes (opcional)</BookingLabel>
+              <BookingTextarea
+                placeholder="Adicione observacoes se necessario..."
+                value={bookingNotes}
+                onChange={(event) => setBookingNotes(event.target.value)}
+              />
+            </BookingField>
+          </BookingForm>
         </Modal>
       )}
     </PageWrapper>

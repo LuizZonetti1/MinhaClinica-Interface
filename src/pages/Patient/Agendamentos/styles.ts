@@ -92,6 +92,7 @@ export type AppointmentBadgeVariant =
   | "completed"
   | "waiting"
   | "progress"
+  | "rescheduled"
   | "default";
 
 const badgeVariantStyles: Record<AppointmentBadgeVariant, ReturnType<typeof css>> = {
@@ -124,6 +125,11 @@ const badgeVariantStyles: Record<AppointmentBadgeVariant, ReturnType<typeof css>
     color: var(--mc-status-progress-text, #1e40af);
     background: var(--mc-status-progress-bg, #dbeafe);
     border: 1px solid var(--mc-status-progress-border, #93c5fd);
+  `,
+  rescheduled: css`
+    color: #5b21b6;
+    background: #ede9fe;
+    border: 1px solid #c4b5fd;
   `,
   default: css`
     color: ${theme.colors.text.secondary};
@@ -502,7 +508,11 @@ export const SlotButton = styled.button<{ $selected: boolean; $available: boolea
           ? theme.colors.border.default
           : theme.colors.border.lighter};
   background: ${({ $selected, $available }) =>
-    $selected ? theme.colors.primary : $available ? theme.colors.surface : theme.colors.surfaceMuted};
+    $selected
+      ? theme.colors.primary
+      : $available
+        ? theme.colors.surface
+        : theme.colors.surfaceMuted};
   color: ${({ $selected, $available }) =>
     $selected
       ? theme.colors.text.inverse
@@ -525,4 +535,111 @@ export const BookingEmpty = styled.p`
   font-family: "Roboto", sans-serif;
   font-size: 13px;
   color: ${theme.colors.text.muted};
+`;
+
+// ─── Detail / Reschedule Modal ────────────────────────────────────────────────
+
+export const ModalActionSection = styled.div`
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid ${theme.colors.border.lighter};
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+export const ModalNotice = styled.p`
+  margin: 0;
+  font-family: "Roboto", sans-serif;
+  font-size: 12px;
+  color: ${theme.colors.text.muted};
+`;
+
+export const ModalActionRow = styled.div`
+  display: flex;
+  gap: 8px;
+
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    flex-direction: column;
+  }
+`;
+
+export const ModalRescheduleBtn = styled.button`
+  flex: 1;
+  height: 40px;
+  border: 1px solid ${theme.colors.primary};
+  background: ${theme.colors.primary};
+  color: ${theme.colors.text.inverse};
+  border-radius: ${theme.borderRadius.md};
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: filter 0.15s ease;
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.08);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+export const ModalCancelBtn = styled.button`
+  flex: 1;
+  height: 40px;
+  border: 1px solid var(--mc-status-cancelled-border, #fca5a5);
+  background: var(--mc-status-cancelled-bg, #fee2e2);
+  color: var(--mc-status-cancelled-text, #dc2626);
+  border-radius: ${theme.borderRadius.md};
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.06);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+export const ModalInfoBanner = styled.div`
+  background: var(--mc-status-progress-bg, #dbeafe);
+  border: 1px solid var(--mc-status-progress-border, #93c5fd);
+  border-radius: ${theme.borderRadius.md};
+  padding: 12px 14px;
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  color: var(--mc-status-progress-text, #1e40af);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+`;
+
+export const ModalWarningBox = styled.div`
+  background: var(--mc-status-cancelled-bg, #fee2e2);
+  border: 1px solid var(--mc-status-cancelled-border, #fca5a5);
+  border-radius: ${theme.borderRadius.md};
+  padding: 16px;
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  color: var(--mc-status-cancelled-text, #991b1b);
+  line-height: 1.6;
+`;
+
+export const RescheduleForm = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 `;
