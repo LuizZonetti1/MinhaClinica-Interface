@@ -24,20 +24,18 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Button } from "../../../components/Button";
+import { Modal } from "../../../components/Modal";
 import {
   concludeAppointment,
-  createAppointmentAddendum,
+  getAppointmentById,
+  patchAppointmentStatus,
 } from "../../../services/appointment.service";
 import {
   createClinicalDocument,
   deleteClinicalDocument,
   listClinicalDocuments,
 } from "../../../services/clinical-documents.service";
-import type {
-  ClinicalDocumentItem,
-  ClinicalDocumentsResult,
-  DocumentTypeCard,
-} from "../../../types/clinical-document";
+import type { ClinicalDocumentItem, DocumentTypeCard } from "../../../types/clinical-document";
 import { ClinicalDocumentType } from "../../../types/clinical-document";
 import { formatIsoDateToBr } from "../../../utils/dateParsers";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
@@ -240,74 +238,139 @@ const formatDocDate = (iso: string): string => {
   return formatIsoDateToBr(datePart, "--/--/----");
 };
 
-const buildContextFromParams = (
-  params: URLSearchParams,
-  appointmentId: string,
-): ClinicalDocumentsResult["appointmentContext"] => ({
-  appointmentId,
-  patientName: params.get("paciente") || "Paciente",
-  appointmentDate: params.get("data") || "",
-  startTime: params.get("horario") || "--:--",
-  professionalName: params.get("profissional") || "",
-  councilRegistration: "",
-  appointmentStatus: params.get("statusConsulta") || "IN_PROGRESS",
-});
+// ─── Session cache (TTL 2 min) ────────────────────────────────────────────────
+
+const DOC_CACHE_TTL = 2 * 60 * 1000;
+
+interface DocPageCache {
+  appointmentCtx: AppointmentCtx;
+  documents: ClinicalDocumentItem[];
+  cachedAt: number;
+}
+
+function getDocCache(id: string): DocPageCache | null {
+  try {
+    const raw = sessionStorage.getItem(`doc-page-${id}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as DocPageCache;
+    if (Date.now() - parsed.cachedAt > DOC_CACHE_TTL) {
+      sessionStorage.removeItem(`doc-page-${id}`);
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function setDocCache(id: string, appointmentCtx: AppointmentCtx, documents: ClinicalDocumentItem[]) {
+  try {
+    const entry: DocPageCache = { appointmentCtx, documents, cachedAt: Date.now() };
+    sessionStorage.setItem(`doc-page-${id}`, JSON.stringify(entry));
+  } catch {
+    // sessionStorage não disponível ou cheio — ignorar silenciosamente
+  }
+}
+
+function clearDocCache(id: string) {
+  sessionStorage.removeItem(`doc-page-${id}`);
+}
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
+
+interface AppointmentCtx {
+  appointmentId: string;
+  patientName: string;
+  appointmentDate: string;
+  startTime: string;
+  professionalName: string;
+  councilRegistration: string;
+  appointmentStatus: string;
+}
 
 const ProfessionalDocumentosPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const appointmentId = searchParams.get("consulta") ?? "";
 
-  const [result, setResult] = useState<ClinicalDocumentsResult>(() => ({
-    appointmentContext: buildContextFromParams(searchParams, appointmentId),
-    documents: [],
-  }));
-  const [loading, setLoading] = useState(Boolean(appointmentId));
+  const [appointmentCtx, setAppointmentCtx] = useState<AppointmentCtx>(() => {
+    const cached = getDocCache(appointmentId);
+    if (cached) return cached.appointmentCtx;
+    return {
+      appointmentId,
+      patientName: searchParams.get("paciente") || "Paciente",
+      appointmentDate: searchParams.get("data") || "",
+      startTime: searchParams.get("horario") || "--:--",
+      professionalName: searchParams.get("profissional") || "",
+      councilRegistration: "",
+      appointmentStatus: searchParams.get("statusConsulta") || "IN_PROGRESS",
+    };
+  });
+  const [documents, setDocuments] = useState<ClinicalDocumentItem[]>(
+    () => getDocCache(appointmentId)?.documents ?? [],
+  );
+  const [loading, setLoading] = useState(
+    () => Boolean(appointmentId) && !getDocCache(appointmentId),
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [creatingType, setCreatingType] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [concluding, setConcluding] = useState(false);
-  const [addingAddendum, setAddingAddendum] = useState(false);
-  const [draftDocumentWarning, setDraftDocumentWarning] = useState<string[] | null>(null);
+  const [showConcludeModal, setShowConcludeModal] = useState(false);
+  const [showAddendumPicker, setShowAddendumPicker] = useState(false);
+  const [draftDocumentWarning, setDraftDocumentWarning] =
+    useState<Array<{ id: string; documentNumber?: string; type: string }> | null>(null);
 
-  const loadDocuments = useCallback(async () => {
+  const loadData = useCallback(async (silent = false) => {
     if (!appointmentId) return;
-    setLoading(true);
+    if (!silent) setLoading(true);
     setErrorMessage(null);
     try {
-      const data = await listClinicalDocuments(appointmentId);
-      setResult(data);
-      // Se o status retornado for WAITING, atualizar badge localmente para IN_PROGRESS
-      // (backend nao possui endpoint de transicao automatica para este status)
-      if (data.appointmentContext.appointmentStatus.toUpperCase() === "WAITING") {
-        setResult((prev) => ({
-          ...prev,
-          appointmentContext: { ...prev.appointmentContext, appointmentStatus: "IN_PROGRESS" },
-        }));
+      // Load appointment context + documents in parallel
+      const [appt, docsResult] = await Promise.all([
+        getAppointmentById(appointmentId),
+        listClinicalDocuments(appointmentId),
+      ]);
+
+      let currentStatus = appt.status;
+
+      // Auto-transition SCHEDULED/CONFIRMED/WAITING → IN_PROGRESS
+      const PRE_PROGRESS_STATUSES = ["WAITING", "SCHEDULED", "CONFIRMED"];
+      if (PRE_PROGRESS_STATUSES.includes(currentStatus.toUpperCase())) {
+        try {
+          const patched = await patchAppointmentStatus(appointmentId, "IN_PROGRESS");
+          currentStatus = patched.status;
+        } catch (patchErr: unknown) {
+          notifyError(getApiErrorMessage(patchErr, "Não foi possível iniciar o atendimento."));
+        }
       }
+
+      const newCtx: AppointmentCtx = {
+        appointmentId,
+        patientName: appt.patientName,
+        appointmentDate: appt.scheduledAt.split("T")[0] ?? "",
+        startTime: appt.startTime,
+        professionalName: appt.professionalName,
+        councilRegistration: appt.councilRegistration,
+        appointmentStatus: currentStatus,
+      };
+
+      setAppointmentCtx(newCtx);
+      setDocuments(docsResult.documents);
+      setDocCache(appointmentId, newCtx, docsResult.documents);
     } catch (err: unknown) {
-      // Se o endpoint nao existir ainda (404) trata como lista vazia —
-      // o contexto da consulta ja foi populado pelos params da URL.
-      const isAxios404 =
-        typeof err === "object" &&
-        err !== null &&
-        "response" in err &&
-        (err as { response?: { status?: number } }).response?.status === 404;
-      if (!isAxios404) {
-        const msg = getApiErrorMessage(err, "Nao foi possivel carregar os documentos.");
-        setErrorMessage(msg);
-        notifyError(msg);
-      }
+      const msg = getApiErrorMessage(err, "Nao foi possivel carregar os dados da consulta.");
+      setErrorMessage(msg);
+      notifyError(msg);
     } finally {
       setLoading(false);
     }
   }, [appointmentId]);
 
   useEffect(() => {
-    void loadDocuments();
-  }, [loadDocuments]);
+    const hasCached = Boolean(getDocCache(appointmentId));
+    void loadData(hasCached);
+  }, [loadData, appointmentId]);
 
   const handleCreateDocument = async (type: ClinicalDocumentType) => {
     if (!appointmentId) return;
@@ -325,7 +388,7 @@ const ProfessionalDocumentosPage = () => {
 
   const handleDeleteDocument = async (doc: ClinicalDocumentItem) => {
     if (!appointmentId) return;
-    if (doc.status === "FINALIZED" || doc.status === "SENT" || doc.status === "ADDENDUM") {
+    if (doc.status === "SENT" || doc.status === "ADDENDUM") {
       notifyError("Este documento nao pode ser excluido.");
       return;
     }
@@ -333,7 +396,8 @@ const ProfessionalDocumentosPage = () => {
     try {
       await deleteClinicalDocument(appointmentId, doc.id);
       notifySuccess("Documento removido.");
-      void loadDocuments();
+      setDocuments((prev) => prev.filter((d) => d.id !== doc.id));
+      clearDocCache(appointmentId);
     } catch (err: unknown) {
       notifyError(getApiErrorMessage(err, "Nao foi possivel remover o documento."));
     } finally {
@@ -341,22 +405,25 @@ const ProfessionalDocumentosPage = () => {
     }
   };
 
+  const openConcludeModal = () => {
+    setShowConcludeModal(true);
+  };
+
   const handleConcludeAppointment = async () => {
     if (!appointmentId) return;
+    setShowConcludeModal(false);
     setConcluding(true);
     try {
-      const result = await concludeAppointment(appointmentId);
+      const res = await concludeAppointment(appointmentId);
       notifySuccess("Consulta concluida com sucesso.");
-      setResult((prev) => ({
-        ...prev,
-        appointmentContext: {
-          ...prev.appointmentContext,
-          appointmentStatus: result.status,
-        },
-      }));
-      if (result.draftDocuments && result.draftDocuments.length > 0) {
-        setDraftDocumentWarning(result.draftDocuments);
+      clearDocCache(appointmentId);
+      setAppointmentCtx((prev) => ({ ...prev, appointmentStatus: res.status }));
+      if (res.draftDocuments && res.draftDocuments.length > 0) {
+        setDraftDocumentWarning(res.draftDocuments);
       }
+      // Reload document list to reflect SENT status
+      const docsResult = await listClinicalDocuments(appointmentId);
+      setDocuments(docsResult.documents);
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status;
       if (status === 403) {
@@ -369,41 +436,60 @@ const ProfessionalDocumentosPage = () => {
     }
   };
 
-  const handleCreateAddendum = async () => {
-    if (!appointmentId) return;
-    setAddingAddendum(true);
-    try {
-      const addendumResult = await createAppointmentAddendum(appointmentId);
-      notifySuccess("Adendo criado. Registre as alteracoes no novo documento.");
-      setResult((prev) => ({
-        ...prev,
-        appointmentContext: {
-          ...prev.appointmentContext,
-          appointmentStatus: addendumResult.status,
-        },
-      }));
-      void loadDocuments();
-    } catch (err: unknown) {
-      const status = (err as { response?: { status?: number } })?.response?.status;
-      if (status === 403) {
-        notifyError("Sem permissao para criar um adendo nesta consulta.");
-      } else {
-        notifyError(getApiErrorMessage(err, "Nao foi possivel criar o adendo."));
-      }
-    } finally {
-      setAddingAddendum(false);
-    }
+  const handlePickAddendumType = (type: ClinicalDocumentType) => {
+    setShowAddendumPicker(false);
+    navigate(
+      `/profissional/documentos/formulario?consulta=${appointmentId}&modo=adendo&tipo=${type}`,
+    );
   };
 
-  const { appointmentContext, documents } = result;
-  const appointmentStatus = appointmentContext.appointmentStatus;
+  const appointmentStatus = appointmentCtx.appointmentStatus;
   const locked = isAppointmentLocked(appointmentStatus);
   const isCompleted =
     appointmentStatus.toUpperCase() === "COMPLETED" || appointmentStatus.toUpperCase() === "DONE";
   const isWithAddendum = appointmentStatus.toUpperCase() === "COMPLETED_WITH_ADDENDUM";
+  const canAddAddendum = isCompleted || isWithAddendum;
+  const draftDocs = documents.filter((d) => d.status === "DRAFT");
 
   return (
     <PageWrapper>
+      {/* ── Confirm conclude modal ── */}
+      <Modal
+        isOpen={showConcludeModal}
+        onClose={() => setShowConcludeModal(false)}
+        title="Concluir consulta"
+        actions={
+          <>
+            <Button variant="outline" size="small" onClick={() => setShowConcludeModal(false)}>
+              Cancelar
+            </Button>
+            <Button variant="primary" size="small" onClick={() => void handleConcludeAppointment()}>
+              Confirmar conclusao
+            </Button>
+          </>
+        }
+      >
+        {draftDocs.length > 0 ? (
+          <div>
+            <p style={{ marginBottom: 8 }}>
+              <strong>Atencao:</strong> {draftDocs.length} documento(s) ainda em rascunho serao
+              descartados ou permanecerao sem envio:
+            </p>
+            <ul style={{ paddingLeft: 18, margin: 0 }}>
+              {draftDocs.map((d) => (
+                <li key={d.id} style={{ marginBottom: 4 }}>
+                  {DOC_TYPE_LABEL[d.type] ?? d.type}
+                  {d.documentNumber ? ` — Doc. ${d.documentNumber}` : ""}
+                </li>
+              ))}
+            </ul>
+            <p style={{ marginTop: 8 }}>Deseja continuar e concluir a consulta mesmo assim?</p>
+          </div>
+        ) : (
+          <p>Tem certeza que deseja concluir esta consulta?</p>
+        )}
+      </Modal>
+
       {/* ── Header ── */}
       <PageHeader>
         <PageTitleGroup>
@@ -427,7 +513,7 @@ const ProfessionalDocumentosPage = () => {
               variant="primary"
               size="medium"
               icon={<CheckCircle size={15} />}
-              onClick={() => void handleConcludeAppointment()}
+              onClick={openConcludeModal}
               disabled={concluding}
             >
               {concluding ? "Concluindo..." : "Concluir consulta"}
@@ -441,16 +527,15 @@ const ProfessionalDocumentosPage = () => {
             </Button>
           )}
 
-          {/* Adicionar adendo — visivel apenas quando COMPLETED */}
-          {appointmentId && isCompleted && (
+          {/* Adicionar adendo — visivel quando COMPLETED ou COMPLETED_WITH_ADDENDUM */}
+          {appointmentId && canAddAddendum && (
             <Button
               variant="outline"
               size="medium"
               icon={<GitCompareArrows size={15} />}
-              onClick={() => void handleCreateAddendum()}
-              disabled={addingAddendum}
+              onClick={() => setShowAddendumPicker(true)}
             >
-              {addingAddendum ? "Criando adendo..." : "Adicionar adendo"}
+              Adicionar adendo
             </Button>
           )}
         </HeaderActions>
@@ -461,17 +546,17 @@ const ProfessionalDocumentosPage = () => {
         <AppointmentInfoBar>
           <InfoBarItem>
             <InfoBarLabel>Paciente</InfoBarLabel>
-            <InfoBarValue>{appointmentContext.patientName}</InfoBarValue>
+            <InfoBarValue>{appointmentCtx.patientName}</InfoBarValue>
           </InfoBarItem>
           <InfoBarItem>
             <InfoBarLabel>Consulta</InfoBarLabel>
             <InfoBarValue>
-              {formatDocDate(appointmentContext.appointmentDate)} as {appointmentContext.startTime}
+              {formatDocDate(appointmentCtx.appointmentDate)} as {appointmentCtx.startTime}
             </InfoBarValue>
           </InfoBarItem>
           <InfoBarItem>
             <InfoBarLabel>Profissional</InfoBarLabel>
-            <InfoBarValue>{appointmentContext.professionalName}</InfoBarValue>
+            <InfoBarValue>{appointmentCtx.professionalName}</InfoBarValue>
           </InfoBarItem>
           <InfoBarItem>
             <InfoBarLabel>Status da Consulta</InfoBarLabel>
@@ -502,6 +587,30 @@ const ProfessionalDocumentosPage = () => {
             <strong>Atencao:</strong> {draftDocumentWarning.length} documento(s) permanecem como
             rascunho e nao foram enviados ao paciente.
           </span>
+        </div>
+      )}
+
+      {/* ── Adendo picker ── */}
+      {showAddendumPicker && (
+        <div>
+          <SectionTitle>Selecione o tipo do adendo</SectionTitle>
+          <DocTypeGrid>
+            {DOCUMENT_TYPES.map((docType) => (
+              <DocTypeCard
+                key={docType.type}
+                type="button"
+                onClick={() => handlePickAddendumType(docType.type)}
+              >
+                <DocTypeIconWrap $bg={docType.bgColor} $color={docType.iconColor}>
+                  {DOC_TYPE_ICON[docType.type] ?? <FileText size={18} />}
+                </DocTypeIconWrap>
+                <DocTypeInfo>
+                  <DocTypeLabel>{docType.label}</DocTypeLabel>
+                  <DocTypeDescription>{docType.description}</DocTypeDescription>
+                </DocTypeInfo>
+              </DocTypeCard>
+            ))}
+          </DocTypeGrid>
         </div>
       )}
 
@@ -579,7 +688,7 @@ const ProfessionalDocumentosPage = () => {
                             ? "Adendo"
                             : "Rascunho";
                     const isEditable = docStatus === "DRAFT" && !locked;
-                    const isDeletable = docStatus === "DRAFT" && !locked;
+                    const isDeletable = !locked && (docStatus === "DRAFT" || docStatus === "FINALIZED");
 
                     return (
                       <DocsTableRow key={doc.id}>
