@@ -11,6 +11,7 @@ import {
 import type { AppointmentStatusUpdate } from "../../../types/dashboard";
 import type { ReceptionAppointmentItem, ReceptionPatientListItem } from "../../../types/patient";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
+import { getInitials } from "../../../utils/formatters";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import {
   AccordionBody,
@@ -61,13 +62,6 @@ const STATUS_UPDATE_OPTIONS: Array<{ value: AppointmentStatusUpdate; label: stri
   { value: "NO_SHOW", label: "Não compareceu" },
   { value: "CANCELLED", label: "Cancelada" },
 ];
-
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
 
 const APPT_STATUS_LABELS: Record<string, string> = {
   WAITING: "Aguardando",

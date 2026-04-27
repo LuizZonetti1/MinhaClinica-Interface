@@ -10,6 +10,7 @@ import type {
   TodayAppointmentItem,
 } from "../../../types/dashboard";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
+import { getInitials } from "../../../utils/formatters";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import {
   ActionsCell,
@@ -98,8 +99,8 @@ const STATUS_UPDATE_OPTIONS: Array<{ value: AppointmentStatusUpdate; label: stri
   { value: "CONFIRMED", label: "Confirmado" },
   { value: "WAITING", label: "Check-in OK" },
   { value: "IN_PROGRESS", label: "Em Atendimento" },
-  { value: "COMPLETED", label: "Concluido" },
-  { value: "NO_SHOW", label: "Nao Compareceu" },
+  { value: "COMPLETED", label: "Concluído" },
+  { value: "NO_SHOW", label: "Não Compareceu" },
   { value: "CANCELLED", label: "Cancelado" },
 ];
 
@@ -141,14 +142,6 @@ const getFormattedDate = () =>
     month: "long",
     year: "numeric",
   });
-
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
-    .join("");
 
 const formatAppointmentType = (raw: string | null | undefined): string | null => {
   if (!raw) return null;

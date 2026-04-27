@@ -9,6 +9,7 @@ import type {
   AppointmentStatus,
 } from "../../../types/dashboard";
 import { formatDateToIsoDate } from "../../../utils/dateParsers";
+import { getInitials } from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError } from "../../../utils/toast";
 import {
@@ -49,7 +50,7 @@ const DASHBOARD_STATUS_META: Record<AppointmentStatus, { label: string; variant:
   WAITING: { label: "Aguardando", variant: "waiting" },
   CHECKED_IN: { label: "Check-in OK", variant: "checkin" },
   IN_PROGRESS: { label: "Em Atendimento", variant: "progress" },
-  DONE: { label: "Concluido", variant: "done" },
+  DONE: { label: "Concluído", variant: "done" },
   CANCELLED: { label: "Cancelado", variant: "cancelled" },
 };
 
@@ -93,14 +94,6 @@ const getAvatarColors = (name: string) => {
   }
   return AVATAR_PALETTE[Math.abs(hash) % AVATAR_PALETTE.length];
 };
-
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
-    .join("");
 
 const toISODate = (d: Date): string => formatDateToIsoDate(d);
 
