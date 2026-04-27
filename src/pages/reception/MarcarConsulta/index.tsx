@@ -140,11 +140,11 @@ const CONSULTATION_TYPE_OPTIONS: Array<{
   value: AppointmentType;
   label: string;
 }> = [
-  { value: AppointmentType.CONSULTATION, label: "Consulta" },
-  { value: AppointmentType.RETURN, label: "Retorno" },
-  { value: AppointmentType.EXAM, label: "Exame" },
-  { value: AppointmentType.EMERGENCY, label: "Emergência" },
-];
+    { value: AppointmentType.CONSULTATION, label: "Consulta" },
+    { value: AppointmentType.RETURN, label: "Retorno" },
+    { value: AppointmentType.EXAM, label: "Exame" },
+    { value: AppointmentType.EMERGENCY, label: "Emergência" },
+  ];
 
 const getConsultationTypeLabel = (value: AppointmentType): string =>
   CONSULTATION_TYPE_OPTIONS.find((option) => option.value === value)?.label ?? "Consulta";
@@ -168,6 +168,7 @@ const ReceptionMarcarConsultaPage = () => {
   );
   const searchRef = useRef<HTMLDivElement>(null);
   const patientQueryCacheRef = useRef<Map<string, PatientSearchResult[]>>(new Map());
+  const submittingRef = useRef(false);
 
   // ── Step 2 state ────────────────────────────────────────────────────────────
   const [professionals, setProfessionals] = useState<AppointmentProfessional[]>([]);
@@ -361,6 +362,7 @@ const ReceptionMarcarConsultaPage = () => {
   };
 
   const handleConfirm = async () => {
+    if (submittingRef.current) return;
     if (!selectedPatient || !selectedProfessional) return;
 
     const selectedSlotData = slots.find((slot) => slot.time === selectedSlot);
@@ -372,6 +374,7 @@ const ReceptionMarcarConsultaPage = () => {
     }
 
     setSubmitting(true);
+    submittingRef.current = true;
     try {
       await createAppointment({
         patientId: selectedPatient.id,
@@ -416,6 +419,7 @@ const ReceptionMarcarConsultaPage = () => {
         }
       }
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   };

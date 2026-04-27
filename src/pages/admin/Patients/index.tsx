@@ -1,11 +1,9 @@
-import { ChevronDown, Eye, Pencil, Search } from "lucide-react";
+import { ChevronDown, FileText, Pencil, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Button } from "../../../components/Button";
+import { useNavigate } from "react-router";
 import { Input } from "../../../components/Input";
-import { Modal } from "../../../components/Modal";
 import { Skeleton } from "../../../components/Skeleton";
 import {
-  getPatientDetailsAdmin,
   getPatientSummary,
   listPatientsAdmin,
 } from "../../../services/patient-admin.service";
@@ -15,14 +13,11 @@ import {
 } from "../../../services/reception.service";
 import type { AppointmentStatusUpdate } from "../../../types/dashboard";
 import type {
-  PatientAuditDetails,
   PatientListItem,
   PatientSummary,
   ReceptionAppointmentItem,
 } from "../../../types/patient";
 import {
-  formatDateDayMonthYear,
-  formatPhoneNumber,
   normalizePhoneDigits,
 } from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
@@ -37,6 +32,7 @@ import {
   ApptDivider,
   ApptDropdownItem,
   ApptDropdownMenu,
+  ApptDocsButton,
   ApptDropdownWrapper,
   ApptEditButton,
   ApptInfo,
@@ -45,12 +41,6 @@ import {
   ApptProfessional,
   ApptStatusBadge,
   ChevronWrapper,
-  DetailItem,
-  DetailLabel,
-  DetailSection,
-  DetailSectionTitle,
-  DetailsGrid,
-  DetailValue,
   FiltersRow,
   PageTitle,
   PageWrapper,
@@ -72,7 +62,6 @@ import {
   SummaryLabel,
   SummaryValue,
   TopRow,
-  ViewDetailsButton,
 } from "./styles";
 
 const AVATAR_COLORS = ["#2563EB", "#16A34A", "#9333EA", "#EA580C", "#4B5563"];
@@ -137,39 +126,6 @@ const apptStatusLabel = (status: string | null | undefined): string => {
   return APPT_STATUS_LABELS[status.toUpperCase()] ?? status;
 };
 
-const toDash = (value: string | null | undefined): string => {
-  if (!value) return "-";
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : "-";
-};
-
-const statusLabel = (status: string | null | undefined) => {
-  if (!status) return "-";
-
-  const map: Record<string, string> = {
-    ACTIVE: "Ativo",
-    INACTIVE: "Inativo",
-    BLOCKED: "Bloqueado",
-    PENDING_ACTIVATION: "Pendente",
-    EMAIL_VERIFIED: "Email verificado",
-  };
-
-  return map[status] ?? status;
-};
-
-const genderLabel = (gender: string | null | undefined) => {
-  if (!gender) return "-";
-
-  const map: Record<string, string> = {
-    MALE: "Masculino",
-    FEMALE: "Feminino",
-    OTHER: "Outro",
-    PREFER_NOT_TO_SAY: "Prefere nao informar",
-  };
-
-  return map[gender] ?? gender;
-};
-
 // ─── Appointment Dropdown ────────────────────────────────────────────────────
 
 type ApptDropdownProps = {
@@ -232,6 +188,7 @@ type AppointmentItemProps = {
 };
 
 const AppointmentItem = ({ appt, onStatusChange }: AppointmentItemProps) => {
+  const navigate = useNavigate();
   const date = parseDate(appt.date);
   const day = date ? String(date.getDate()).padStart(2, "0") : "—";
   const monthYear = date ? formatMonthYear(date) : "";
@@ -266,6 +223,20 @@ const AppointmentItem = ({ appt, onStatusChange }: AppointmentItemProps) => {
         currentRawStatus={rawStatus}
         onStatusChange={onStatusChange}
       />
+      {(rawStatus === "COMPLETED" || rawStatus === "DONE") && appt.id && (
+        <ApptDocsButton
+          type="button"
+          title="Ver documentos"
+          onClick={() =>
+            navigate(
+              `/admin/documentos?consulta=${appt.id}&paciente=${encodeURIComponent(appt.professionalName || "")}`,
+            )
+          }
+        >
+          <FileText size={12} />
+          Documentos
+        </ApptDocsButton>
+      )}
     </AppointmentEntry>
   );
 };
@@ -275,10 +246,9 @@ const AppointmentItem = ({ appt, onStatusChange }: AppointmentItemProps) => {
 type PatientCardRowProps = {
   patient: PatientListItem;
   index: number;
-  onView: (patient: PatientListItem) => void;
 };
 
-const PatientCardRow = ({ patient, index, onView }: PatientCardRowProps) => {
+const PatientCardRow = ({ patient, index }: PatientCardRowProps) => {
   const [expanded, setExpanded] = useState(false);
   const [appointments, setAppointments] = useState<ReceptionAppointmentItem[] | null>(null);
   const [loadingAppts, setLoadingAppts] = useState(false);
@@ -347,23 +317,7 @@ const PatientCardRow = ({ patient, index, onView }: PatientCardRowProps) => {
             <StatLabel>Consultas</StatLabel>
             <StatValue>{patient.totalAppointments}</StatValue>
           </StatPill>
-          <StatPill>
-            <StatLabel>Status</StatLabel>
-            <StatValue>{statusLabel(patient.status)}</StatValue>
-          </StatPill>
         </PatientStats>
-
-        <ViewDetailsButton
-          type="button"
-          aria-label={`Ver dados completos de ${patient.name}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onView(patient);
-          }}
-        >
-          <Eye size={14} />
-          Ver dados
-        </ViewDetailsButton>
 
         <ChevronWrapper $open={expanded}>
           <ChevronDown size={18} />
@@ -393,12 +347,6 @@ const PatientsPage = () => {
   const [summary, setSummary] = useState<PatientSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [isViewOpen, setIsViewOpen] = useState(false);
-  const [viewPatient, setViewPatient] = useState<PatientListItem | null>(null);
-  const [details, setDetails] = useState<PatientAuditDetails | null>(null);
-  const [detailsLoading, setDetailsLoading] = useState(false);
-  const [detailsError, setDetailsError] = useState<string | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -437,35 +385,6 @@ const PatientsPage = () => {
         (phoneQuery.length > 0 && normalizePhoneDigits(patient.phone).includes(phoneQuery)),
     );
   }, [patients, searchTerm]);
-
-  const openView = async (patient: PatientListItem) => {
-    setViewPatient(patient);
-    setIsViewOpen(true);
-    setDetails(null);
-    setDetailsError(null);
-    setDetailsLoading(true);
-
-    try {
-      const response = await getPatientDetailsAdmin(patient.id);
-      setDetails(response);
-    } catch {
-      const message = "Erro ao carregar os dados completos do paciente.";
-      setDetailsError(message);
-      notifyError(message);
-    } finally {
-      setDetailsLoading(false);
-    }
-  };
-
-  const closeView = () => {
-    setIsViewOpen(false);
-    setViewPatient(null);
-    setDetails(null);
-    setDetailsLoading(false);
-    setDetailsError(null);
-  };
-
-  const selectedPatient = details?.patient;
 
   return (
     <PageWrapper>
@@ -546,196 +465,9 @@ const PatientsPage = () => {
               key={patient.id}
               patient={patient}
               index={index}
-              onView={(p) => void openView(p)}
             />
           ))}
         </PatientList>
-      )}
-
-      {isViewOpen && viewPatient && (
-        <Modal
-          isOpen={isViewOpen}
-          onClose={closeView}
-          title={selectedPatient?.name ?? viewPatient.name}
-          actions={
-            <Button size="small" variant="outline" onClick={closeView}>
-              Fechar
-            </Button>
-          }
-        >
-          {detailsLoading && (
-            <>
-              <DetailSection>
-                <DetailSectionTitle>Carregando dados do paciente</DetailSectionTitle>
-                <DetailsGrid>
-                  {Array.from({ length: 8 }, (_, i) => (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: lista de skeleton estática
-                    <DetailItem key={`detail-loading-${i}`}>
-                      <Skeleton width="50%" height={10} />
-                      <Skeleton width="80%" height={14} />
-                    </DetailItem>
-                  ))}
-                </DetailsGrid>
-              </DetailSection>
-
-              <DetailSection>
-                <DetailSectionTitle>Carregando laudos</DetailSectionTitle>
-                <Skeleton width="100%" height={110} />
-                <Skeleton width="100%" height={110} />
-              </DetailSection>
-            </>
-          )}
-
-          {!detailsLoading && detailsError && (
-            <StatusMessage $variant="error">{detailsError}</StatusMessage>
-          )}
-
-          {!detailsLoading && !detailsError && selectedPatient && (
-            <>
-              <DetailSection>
-                <DetailSectionTitle>Dados pessoais</DetailSectionTitle>
-                <DetailsGrid>
-                  <DetailItem>
-                    <DetailLabel>Nome</DetailLabel>
-                    <DetailValue>{selectedPatient.name}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Email</DetailLabel>
-                    <DetailValue>{selectedPatient.email}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Telefone principal</DetailLabel>
-                    <DetailValue>{formatPhoneNumber(selectedPatient.phone)}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Telefone alternativo</DetailLabel>
-                    <DetailValue>{formatPhoneNumber(selectedPatient.alternativePhone)}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>CPF</DetailLabel>
-                    <DetailValue>{toDash(selectedPatient.cpf)}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>RG</DetailLabel>
-                    <DetailValue>{toDash(selectedPatient.rg)}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Data de nascimento</DetailLabel>
-                    <DetailValue>{formatDateDayMonthYear(selectedPatient.dateOfBirth)}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Genero</DetailLabel>
-                    <DetailValue>{genderLabel(selectedPatient.gender)}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Status do usuario</DetailLabel>
-                    <DetailValue>{statusLabel(selectedPatient.status)}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Perfil ativo</DetailLabel>
-                    <DetailValue>{selectedPatient.isActive ? "Sim" : "Nao"}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Total de consultas</DetailLabel>
-                    <DetailValue>{selectedPatient.totalAppointments}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Consultas concluidas</DetailLabel>
-                    <DetailValue>{selectedPatient.completedAppointments}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Faltas registradas</DetailLabel>
-                    <DetailValue>{selectedPatient.noShowCount}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Ultima visita</DetailLabel>
-                    <DetailValue>{formatDateDayMonthYear(selectedPatient.lastVisit)}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Criado em</DetailLabel>
-                    <DetailValue>{formatDateDayMonthYear(selectedPatient.createdAt)}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Atualizado em</DetailLabel>
-                    <DetailValue>{formatDateDayMonthYear(selectedPatient.updatedAt)}</DetailValue>
-                  </DetailItem>
-                </DetailsGrid>
-              </DetailSection>
-
-              <DetailSection>
-                <DetailSectionTitle>Endereco</DetailSectionTitle>
-                <DetailsGrid>
-                  <DetailItem>
-                    <DetailLabel>CEP</DetailLabel>
-                    <DetailValue>{toDash(selectedPatient.address.zipCode)}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Rua</DetailLabel>
-                    <DetailValue>{toDash(selectedPatient.address.street)}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Numero</DetailLabel>
-                    <DetailValue>{toDash(selectedPatient.address.number)}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Complemento</DetailLabel>
-                    <DetailValue>{toDash(selectedPatient.address.complement)}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Bairro</DetailLabel>
-                    <DetailValue>{toDash(selectedPatient.address.neighborhood)}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Cidade</DetailLabel>
-                    <DetailValue>{toDash(selectedPatient.address.city)}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Estado</DetailLabel>
-                    <DetailValue>{toDash(selectedPatient.address.state)}</DetailValue>
-                  </DetailItem>
-                </DetailsGrid>
-              </DetailSection>
-
-              <DetailSection>
-                <DetailSectionTitle>Dados clinicos</DetailSectionTitle>
-                <DetailsGrid>
-                  <DetailItem>
-                    <DetailLabel>Tipo sanguineo</DetailLabel>
-                    <DetailValue>{toDash(selectedPatient.medical.bloodType)}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Alergias</DetailLabel>
-                    <DetailValue>{toDash(selectedPatient.medical.allergies)}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Medicamentos em uso</DetailLabel>
-                    <DetailValue>{toDash(selectedPatient.medical.medications)}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Condicoes pre-existentes</DetailLabel>
-                    <DetailValue>{toDash(selectedPatient.medical.conditions)}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Observacoes gerais</DetailLabel>
-                    <DetailValue>{toDash(selectedPatient.medical.observations)}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Contato de emergencia</DetailLabel>
-                    <DetailValue>
-                      {toDash(selectedPatient.medical.emergencyContactName)}
-                    </DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                    <DetailLabel>Telefone de emergencia</DetailLabel>
-                    <DetailValue>
-                      {formatPhoneNumber(selectedPatient.medical.emergencyContactPhone)}
-                    </DetailValue>
-                  </DetailItem>
-                </DetailsGrid>
-              </DetailSection>
-            </>
-          )}
-        </Modal>
       )}
     </PageWrapper>
   );

@@ -493,6 +493,31 @@ export const ApptEditButton = styled.button`
   }
 `;
 
+export const ApptDocsButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: ${theme.borderRadius.sm};
+  border: 1px solid ${theme.colors.border.light};
+  background: ${theme.colors.surface};
+  color: ${theme.colors.text.secondary};
+  font-family: "Roboto", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: ${theme.colors.featureBg.blue};
+    color: ${theme.colors.primary};
+    border-color: #bfdbfe;
+  }
+`;
+
 export const ApptDropdownMenu = styled.div`
   position: absolute;
   right: 0;
