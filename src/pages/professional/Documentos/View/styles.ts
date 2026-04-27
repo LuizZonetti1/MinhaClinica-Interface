@@ -49,6 +49,9 @@ export const PrintWrapper = styled.div`
     border-radius: 0;
     max-width: none;
     margin: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
   }
 `;
 
@@ -187,6 +190,10 @@ export const DocBody = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
+
+  @media print {
+    flex: 1;
+  }
 `;
 
 export const DocSection = styled.div`
@@ -472,4 +479,31 @@ export const ViewStatusMessage = styled.p<{ $error?: boolean }>`
   color: ${({ $error }) => ($error ? theme.colors.error : theme.colors.text.muted)};
   text-align: center;
   padding: 64px 0;
+`;
+
+// ─── Item list (campos com múltiplos itens) ───────────────────────────────────
+
+export const DocItemList = styled.ul`
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+export const DocItemListItem = styled.li`
+  font-family: "Roboto", sans-serif;
+  font-size: 13.5px;
+  color: ${theme.colors.text.primary};
+  line-height: 1.65;
+  padding-left: 16px;
+  position: relative;
+
+  &::before {
+    content: "•";
+    position: absolute;
+    left: 4px;
+    color: ${theme.colors.text.muted};
+  }
 `;

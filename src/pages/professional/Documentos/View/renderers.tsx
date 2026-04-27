@@ -12,6 +12,7 @@ import type {
   ReferralContent,
   TreatmentPlanContent,
 } from "../../../../../types/clinical-document";
+import { formatIsoDateToBr } from "../../../../utils/dateParsers";
 import {
   BudgetTable,
   BudgetTd,
@@ -26,6 +27,8 @@ import {
   DocHighlightBlock,
   DocHighlightText,
   DocHighlightTitle,
+  DocItemList,
+  DocItemListItem,
   DocSection,
   DocSectionText,
   DocSectionTitle,
@@ -33,7 +36,7 @@ import {
   MedItemDetail,
   MedItemName,
   MedList,
-} from "../styles";
+} from "./styles";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -56,6 +59,21 @@ const INTERVENTION_TYPE_LABEL: Record<string, string> = {
 
 // ─── 1. Clinical Report ───────────────────────────────────────────────────────
 
+const renderSectionValue = (value: string) => {
+  const items = value.split("\n").filter((s) => s.trim() !== "");
+  if (items.length > 1) {
+    return (
+      <DocItemList>
+        {items.map((item, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: valor estável de exibição
+          <DocItemListItem key={i}>{item}</DocItemListItem>
+        ))}
+      </DocItemList>
+    );
+  }
+  return <DocSectionText>{value}</DocSectionText>;
+};
+
 export const ClinicalReportRenderer = ({ doc }: { doc: ClinicalDocumentDetail }) => {
   const c = doc.content as ClinicalReportContent;
   const fields: [string, string][] = [
@@ -73,7 +91,7 @@ export const ClinicalReportRenderer = ({ doc }: { doc: ClinicalDocumentDetail })
         value ? (
           <DocSection key={label}>
             <DocSectionTitle>{label}</DocSectionTitle>
-            <DocSectionText>{value}</DocSectionText>
+            {renderSectionValue(value)}
           </DocSection>
         ) : null,
       )}
@@ -147,42 +165,35 @@ export const CertificateRenderer = ({ doc }: { doc: ClinicalDocumentDetail }) =>
 
 export const AttendanceDeclarationRenderer = ({ doc }: { doc: ClinicalDocumentDetail }) => {
   const c = doc.content as AttendanceDeclarationContent;
+  const patientName = doc.appointmentContext.patientName || "[nome do paciente]";
+  const dateFormatted = c.attendanceDate ? formatIsoDateToBr(c.attendanceDate) : "__/__/____";
+  const arrival = c.arrivalTime || null;
+  const departure = c.departureTime || null;
+  const purposeText = c.purpose || null;
+
+  let declarationText = `Declaramos que ${patientName} compareceu a esta clínica no dia ${dateFormatted}`;
+  if (arrival) {
+    declarationText += `, no horário das ${arrival}`;
+    if (departure) declarationText += ` às ${departure}`;
+  }
+  if (purposeText) declarationText += `, para ${purposeText}`;
+  declarationText += ".";
+
   return (
     <>
-      <DocFieldRow>
-        {c.declarationType && (
+      {c.declarationType && (
+        <DocFieldRow>
           <DocField>
             <DocFieldLabel>Tipo de Declaracao</DocFieldLabel>
             <DocFieldValue>
               {DECLARATION_TYPE_LABEL[c.declarationType] ?? c.declarationType}
             </DocFieldValue>
           </DocField>
-        )}
-        {c.attendanceDate && (
-          <DocField>
-            <DocFieldLabel>Data do Atendimento</DocFieldLabel>
-            <DocFieldValue>{c.attendanceDate}</DocFieldValue>
-          </DocField>
-        )}
-        {c.arrivalTime && (
-          <DocField>
-            <DocFieldLabel>Chegada</DocFieldLabel>
-            <DocFieldValue>{c.arrivalTime}</DocFieldValue>
-          </DocField>
-        )}
-        {c.departureTime && (
-          <DocField>
-            <DocFieldLabel>Saida</DocFieldLabel>
-            <DocFieldValue>{c.departureTime}</DocFieldValue>
-          </DocField>
-        )}
-      </DocFieldRow>
-      {c.purpose && (
-        <DocSection>
-          <DocSectionTitle>Finalidade</DocSectionTitle>
-          <DocSectionText>{c.purpose}</DocSectionText>
-        </DocSection>
+        </DocFieldRow>
       )}
+      <DocSection>
+        <DocSectionText>{declarationText}</DocSectionText>
+      </DocSection>
     </>
   );
 };
