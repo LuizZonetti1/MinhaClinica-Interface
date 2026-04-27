@@ -17,7 +17,7 @@ import type {
   UpdateProfessionalProfilePayload,
   WorkingHour,
 } from "../../../types/professional-profile";
-import { maskPhoneInput, getInitials, normalizePhoneDigits } from "../../../utils/formatters";
+import { getInitials, maskPhoneInput, normalizePhoneDigits } from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import {
@@ -58,16 +58,16 @@ const ALL_DAYS: DayOfWeek[] = [
 
 const DAY_LABELS: Record<DayOfWeek, string> = {
   MONDAY: "Segunda-feira",
-  TUESDAY: "Terca-feira",
+  TUESDAY: "Terça-feira",
   WEDNESDAY: "Quarta-feira",
   THURSDAY: "Quinta-feira",
   FRIDAY: "Sexta-feira",
-  SATURDAY: "Sabado",
+  SATURDAY: "Sábado",
   SUNDAY: "Domingo",
 };
 
 const PASSWORD_REQUIREMENTS_MESSAGE =
-  "A nova senha deve ter no minimo 8 caracteres, com letras maiusculas, minusculas e numeros.";
+  "A nova senha deve ter no mínimo 8 caracteres, com letras maiúsculas, minúsculas e números.";
 
 type ProfessionalFormState = {
   name: string;
@@ -227,7 +227,7 @@ const ProfessionalEditProfilePage = () => {
         applyLatestProfile(profile);
       })
       .catch((error: unknown) => {
-        notifyError(getApiErrorMessage(error, "Nao foi possivel carregar o perfil."));
+        notifyError(getApiErrorMessage(error, "Não foi possível carregar o perfil."));
 
         const fallbackName = user?.name ?? "";
         const fallbackEmail = user?.email ?? "";
@@ -260,13 +260,21 @@ const ProfessionalEditProfilePage = () => {
     };
   }, [avatarPreview]);
 
-  const setFormField = <K extends keyof ProfessionalFormState>(key: K, value: ProfessionalFormState[K]) =>
-    setForm((previous) => ({ ...previous, [key]: value }));
+  const setFormField = <K extends keyof ProfessionalFormState>(
+    key: K,
+    value: ProfessionalFormState[K],
+  ) => setForm((previous) => ({ ...previous, [key]: value }));
 
-  const setPasswordField = <K extends keyof PasswordFormState>(key: K, value: PasswordFormState[K]) =>
-    setPasswordForm((previous) => ({ ...previous, [key]: value }));
+  const setPasswordField = <K extends keyof PasswordFormState>(
+    key: K,
+    value: PasswordFormState[K],
+  ) => setPasswordForm((previous) => ({ ...previous, [key]: value }));
 
-  const updateDay = <K extends keyof DayFormItem>(dayOfWeek: DayOfWeek, key: K, value: DayFormItem[K]) =>
+  const updateDay = <K extends keyof DayFormItem>(
+    dayOfWeek: DayOfWeek,
+    key: K,
+    value: DayFormItem[K],
+  ) =>
     setHours((previous) =>
       previous.map((item) => (item.dayOfWeek === dayOfWeek ? { ...item, [key]: value } : item)),
     );
@@ -314,7 +322,11 @@ const ProfessionalEditProfilePage = () => {
     );
 
     if (isChangingPassword) {
-      if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+      if (
+        !passwordForm.currentPassword ||
+        !passwordForm.newPassword ||
+        !passwordForm.confirmPassword
+      ) {
         notifyError("Preencha senha atual, nova senha e confirmacao.");
         return;
       }
@@ -352,7 +364,7 @@ const ProfessionalEditProfilePage = () => {
     const hasAvatarChange = avatarFile instanceof File;
 
     if (!profileChanged && !hasAvatarChange && !isChangingPassword) {
-      notifySuccess("Nenhuma alteracao para salvar.");
+      notifySuccess("Nenhuma alteração para salvar.");
       return;
     }
 
@@ -409,7 +421,7 @@ const ProfessionalEditProfilePage = () => {
       notifySuccess("Perfil atualizado com sucesso.");
       navigate("/profissional/perfil");
     } catch (error: unknown) {
-      notifyError(getApiErrorMessage(error, "Nao foi possivel atualizar o perfil."));
+      notifyError(getApiErrorMessage(error, "Não foi possível atualizar o perfil."));
     } finally {
       setIsSaving(false);
     }
@@ -525,7 +537,9 @@ const ProfessionalEditProfilePage = () => {
         <TextareaWrapper>
           <TextareaLabel>Formacoes</TextareaLabel>
           <StyledTextarea
-            placeholder={"Uma formacao por linha. Ex:\nGraduacao - USP (2005)\nEspecializacao - InCor (2009)"}
+            placeholder={
+              "Uma formacao por linha. Ex:\nGraduacao - USP (2005)\nEspecializacao - InCor (2009)"
+            }
             value={form.formations}
             onChange={(event) => setFormField("formations", event.target.value)}
             rows={4}
@@ -644,7 +658,11 @@ const ProfessionalEditProfilePage = () => {
       </FormCard>
 
       <ActionRow>
-        <Button variant="outline" onClick={() => navigate("/profissional/perfil")} disabled={isSaving}>
+        <Button
+          variant="outline"
+          onClick={() => navigate("/profissional/perfil")}
+          disabled={isSaving}
+        >
           Cancelar
         </Button>
         <Button icon={<Save size={16} />} onClick={() => void handleSave()} disabled={isSaving}>

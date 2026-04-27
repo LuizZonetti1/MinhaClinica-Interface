@@ -4,9 +4,9 @@ import { Badge } from "../../../components/Badge";
 import { Button } from "../../../components/Button";
 import { Modal } from "../../../components/Modal";
 import {
+  type CompletedConsultationPatient,
   commentService,
   listCompletedConsultationPatients,
-  type CompletedConsultationPatient,
 } from "../../../services/comment.service";
 import type { CommentConsultationType, PatientComment } from "../../../types/comment";
 import type { BadgeVariant } from "../../../types/components";
@@ -24,8 +24,9 @@ import {
   CommentPatientName,
   CommentPatientSubtitle,
   CommentRight,
-  CommentText,
   CommentsList,
+  CommentText,
+  ConfirmMessage,
   DeleteButton,
   EditButton,
   EmptyState,
@@ -41,7 +42,6 @@ import {
   SearchResultInfo,
   SearchResultMeta,
   SearchResultName,
-  ConfirmMessage,
   SelectedPatientCard,
   SelectedPatientClear,
   SelectedPatientContent,
@@ -88,7 +88,9 @@ const ProfessionalCommentsPage = () => {
   const [comments, setComments] = useState<PatientComment[]>([]);
   const [loadingComments, setLoadingComments] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [completedPatientOptions, setCompletedPatientOptions] = useState<CompletedConsultationPatient[]>([]);
+  const [completedPatientOptions, setCompletedPatientOptions] = useState<
+    CompletedConsultationPatient[]
+  >([]);
   const [loadingCompletedPatients, setLoadingCompletedPatients] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<CompletedConsultationPatient | null>(null);
   const [commentText, setCommentText] = useState("");
@@ -113,7 +115,7 @@ const ProfessionalCommentsPage = () => {
       const data = await commentService.list();
       setComments(data);
     } catch (error) {
-      notifyError(getApiErrorMessage(error, "Nao foi possivel carregar os comentarios."));
+      notifyError(getApiErrorMessage(error, "Não foi possível carregar os comentários."));
       setComments([]);
     } finally {
       setLoadingComments(false);
@@ -174,7 +176,7 @@ const ProfessionalCommentsPage = () => {
     event.preventDefault();
 
     if (!selectedPatient || !commentText.trim()) {
-      notifyError("Selecione um paciente e escreva o comentario.");
+      notifyError("Selecione um paciente e escreva o comentário.");
       return;
     }
 
@@ -196,10 +198,10 @@ const ProfessionalCommentsPage = () => {
         ...previousComments,
       ]);
 
-      notifySuccess("Comentario salvo com sucesso!");
+      notifySuccess("Comentário salvo com sucesso!");
       handleCancel();
     } catch (error) {
-      notifyError(getApiErrorMessage(error, "Nao foi possivel salvar o comentario."));
+      notifyError(getApiErrorMessage(error, "Não foi possível salvar o comentário."));
     } finally {
       setSubmitting(false);
     }
@@ -229,9 +231,9 @@ const ProfessionalCommentsPage = () => {
         setEditingText("");
       }
       setCommentPendingDelete(null);
-      notifySuccess("Comentario removido.");
+      notifySuccess("Comentário removido.");
     } catch (error) {
-      notifyError(getApiErrorMessage(error, "Nao foi possivel remover o comentario."));
+      notifyError(getApiErrorMessage(error, "Não foi possível remover o comentário."));
     } finally {
       setDeletingComment(false);
     }
@@ -250,7 +252,7 @@ const ProfessionalCommentsPage = () => {
   const handleSaveEdit = async (comment: PatientComment) => {
     const content = editingText.trim();
     if (!content) {
-      notifyError("Digite um comentario valido para salvar.");
+      notifyError("Digite um comentário válido para salvar.");
       return;
     }
 
@@ -260,13 +262,15 @@ const ProfessionalCommentsPage = () => {
       const updatedComment = await commentService.update(comment.id, { content });
       setComments((previousComments) =>
         previousComments.map((item) =>
-          item.id === comment.id ? { ...item, ...updatedComment, content: updatedComment.content || content } : item,
+          item.id === comment.id
+            ? { ...item, ...updatedComment, content: updatedComment.content || content }
+            : item,
         ),
       );
-      notifySuccess("Comentario atualizado com sucesso!");
+      notifySuccess("Comentário atualizado com sucesso!");
       handleCancelEdit();
     } catch (error) {
-      notifyError(getApiErrorMessage(error, "Nao foi possivel atualizar o comentario."));
+      notifyError(getApiErrorMessage(error, "Não foi possível atualizar o comentário."));
     } finally {
       setSavingEdit(false);
     }
@@ -277,7 +281,7 @@ const ProfessionalCommentsPage = () => {
   return (
     <PageWrapper>
       <PageHeader>
-        <PageTitle>Comentarios de Pacientes</PageTitle>
+        <PageTitle>Comentários de Pacientes</PageTitle>
         <Button
           variant="primary"
           size="small"
@@ -285,13 +289,13 @@ const ProfessionalCommentsPage = () => {
           disabled={isFormOpen}
           onClick={handleOpenForm}
         >
-          Novo Comentario
+          Novo Comentário
         </Button>
       </PageHeader>
 
       {isFormOpen && (
         <FormCard onSubmit={handleSubmit} noValidate>
-          <FormTitle>Adicionar Comentario</FormTitle>
+          <FormTitle>Adicionar Comentário</FormTitle>
 
           <FormFields>
             {selectedPatient ? (
@@ -350,9 +354,7 @@ const ProfessionalCommentsPage = () => {
 
                       <SearchResultInfo>
                         <SearchResultName>{patient.name}</SearchResultName>
-                        <SearchResultMeta>
-                          {getCompletedOptionMeta(patient)}
-                        </SearchResultMeta>
+                        <SearchResultMeta>{getCompletedOptionMeta(patient)}</SearchResultMeta>
                       </SearchResultInfo>
                     </TodayAppointmentItem>
                   ))

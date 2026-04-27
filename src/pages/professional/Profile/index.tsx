@@ -42,11 +42,11 @@ import {
 
 const DAY_LABELS: Record<string, string> = {
   MONDAY: "Segunda-feira",
-  TUESDAY: "Terca-feira",
+  TUESDAY: "Terça-feira",
   WEDNESDAY: "Quarta-feira",
   THURSDAY: "Quinta-feira",
   FRIDAY: "Sexta-feira",
-  SATURDAY: "Sabado",
+  SATURDAY: "Sábado",
   SUNDAY: "Domingo",
 };
 
@@ -98,7 +98,7 @@ const ProfessionalProfilePage = () => {
         const data = await getProfessionalProfile();
         setProfile(data);
       } catch (error: unknown) {
-        notifyError(getApiErrorMessage(error, "Nao foi possivel carregar o perfil."));
+        notifyError(getApiErrorMessage(error, "Não foi possível carregar o perfil."));
       } finally {
         setLoading(false);
       }
@@ -113,11 +113,11 @@ const ProfessionalProfilePage = () => {
   const primarySpecialty = profile?.specialties.find((specialty) => specialty.isPrimary);
   const heroSubtitle = profile
     ? [
-      primarySpecialty?.name,
-      `${profile.professionalCouncil} ${profile.registrationNumber}/${profile.registrationState}`,
-    ]
-      .filter(Boolean)
-      .join(" - ")
+        primarySpecialty?.name,
+        `${profile.professionalCouncil} ${profile.registrationNumber}/${profile.registrationState}`,
+      ]
+        .filter(Boolean)
+        .join(" - ")
     : "";
 
   const formations = profile?.formations ? profile.formations.split("\n").filter(Boolean) : [];
@@ -129,7 +129,11 @@ const ProfessionalProfilePage = () => {
       <HeroBanner>
         <HeroLeft>
           <AvatarCircle>
-            {profile?.avatarUrl ? <img src={profile.avatarUrl} alt={profileName} /> : initials || "P"}
+            {profile?.avatarUrl ? (
+              <img src={profile.avatarUrl} alt={profileName} />
+            ) : (
+              initials || "P"
+            )}
           </AvatarCircle>
 
           <HeroInfo>
@@ -175,7 +179,7 @@ const ProfessionalProfilePage = () => {
               </StatValue>
               <StatMeta>
                 <Building2 size={14} />
-                <StatLabel>Na clinica</StatLabel>
+                <StatLabel>Na clínica</StatLabel>
               </StatMeta>
             </StatItem>
           </StatsRow>
@@ -209,7 +213,7 @@ const ProfessionalProfilePage = () => {
                 <>
                   <SectionDivider />
                   <Section>
-                    <SectionTitle>Formacao</SectionTitle>
+                    <SectionTitle>Formação</SectionTitle>
                     {formations.map((line, index) => (
                       // biome-ignore lint/suspicious/noArrayIndexKey: static formation list
                       <FormationLine key={index}>{line}</FormationLine>
@@ -220,13 +224,13 @@ const ProfessionalProfilePage = () => {
 
               {!profile.bio && formations.length === 0 && (
                 <Section>
-                  <SectionText>Nenhuma informacao profissional cadastrada.</SectionText>
+                  <SectionText>Nenhuma informação profissional cadastrada.</SectionText>
                 </Section>
               )}
             </ContentCard>
 
             <ContentCard>
-              <CardTitle>Horarios de Atendimento</CardTitle>
+              <CardTitle>Horários de Atendimento</CardTitle>
               {orderedHours.map((workingHour) => {
                 const schedule = formatSchedule(workingHour);
                 return (
