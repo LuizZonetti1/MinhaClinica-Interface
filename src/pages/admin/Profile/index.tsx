@@ -20,8 +20,13 @@ import { useAuth } from "../../../contexts";
 import { getDashboardSummary } from "../../../services/admin.service";
 import { getProfile } from "../../../services/profile.service";
 import type { ProfileData } from "../../../types/profile";
+import {
+  formatCurrencyBRL,
+  formatDateDayMonthYear,
+  formatPhoneNumber,
+  getInitials,
+} from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
-import { formatCurrencyBRL, formatDateDayMonthYear, formatPhoneNumber, getInitials } from "../../../utils/formatters";
 import { notifyError } from "../../../utils/toast";
 import {
   AvatarCircle,
@@ -99,7 +104,9 @@ const ProfilePage = () => {
               };
 
         if (profileResult.status === "rejected") {
-          notifyError(getApiErrorMessage(profileResult.reason, "Nao foi possivel carregar o perfil."));
+          notifyError(
+            getApiErrorMessage(profileResult.reason, "Não foi possível carregar o perfil."),
+          );
         }
 
         if (
@@ -114,7 +121,7 @@ const ProfilePage = () => {
 
         setProfile(resolvedProfile);
       } catch (error: unknown) {
-        notifyError(getApiErrorMessage(error, "Nao foi possivel carregar o perfil."));
+        notifyError(getApiErrorMessage(error, "Não foi possível carregar o perfil."));
         setProfile({
           ...EMPTY_PROFILE,
           fullName: user?.name ?? EMPTY_PROFILE.fullName,
@@ -150,7 +157,11 @@ const ProfilePage = () => {
         <HeroRole>{toDash(profileData.clinicRole)}</HeroRole>
 
         <HeroActions>
-          <EditButton type="button" onClick={() => navigate("/admin/perfil/editar")} disabled={loading}>
+          <EditButton
+            type="button"
+            onClick={() => navigate("/admin/perfil/editar")}
+            disabled={loading}
+          >
             <Pencil size={15} />
             Editar Perfil
           </EditButton>
@@ -161,7 +172,7 @@ const ProfilePage = () => {
 
       <CardGrid>
         <InfoCard>
-          <CardTitle>Informacoes Pessoais</CardTitle>
+          <CardTitle>Informações Pessoais</CardTitle>
           <InfoRow>
             <InfoLeft>
               <User size={16} />
@@ -186,32 +197,32 @@ const ProfilePage = () => {
           <InfoRow>
             <InfoLeft>
               <MapPin size={16} />
-              <InfoLabel>Endereco</InfoLabel>
+              <InfoLabel>Endereço</InfoLabel>
             </InfoLeft>
             <InfoValue>{toDash(profileData.address)}</InfoValue>
           </InfoRow>
         </InfoCard>
 
         <InfoCard>
-          <CardTitle>Informacoes da Clinica</CardTitle>
+          <CardTitle>Informações da Clínica</CardTitle>
           <InfoRow>
             <InfoLeft>
               <Building2 size={16} />
-              <InfoLabel>Clinica</InfoLabel>
+              <InfoLabel>Clínica</InfoLabel>
             </InfoLeft>
             <InfoValue>{toDash(profileData.clinicName)}</InfoValue>
           </InfoRow>
           <InfoRow>
             <InfoLeft>
               <Briefcase size={16} />
-              <InfoLabel>Funcao</InfoLabel>
+              <InfoLabel>Função</InfoLabel>
             </InfoLeft>
             <InfoValue>{toDash(profileData.clinicRole)}</InfoValue>
           </InfoRow>
           <InfoRow>
             <InfoLeft>
               <Calendar size={16} />
-              <InfoLabel>Fundacao</InfoLabel>
+              <InfoLabel>Fundação</InfoLabel>
             </InfoLeft>
             <InfoValue>{formatDateDayMonthYear(profileData.foundedAt)}</InfoValue>
           </InfoRow>
@@ -225,11 +236,11 @@ const ProfilePage = () => {
         </InfoCard>
 
         <InfoCard>
-          <CardTitle>Acesso e Permissoes</CardTitle>
+          <CardTitle>Acesso e Permissões</CardTitle>
           <InfoRow>
             <InfoLeft>
               <Shield size={16} />
-              <InfoLabel>Nivel de Acesso</InfoLabel>
+              <InfoLabel>Nível de Acesso</InfoLabel>
             </InfoLeft>
             <InfoValue>{toDash(profileData.accessLevel)}</InfoValue>
           </InfoRow>
@@ -243,20 +254,22 @@ const ProfilePage = () => {
           <InfoRow>
             <InfoLeft>
               <Monitor size={16} />
-              <InfoLabel>Sessao Ativa</InfoLabel>
+              <InfoLabel>Sessão Ativa</InfoLabel>
             </InfoLeft>
             <InfoValue>{toDash(profileData.activeSession)}</InfoValue>
           </InfoRow>
         </InfoCard>
 
         <InfoCard>
-          <CardTitle>Estatisticas Gerais</CardTitle>
+          <CardTitle>Estatísticas Gerais</CardTitle>
           <InfoRow>
             <InfoLeft>
               <Users size={16} />
               <InfoLabel>Total de Pacientes</InfoLabel>
             </InfoLeft>
-            <InfoValueHighlight>{profileData.totalPatients.toLocaleString("pt-BR")}</InfoValueHighlight>
+            <InfoValueHighlight>
+              {profileData.totalPatients.toLocaleString("pt-BR")}
+            </InfoValueHighlight>
           </InfoRow>
           <InfoRow>
             <InfoLeft>
@@ -270,7 +283,7 @@ const ProfilePage = () => {
           <InfoRow>
             <InfoLeft>
               <BarChart2 size={16} />
-              <InfoLabel>Consultas este Mes</InfoLabel>
+              <InfoLabel>Consultas este Mês</InfoLabel>
             </InfoLeft>
             <InfoValueHighlight>
               {profileData.appointmentsThisMonth.toLocaleString("pt-BR")}
@@ -279,7 +292,7 @@ const ProfilePage = () => {
           <InfoRow>
             <InfoLeft>
               <DollarSign size={16} />
-              <InfoLabel>Receita (Mes atual)</InfoLabel>
+              <InfoLabel>Receita (Mês atual)</InfoLabel>
             </InfoLeft>
             <InfoValueHighlight>{toDash(profileData.revenueCurrentMonth)}</InfoValueHighlight>
           </InfoRow>

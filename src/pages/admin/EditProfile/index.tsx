@@ -10,8 +10,8 @@ import {
   updateProfilePassword,
 } from "../../../services/profile.service";
 import type { ProfileData, UpdateProfilePayload } from "../../../types/profile";
-import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { getInitials, maskPhoneInput, normalizePhoneDigits } from "../../../utils/formatters";
+import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import {
   ActionRow,
@@ -24,9 +24,9 @@ import {
   FormCardTitle,
   FormGrid,
   FullWidthField,
-  PasswordRequirements,
   PageTitle,
   PageWrapper,
+  PasswordRequirements,
 } from "./styles";
 
 type EditForm = {
@@ -45,7 +45,7 @@ type ProfileBase = {
 const normalizeApiValue = (value: string, fallback = "") => (value === "-" ? fallback : value);
 
 const PASSWORD_REQUIREMENTS_MESSAGE =
-  "A nova senha deve ter no minimo 8 caracteres, com letras maiusculas, minusculas e numeros.";
+  "A nova senha deve ter no mínimo 8 caracteres, com letras maiúsculas, minúsculas e números.";
 
 const isPasswordStrong = (password: string) =>
   password.length >= 8 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /\d/.test(password);
@@ -97,7 +97,7 @@ const EditProfilePage = () => {
         });
       })
       .catch((err: unknown) => {
-        notifyError(getApiErrorMessage(err, "Nao foi possivel carregar o perfil."));
+        notifyError(getApiErrorMessage(err, "Não foi possível carregar o perfil."));
         const fallbackName = user?.name ?? "";
         setEmail(user?.email ?? "");
         setBaseProfile({ name: fallbackName, phone: "" });
@@ -131,12 +131,18 @@ const EditProfilePage = () => {
   const set = <K extends keyof EditForm>(key: K, value: EditForm[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
-  const applyLatestProfile = (latestProfile: ProfileData, fallbackName: string, fallbackPhone: string) => {
+  const applyLatestProfile = (
+    latestProfile: ProfileData,
+    fallbackName: string,
+    fallbackPhone: string,
+  ) => {
     const latestName = normalizeApiValue(latestProfile.fullName, fallbackName);
     const latestPhoneMasked = maskPhoneInput(normalizeApiValue(latestProfile.phone, fallbackPhone));
     const latestPhoneDigits = normalizePhoneDigits(latestPhoneMasked);
     const latestEmail = normalizeApiValue(latestProfile.email, email);
-    const latestAvatar = latestProfile.avatarUrl.trim() ? latestProfile.avatarUrl : currentAvatarUrl;
+    const latestAvatar = latestProfile.avatarUrl.trim()
+      ? latestProfile.avatarUrl
+      : currentAvatarUrl;
 
     if (avatarPreview.startsWith("blob:")) URL.revokeObjectURL(avatarPreview);
 
@@ -173,12 +179,12 @@ const EditProfilePage = () => {
     );
     if (isChangingPassword) {
       if (!form.currentPassword || !form.newPassword || !form.confirmPassword) {
-        notifyError("Preencha senha atual, nova senha e confirmacao.");
+        notifyError("Preencha senha atual, nova senha e confirmação.");
         return;
       }
 
       if (form.newPassword !== form.confirmPassword) {
-        notifyError("As senhas nao coincidem.");
+        notifyError("As senhas não coincidem.");
         return;
       }
 
@@ -193,7 +199,7 @@ const EditProfilePage = () => {
     const hasAvatarChange = Boolean(avatarFile);
 
     if (!profileChanged && !isChangingPassword && !hasAvatarChange) {
-      notifySuccess("Nenhuma alteracao para salvar.");
+      notifySuccess("Nenhuma alteração para salvar.");
       return;
     }
 
@@ -222,7 +228,7 @@ const EditProfilePage = () => {
       notifySuccess("Perfil atualizado com sucesso.");
       navigate("/admin/perfil");
     } catch (error: unknown) {
-      notifyError(getApiErrorMessage(error, "Nao foi possivel atualizar o perfil."));
+      notifyError(getApiErrorMessage(error, "Não foi possível atualizar o perfil."));
     } finally {
       setIsSaving(false);
     }
@@ -333,7 +339,7 @@ const EditProfilePage = () => {
           Cancelar
         </Button>
         <Button icon={<Save size={16} />} onClick={() => void handleSave()} disabled={isSaving}>
-          {isSaving ? "Salvando..." : "Salvar Alteracoes"}
+          {isSaving ? "Salvando..." : "Salvar Alterações"}
         </Button>
       </ActionRow>
     </PageWrapper>
