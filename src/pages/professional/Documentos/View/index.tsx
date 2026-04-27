@@ -1,5 +1,5 @@
 import { ArrowLeft, Printer } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Button } from "../../../../components/Button";
 import {
@@ -39,6 +39,7 @@ const DocumentViewPage = () => {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [printing, setPrinting] = useState(false);
+  const autoPrintFired = useRef(false);
 
   const loadDocument = useCallback(async () => {
     if (!appointmentId || !documentId) {
@@ -79,7 +80,8 @@ const DocumentViewPage = () => {
 
   // Auto-trigger print when print=1 param present and doc loaded
   useEffect(() => {
-    if (autoPrint && doc && !loading) {
+    if (autoPrint && doc && !loading && !autoPrintFired.current) {
+      autoPrintFired.current = true;
       void handlePrint();
     }
   }, [autoPrint, doc, loading, handlePrint]);
