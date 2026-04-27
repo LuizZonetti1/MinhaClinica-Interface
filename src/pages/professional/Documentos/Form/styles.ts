@@ -399,7 +399,7 @@ export const DynamicListAddButton = styled.button`
 export const FormFooterWrapper = styled.div`
   position: fixed;
   bottom: 0;
-  left: 0;
+  left: 256px;
   right: 0;
   background: ${theme.colors.surface};
   border-top: 1px solid ${theme.colors.border.light};

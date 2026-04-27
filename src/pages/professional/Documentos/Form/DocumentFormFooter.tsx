@@ -13,6 +13,7 @@ interface DocumentFormFooterProps {
   lastSavedAt: string | null;
   autosaveError: boolean;
   disabled?: boolean;
+  finalizeLabel?: string;
 }
 
 const DocumentFormFooter = ({
@@ -25,6 +26,7 @@ const DocumentFormFooter = ({
   lastSavedAt,
   autosaveError,
   disabled,
+  finalizeLabel = "Finalizar documento",
 }: DocumentFormFooterProps) => {
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -69,7 +71,7 @@ const DocumentFormFooter = ({
             onClick={handleFinalizeClick}
             disabled={!canFinalize || finalizing || saving || disabled}
           >
-            {finalizing ? "Finalizando..." : "Finalizar documento"}
+            {finalizing ? "Finalizando..." : finalizeLabel}
           </Button>
         </FooterActions>
       </FormFooterWrapper>
@@ -77,7 +79,7 @@ const DocumentFormFooter = ({
       <Modal
         isOpen={showConfirm}
         onClose={() => setShowConfirm(false)}
-        title="Finalizar documento"
+        title={finalizeLabel}
         actions={
           <>
             <Button variant="outline" size="small" onClick={() => setShowConfirm(false)}>
