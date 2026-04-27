@@ -11,7 +11,7 @@ import type {
   PrescriptionContent,
   ReferralContent,
   TreatmentPlanContent,
-} from "../../../../../types/clinical-document";
+} from "../../../../types/clinical-document";
 import { formatIsoDateToBr } from "../../../../utils/dateParsers";
 import {
   BudgetTable,
@@ -24,9 +24,6 @@ import {
   DocFieldLabel,
   DocFieldRow,
   DocFieldValue,
-  DocHighlightBlock,
-  DocHighlightText,
-  DocHighlightTitle,
   DocItemList,
   DocItemListItem,
   DocSection,
@@ -46,7 +43,16 @@ const formatCurrency = (value: number): string =>
 const DECLARATION_TYPE_LABEL: Record<string, string> = {
   ATTENDANCE: "Comparecimento",
   INCAPACITY: "Incapacidade",
-  MEDICAL_FOLLOW_UP: "Acompanhamento medico",
+  MEDICAL_FOLLOW_UP: "Acompanhamento médico",
+};
+
+const URGENCY_LABEL: Record<string, string> = {
+  URGENT: "Urgente",
+  ALTA: "Alta",
+  MEDIA: "Média",
+  BAIXA: "Baixa",
+  NORMAL: "Normal",
+  ELECTIVE: "Eletivo",
 };
 
 const INTERVENTION_TYPE_LABEL: Record<string, string> = {
@@ -78,12 +84,12 @@ export const ClinicalReportRenderer = ({ doc }: { doc: ClinicalDocumentDetail })
   const c = doc.content as ClinicalReportContent;
   const fields: [string, string][] = [
     ["Anamnese", c.anamnesis],
-    ["Historico", c.history],
-    ["Exame Fisico", c.physicalExam],
+    ["Histórico", c.history],
+    ["Exame Físico", c.physicalExam],
     ["Exames Complementares", c.complementaryExams],
-    ["Diagnostico", c.diagnosis],
+    ["Diagnóstico", c.diagnosis],
     ["Tratamento", c.treatment],
-    ["Prognostico", c.prognosis],
+    ["Prognóstico", c.prognosis],
   ];
   return (
     <>
@@ -122,13 +128,13 @@ export const CertificateRenderer = ({ doc }: { doc: ClinicalDocumentDetail }) =>
         )}
         {c.startDate && (
           <DocField>
-            <DocFieldLabel>Inicio</DocFieldLabel>
+            <DocFieldLabel>Início</DocFieldLabel>
             <DocFieldValue>{c.startDate}</DocFieldValue>
           </DocField>
         )}
         {c.endDate && (
           <DocField>
-            <DocFieldLabel>Termino</DocFieldLabel>
+            <DocFieldLabel>Término</DocFieldLabel>
             <DocFieldValue>{c.endDate}</DocFieldValue>
           </DocField>
         )}
@@ -141,7 +147,7 @@ export const CertificateRenderer = ({ doc }: { doc: ClinicalDocumentDetail }) =>
       </DocFieldRow>
       {c.diagnosisDescription && (
         <DocSection>
-          <DocSectionTitle>Descricao do Diagnostico</DocSectionTitle>
+          <DocSectionTitle>Descrição do Diagnóstico</DocSectionTitle>
           <DocSectionText>{c.diagnosisDescription}</DocSectionText>
         </DocSection>
       )}
@@ -153,7 +159,7 @@ export const CertificateRenderer = ({ doc }: { doc: ClinicalDocumentDetail }) =>
       )}
       {c.observations && (
         <DocSection>
-          <DocSectionTitle>Observacoes</DocSectionTitle>
+          <DocSectionTitle>Observações</DocSectionTitle>
           <DocSectionText>{c.observations}</DocSectionText>
         </DocSection>
       )}
@@ -184,7 +190,7 @@ export const AttendanceDeclarationRenderer = ({ doc }: { doc: ClinicalDocumentDe
       {c.declarationType && (
         <DocFieldRow>
           <DocField>
-            <DocFieldLabel>Tipo de Declaracao</DocFieldLabel>
+            <DocFieldLabel>Tipo de Declaração</DocFieldLabel>
             <DocFieldValue>
               {DECLARATION_TYPE_LABEL[c.declarationType] ?? c.declarationType}
             </DocFieldValue>
@@ -210,9 +216,9 @@ export const PrescriptionRenderer = ({ doc }: { doc: ClinicalDocumentDetail }) =
             {i + 1}. {med.name || "Medicamento"}
           </MedItemName>
           {med.dosage && <MedItemDetail>Dosagem: {med.dosage}</MedItemDetail>}
-          {med.frequency && <MedItemDetail>Frequencia: {med.frequency}</MedItemDetail>}
-          {med.duration && <MedItemDetail>Duracao: {med.duration}</MedItemDetail>}
-          {med.instructions && <MedItemDetail>Instrucoes: {med.instructions}</MedItemDetail>}
+          {med.frequency && <MedItemDetail>Frequência: {med.frequency}</MedItemDetail>}
+          {med.duration && <MedItemDetail>Duração: {med.duration}</MedItemDetail>}
+          {med.instructions && <MedItemDetail>Instruções: {med.instructions}</MedItemDetail>}
         </MedItem>
       ))}
     </MedList>
@@ -225,25 +231,23 @@ export const ControlledPrescriptionRenderer = ({ doc }: { doc: ClinicalDocumentD
   const c = doc.content as ControlledPrescriptionContent;
   return (
     <>
-      <DocHighlightBlock $color="amber">
-        <DocHighlightTitle style={{ color: "#92400e" }}>
-          Receituario de Controle Especial
-        </DocHighlightTitle>
-        <DocHighlightText style={{ color: "#92400e" }}>
-          A dispensacao deste medicamento esta sujeita a normas da ANVISA (Portaria SVS/MS
+      <DocSection>
+        <DocSectionTitle>Receituário de Controle Especial</DocSectionTitle>
+        <DocSectionText>
+          A dispensação deste medicamento está sujeita às normas da ANVISA (Portaria SVS/MS
           344/1998).
-        </DocHighlightText>
-      </DocHighlightBlock>
+        </DocSectionText>
+      </DocSection>
       <DocFieldRow>
         {c.notificationNumber && (
           <DocField>
-            <DocFieldLabel>Numero da Notificacao</DocFieldLabel>
+            <DocFieldLabel>Número da Notificação</DocFieldLabel>
             <DocFieldValue>{c.notificationNumber}</DocFieldValue>
           </DocField>
         )}
         {c.patientAddress && (
           <DocField>
-            <DocFieldLabel>Endereco do Paciente</DocFieldLabel>
+            <DocFieldLabel>Endereço do Paciente</DocFieldLabel>
             <DocFieldValue>{c.patientAddress}</DocFieldValue>
           </DocField>
         )}
@@ -255,10 +259,10 @@ export const ControlledPrescriptionRenderer = ({ doc }: { doc: ClinicalDocumentD
               {i + 1}. {med.name || "Medicamento"}
             </MedItemName>
             {med.dosage && <MedItemDetail>Dosagem: {med.dosage}</MedItemDetail>}
-            {med.frequency && <MedItemDetail>Frequencia: {med.frequency}</MedItemDetail>}
-            {med.duration && <MedItemDetail>Duracao: {med.duration}</MedItemDetail>}
+            {med.frequency && <MedItemDetail>Frequência: {med.frequency}</MedItemDetail>}
+            {med.duration && <MedItemDetail>Duração: {med.duration}</MedItemDetail>}
             {med.quantity && <MedItemDetail>Quantidade: {med.quantity}</MedItemDetail>}
-            {med.instructions && <MedItemDetail>Instrucoes: {med.instructions}</MedItemDetail>}
+            {med.instructions && <MedItemDetail>Instruções: {med.instructions}</MedItemDetail>}
           </MedItem>
         ))}
       </MedList>
@@ -278,7 +282,7 @@ export const ExamRequestRenderer = ({ doc }: { doc: ClinicalDocumentDetail }) =>
           <DocField>
             <DocFieldLabel>Urgência</DocFieldLabel>
             <DocFieldValue>
-              <DocBadge $color={urgencyColor}>{c.urgency}</DocBadge>
+              <DocBadge $color={urgencyColor}>{URGENCY_LABEL[c.urgency] ?? c.urgency}</DocBadge>
             </DocFieldValue>
           </DocField>
         )}
@@ -335,7 +339,7 @@ export const ReferralRenderer = ({ doc }: { doc: ClinicalDocumentDetail }) => {
           <DocField>
             <DocFieldLabel>Urgência</DocFieldLabel>
             <DocFieldValue>
-              <DocBadge $color={urgencyColor}>{c.urgency}</DocBadge>
+              <DocBadge $color={urgencyColor}>{URGENCY_LABEL[c.urgency] ?? c.urgency}</DocBadge>
             </DocFieldValue>
           </DocField>
         )}
@@ -401,10 +405,10 @@ export const MedicalReportRenderer = ({ doc }: { doc: ClinicalDocumentDetail }) 
         </DocSection>
       )}
       {c.conclusion && (
-        <DocHighlightBlock $color="blue">
-          <DocHighlightTitle style={{ color: "#1e40af" }}>Conclusao</DocHighlightTitle>
-          <DocHighlightText style={{ color: "#1e40af" }}>{c.conclusion}</DocHighlightText>
-        </DocHighlightBlock>
+        <DocSection>
+          <DocSectionTitle>Conclusão</DocSectionTitle>
+          <DocSectionText>{c.conclusion}</DocSectionText>
+        </DocSection>
       )}
     </>
   );
@@ -428,19 +432,19 @@ export const ConsentFormRenderer = ({ doc }: { doc: ClinicalDocumentDetail }) =>
       )}
       {c.procedureDescription && (
         <DocSection>
-          <DocSectionTitle>Descricao</DocSectionTitle>
+          <DocSectionTitle>Descrição</DocSectionTitle>
           <DocSectionText>{c.procedureDescription}</DocSectionText>
         </DocSection>
       )}
       {c.risks && (
-        <DocHighlightBlock $color="amber">
-          <DocHighlightTitle style={{ color: "#92400e" }}>Riscos</DocHighlightTitle>
-          <DocHighlightText style={{ color: "#92400e" }}>{c.risks}</DocHighlightText>
-        </DocHighlightBlock>
+        <DocSection>
+          <DocSectionTitle>Riscos</DocSectionTitle>
+          <DocSectionText>{c.risks}</DocSectionText>
+        </DocSection>
       )}
       {c.benefits && (
         <DocSection>
-          <DocSectionTitle>Beneficios</DocSectionTitle>
+          <DocSectionTitle>Benefícios</DocSectionTitle>
           <DocSectionText>{c.benefits}</DocSectionText>
         </DocSection>
       )}
@@ -459,11 +463,11 @@ export const ConsentFormRenderer = ({ doc }: { doc: ClinicalDocumentDetail }) =>
         </DocFieldRow>
       )}
       {c.patientAcknowledged && (
-        <DocHighlightBlock $color="green">
-          <DocHighlightText style={{ color: "#166534", fontWeight: 600 }}>
+        <DocSection>
+          <DocSectionText style={{ fontWeight: 600 }}>
             Paciente declarou estar ciente e assinou o termo.
-          </DocHighlightText>
-        </DocHighlightBlock>
+          </DocSectionText>
+        </DocSection>
       )}
     </>
   );
@@ -478,7 +482,7 @@ export const TreatmentPlanRenderer = ({ doc }: { doc: ClinicalDocumentDetail }) 
       <DocFieldRow>
         {c.diagnosis && (
           <DocField>
-            <DocFieldLabel>Diagnostico</DocFieldLabel>
+            <DocFieldLabel>Diagnóstico</DocFieldLabel>
             <DocFieldValue>{c.diagnosis}</DocFieldValue>
           </DocField>
         )}
@@ -507,7 +511,7 @@ export const TreatmentPlanRenderer = ({ doc }: { doc: ClinicalDocumentDetail }) 
       )}
       {c.interventions.length > 0 && (
         <DocSection>
-          <DocSectionTitle>Intervencoes</DocSectionTitle>
+          <DocSectionTitle>Intervenções</DocSectionTitle>
           {c.interventions.map((intv, i) => (
             <MedItem key={`intv-${i}-${intv.description}`}>
               {intv.type && (
@@ -529,13 +533,13 @@ export const BudgetRenderer = ({ doc }: { doc: ClinicalDocumentDetail }) => {
   return (
     <>
       <DocSection>
-        <DocSectionTitle>Itens do Orcamento</DocSectionTitle>
+        <DocSectionTitle>Itens do Orçamento</DocSectionTitle>
         <BudgetTable>
           <thead>
             <tr>
-              <BudgetTh>Descricao</BudgetTh>
+              <BudgetTh>Descrição</BudgetTh>
               <BudgetTh>Qtd</BudgetTh>
-              <BudgetTh>Valor Unitario</BudgetTh>
+              <BudgetTh>Valor Unitário</BudgetTh>
               <BudgetTh>Total</BudgetTh>
             </tr>
           </thead>
@@ -585,16 +589,16 @@ export const BudgetRenderer = ({ doc }: { doc: ClinicalDocumentDetail }) => {
       )}
       {c.observations && (
         <DocSection>
-          <DocSectionTitle>Observacoes</DocSectionTitle>
+          <DocSectionTitle>Observações</DocSectionTitle>
           <DocSectionText>{c.observations}</DocSectionText>
         </DocSection>
       )}
       {c.patientAcknowledged && (
-        <DocHighlightBlock $color="green">
-          <DocHighlightText style={{ color: "#166534", fontWeight: 600 }}>
+        <DocSection>
+          <DocSectionText style={{ fontWeight: 600 }}>
             Paciente ciente e de acordo com os valores apresentados.
-          </DocHighlightText>
-        </DocHighlightBlock>
+          </DocSectionText>
+        </DocSection>
       )}
     </>
   );
