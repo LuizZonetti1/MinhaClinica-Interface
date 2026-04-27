@@ -346,7 +346,7 @@ const SettingsPage = () => {
         const response = await getClinicSettings();
         setSettings(normalizeSettingsResponse(response));
       } catch (error: unknown) {
-        notifyError(getApiErrorMessage(error, "Erro ao carregar configuracoes da clinica."));
+        notifyError(getApiErrorMessage(error, "Erro ao carregar configurações da clínica."));
       } finally {
         setLoading(false);
       }
@@ -401,9 +401,9 @@ const SettingsPage = () => {
         }),
       ]);
 
-      notifySuccess("Configuracoes salvas com sucesso.");
+      notifySuccess("Configurações salvas com sucesso.");
     } catch (error: unknown) {
-      notifyError(getApiErrorMessage(error, "Nao foi possivel salvar as configuracoes."));
+      notifyError(getApiErrorMessage(error, "Não foi possível salvar as configurações."));
     } finally {
       setIsSaving(false);
     }
@@ -412,11 +412,11 @@ const SettingsPage = () => {
   return (
     <PageWrapper>
       <TopSection>
-        <PageTitle>Configuracoes da Clinica</PageTitle>
+        <PageTitle>Configurações da Clínica</PageTitle>
         <PageSubtitle>
           {loading
-            ? "Carregando configuracoes..."
-            : "Gerencie as preferencias e dados da sua clinica."}
+            ? "Carregando configurações..."
+            : "Gerencie as preferências e dados da sua clínica."}
         </PageSubtitle>
       </TopSection>
 
@@ -424,15 +424,15 @@ const SettingsPage = () => {
         <SectionCard>
           <SectionHeader>
             <Building2 size={18} />
-            <SectionHeaderTitle>Dados da Clinica</SectionHeaderTitle>
+            <SectionHeaderTitle>Dados da Clínica</SectionHeaderTitle>
           </SectionHeader>
           <FormFields>
             <Input
-              label="Nome da Clinica"
+              label="Nome da Clínica"
               fullWidth
               value={settings.clinicName}
               onChange={(e) => set("clinicName", e.target.value)}
-              placeholder="Nome da clinica"
+              placeholder="Nome da clínica"
               disabled={isBusy}
             />
             <Input
@@ -466,7 +466,7 @@ const SettingsPage = () => {
         <SectionCard>
           <SectionHeader>
             <Clock size={18} />
-            <SectionHeaderTitle>Horario de Funcionamento</SectionHeaderTitle>
+            <SectionHeaderTitle>Horário de Funcionamento</SectionHeaderTitle>
           </SectionHeader>
           <FormFields>
             <Input
@@ -509,7 +509,7 @@ const SettingsPage = () => {
                 disabled={isBusy}
               >
                 <option value="seg-sex">Segunda a Sexta</option>
-                <option value="seg-sab">Segunda a Sabado</option>
+                <option value="seg-sab">Segunda a Sábado</option>
                 <option value="seg-dom">Segunda a Domingo</option>
               </FieldSelect>
             </FieldGroup>
@@ -519,7 +519,7 @@ const SettingsPage = () => {
         <SectionCard $fullWidth>
           <SectionHeader>
             <MapPin size={18} />
-            <SectionHeaderTitle>Endereco da Clinica</SectionHeaderTitle>
+            <SectionHeaderTitle>Endereço da Clínica</SectionHeaderTitle>
           </SectionHeader>
           <FormFieldsGrid>
             <Input
@@ -539,7 +539,7 @@ const SettingsPage = () => {
               disabled={isBusy}
             />
             <Input
-              label="Numero"
+              label="Número"
               fullWidth
               value={settings.number}
               onChange={(e) => set("number", e.target.value)}
@@ -584,12 +584,12 @@ const SettingsPage = () => {
         <SectionCard>
           <SectionHeader>
             <Bell size={18} />
-            <SectionHeaderTitle>Notificacoes</SectionHeaderTitle>
+            <SectionHeaderTitle>Notificações</SectionHeaderTitle>
           </SectionHeader>
           <ToggleRow>
             <ToggleInfo>
               <ToggleName>Lembrete de Consulta</ToggleName>
-              <ToggleDesc>Enviar lembretes automaticos aos pacientes</ToggleDesc>
+              <ToggleDesc>Enviar lembretes automáticos aos pacientes</ToggleDesc>
             </ToggleInfo>
             <Toggle
               checked={settings.appointmentReminder}
