@@ -1,5 +1,6 @@
-import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, FileText } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router";
 import { getReceptionAgendas } from "../../../services/reception.service";
 import type {
   AgendaProfessional,
@@ -124,6 +125,7 @@ const formatDateLabel = (date: Date): string => {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const ReceptionAgendasPage = () => {
+  const navigate = useNavigate();
   const todayNorm = stripTime(new Date());
   const minDate = new Date(todayNorm.getFullYear(), todayNorm.getMonth() - 6, todayNorm.getDate());
   const maxDate = new Date(todayNorm.getFullYear(), todayNorm.getMonth() + 6, todayNorm.getDate());
@@ -314,6 +316,34 @@ const ReceptionAgendasPage = () => {
                                     </SlotBadge>
                                   );
                                 })()}
+                              {slot.status === "COMPLETED" && slot.appointmentId && (
+                                <button
+                                  type="button"
+                                  title="Ver documentos"
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 4,
+                                    marginLeft: 6,
+                                    padding: "2px 8px",
+                                    fontSize: 11,
+                                    fontWeight: 500,
+                                    borderRadius: 6,
+                                    border: "1px solid #d1d5db",
+                                    background: "#f9fafb",
+                                    color: "#374151",
+                                    cursor: "pointer",
+                                  }}
+                                  onClick={() =>
+                                    navigate(
+                                      `/recepcao/documentos?consulta=${slot.appointmentId}&paciente=${encodeURIComponent(slot.patientName ?? "")}`,
+                                    )
+                                  }
+                                >
+                                  <FileText size={11} />
+                                  Documentos
+                                </button>
+                              )}
                             </>
                           )}
                         </SlotRow>

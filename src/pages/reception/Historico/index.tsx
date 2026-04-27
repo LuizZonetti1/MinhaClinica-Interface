@@ -1,5 +1,6 @@
-import { ChevronDown, Pencil, Search } from "lucide-react";
+import { ChevronDown, FileText, Pencil, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router";
 import { Input } from "../../../components/Input";
 import { Skeleton } from "../../../components/Skeleton";
 import {
@@ -21,6 +22,7 @@ import {
   ApptDivider,
   ApptDropdownItem,
   ApptDropdownMenu,
+  ApptDocsButton,
   ApptDropdownWrapper,
   ApptEditButton,
   ApptInfo,
@@ -180,6 +182,7 @@ type AppointmentItemProps = {
 };
 
 const AppointmentItem = ({ appt, onStatusChange }: AppointmentItemProps) => {
+  const navigate = useNavigate();
   const date = parseDate(appt.date);
   const day = date ? String(date.getDate()).padStart(2, "0") : "—";
   const monthYear = date ? formatMonthYear(date) : "";
@@ -212,6 +215,19 @@ const AppointmentItem = ({ appt, onStatusChange }: AppointmentItemProps) => {
         currentRawStatus={rawStatus}
         onStatusChange={onStatusChange}
       />
+      {(rawStatus === "COMPLETED" || rawStatus === "DONE") && appt.id && (
+        <ApptDocsButton
+          type="button"
+          onClick={() =>
+            navigate(
+              `/recepcao/documentos?consulta=${appt.id}&paciente=${encodeURIComponent(appt.professionalName || "")}`,
+            )
+          }
+        >
+          <FileText size={12} />
+          Documentos
+        </ApptDocsButton>
+      )}
     </AppointmentEntry>
   );
 };
