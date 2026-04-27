@@ -19,7 +19,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "../../contexts";
 import { UserRole } from "../../types/enums";
 import type { NavLink } from "../../types/layout";
@@ -62,14 +62,18 @@ const RECEPTION_NAV_LINKS: NavLink[] = [
 const PROFESSIONAL_NAV_LINKS: NavLink[] = [
   { label: "Inicio", path: "/profissional/dashboard", icon: LayoutDashboard },
   { label: "Agenda", path: "/profissional/agenda", icon: CalendarDays },
-  { label: "Documentos", path: "/profissional/documentos", icon: FolderOpen },
   { label: "Comentarios", path: "/profissional/comentarios", icon: MessageSquare },
   { label: "Perfil", path: "/profissional/perfil", icon: User },
 ];
 
 const PATIENT_NAV_LINKS: NavLink[] = [
   { label: "Inicio", path: "/paciente/dashboard", icon: LayoutDashboard },
-  { label: "Agendamentos", path: "/paciente/agendamentos", icon: CalendarDays },
+  {
+    label: "Agendamentos",
+    path: "/paciente/agendamentos",
+    icon: CalendarDays,
+    altPaths: ["/paciente/documentos"],
+  },
   { label: "Historico", path: "/paciente/historico", icon: Clock3 },
   { label: "Notificacoes", path: "/paciente/notificacoes", icon: Bell },
   { label: "Perfil", path: "/paciente/perfil", icon: User },
@@ -126,6 +130,7 @@ const getRoleLabel = (role: string) => {
 export const Sidebar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [hasAvatarLoadError, setHasAvatarLoadError] = useState(false);
 
   const navLinks = getRoleNavLinks(user?.role);
@@ -155,12 +160,20 @@ export const Sidebar = () => {
       </LogoRow>
 
       <Nav>
-        {navLinks.map((link) => (
-          <NavItem key={link.path} to={link.path} end={link.path.endsWith("/dashboard")}>
-            <link.icon size={20} />
-            {link.label}
-          </NavItem>
-        ))}
+        {navLinks.map((link) => {
+          const isForceActive = link.altPaths?.some((p) => pathname.startsWith(p)) ?? false;
+          return (
+            <NavItem
+              key={link.path}
+              to={link.path}
+              end={link.path.endsWith("/dashboard")}
+              className={isForceActive ? () => "active" : undefined}
+            >
+              <link.icon size={20} />
+              {link.label}
+            </NavItem>
+          );
+        })}
       </Nav>
 
       <UserSection>
