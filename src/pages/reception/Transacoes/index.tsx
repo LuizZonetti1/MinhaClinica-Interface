@@ -16,7 +16,7 @@ import {
   updateTransaction,
 } from "../../../services/reports.service";
 import { toInputDate } from "../../../utils/dateParsers";
-import { formatCurrencyBRL, formatDateDayMonthYear } from "../../../utils/formatters";
+import { formatCurrencyBRL, formatCurrencyInput, formatDateDayMonthYear, parseNumberFromInput } from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import {
@@ -60,34 +60,6 @@ const PERIOD_TO_MONTHS: Record<ReportPeriod, number> = {
 const TRANSACTION_TYPE_LABEL: Record<TransactionType, string> = {
   INCOME: "Entrada",
   EXPENSE: "Saída",
-};
-
-const formatCurrencyInput = (rawValue: string): string => {
-  const digits = rawValue.replace(/\D/g, "");
-  if (!digits) return "";
-
-  const amount = Number(digits) / 100;
-  return amount.toLocaleString("pt-BR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-};
-
-const parseNumber = (value: unknown): number | null => {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-
-  if (typeof value === "string") {
-    const normalized = value
-      .trim()
-      .replace(/\s+/g, "")
-      .replace(/\.(?=\d{3}\b)/g, "")
-      .replace(",", ".");
-
-    const parsed = Number(normalized);
-    if (Number.isFinite(parsed)) return parsed;
-  }
-
-  return null;
 };
 
 const normalizeComparableText = (value: string): string =>
@@ -186,7 +158,7 @@ const TransactionModal = ({ onClose, onCreated }: TransactionModalProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const amountNumber = parseNumber(form.amount);
+    const amountNumber = parseNumberFromInput(form.amount);
     if (amountNumber === null || amountNumber <= 0) {
       notifyError("Informe um valor valido maior que zero.");
       return;

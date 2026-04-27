@@ -35,7 +35,7 @@ import { theme } from "../../../themes/themes";
 import type { BarSeries } from "../../../types/components";
 import type { ReportData } from "../../../types/dashboard";
 import { toInputDate } from "../../../utils/dateParsers";
-import { formatCurrencyBRL, formatDateDayMonthYear } from "../../../utils/formatters";
+import { formatCurrencyBRL, formatCurrencyInput, formatDateDayMonthYear, parseNumberFromInput } from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import {
@@ -150,17 +150,6 @@ const formatCurrency = (value: number) => {
   return `${sign}R$${absValue.toLocaleString("pt-BR", { maximumFractionDigits: 0 })}`;
 };
 
-const formatCurrencyInput = (rawValue: string): string => {
-  const digits = rawValue.replace(/\D/g, "");
-  if (!digits) return "";
-
-  const amount = Number(digits) / 100;
-  return amount.toLocaleString("pt-BR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-};
-
 const formatCompactCurrency = (value: number) => {
   const sign = value < 0 ? "-" : "";
   const absValue = Math.abs(value);
@@ -174,23 +163,6 @@ const formatCompactCurrency = (value: number) => {
 };
 
 const formatCount = (v: number) => String(v);
-
-const parseNumber = (value: unknown): number | null => {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-
-  if (typeof value === "string") {
-    const normalized = value
-      .trim()
-      .replace(/\s+/g, "")
-      .replace(/\.(?=\d{3}\b)/g, "")
-      .replace(",", ".");
-
-    const parsed = Number(normalized);
-    if (Number.isFinite(parsed)) return parsed;
-  }
-
-  return null;
-};
 
 const MONTH_TOKEN_TO_INDEX: Record<string, number> = {
   jan: 0,
@@ -406,7 +378,7 @@ const getMostRecentFinancialItem = (financial: ReportData["financial"]) => {
 
 const readSummaryNumber = (summary: Record<string, unknown>, keys: string[]): number | null => {
   for (const key of keys) {
-    const parsed = parseNumber(summary[key]);
+    const parsed = parseNumberFromInput(summary[key]);
     if (parsed !== null) return parsed;
   }
 
@@ -486,7 +458,7 @@ const TransactionModal = ({ onClose, onCreated }: TransactionModalProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const amountNumber = parseNumber(form.amount);
+    const amountNumber = parseNumberFromInput(form.amount);
     if (amountNumber === null || amountNumber <= 0) {
       notifyError("Informe um valor valido maior que zero.");
       return;
@@ -796,31 +768,31 @@ const buildStats = (
   totalEntradas: number,
   totalSaidas: number,
 ) => [
-  {
-    icon: <CalendarDays size={24} color="#2563EB" />,
-    iconBg: theme.colors.featureBg.blue,
-    label: "Consultas no período",
-    value: totalConsultas.toLocaleString("pt-BR"),
-  },
-  {
-    icon: <Ban size={24} color="#EA580C" />,
-    iconBg: theme.colors.featureBg.orange,
-    label: "Cancelamentos",
-    value: totalCancelamentos.toLocaleString("pt-BR"),
-  },
-  {
-    icon: <TrendingUp size={24} color="#16A34A" />,
-    iconBg: theme.colors.featureBg.green,
-    label: "Entradas no período",
-    value: formatCurrency(totalEntradas),
-  },
-  {
-    icon: <TrendingDown size={24} color={EXPENSE_ACCENT_COLOR} />,
-    iconBg: EXPENSE_BG_COLOR,
-    label: "Saídas no período",
-    value: formatCurrency(totalSaidas),
-  },
-];
+    {
+      icon: <CalendarDays size={24} color="#2563EB" />,
+      iconBg: theme.colors.featureBg.blue,
+      label: "Consultas no período",
+      value: totalConsultas.toLocaleString("pt-BR"),
+    },
+    {
+      icon: <Ban size={24} color="#EA580C" />,
+      iconBg: theme.colors.featureBg.orange,
+      label: "Cancelamentos",
+      value: totalCancelamentos.toLocaleString("pt-BR"),
+    },
+    {
+      icon: <TrendingUp size={24} color="#16A34A" />,
+      iconBg: theme.colors.featureBg.green,
+      label: "Entradas no período",
+      value: formatCurrency(totalEntradas),
+    },
+    {
+      icon: <TrendingDown size={24} color={EXPENSE_ACCENT_COLOR} />,
+      iconBg: EXPENSE_BG_COLOR,
+      label: "Saídas no período",
+      value: formatCurrency(totalSaidas),
+    },
+  ];
 
 const formatTransactionDate = (value: string) => formatDateDayMonthYear(value, "-");
 
