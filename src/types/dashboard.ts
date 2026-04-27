@@ -142,6 +142,7 @@ export type AgendaSlotStatus =
   | "WAITING"
   | "IN_PROGRESS"
   | "COMPLETED"
+  | "COMPLETED_WITH_ADDENDUM"
   | "NO_SHOW"
   | "CANCELLED";
 

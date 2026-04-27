@@ -64,6 +64,7 @@ export interface ClinicalDocumentItem {
   status: ClinicalDocumentStatus;
   createdAt: string; // ISO date string
   professionalName: string;
+  documentNumber?: string;
 }
 
 // ─── Document type metadata (para os cards de "Novo documento") ───────────────
