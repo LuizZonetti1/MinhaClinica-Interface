@@ -210,9 +210,9 @@ export const searchAppointmentPatients = async (q: string): Promise<PatientSearc
 
   const attempts = preferredPatientSearchAttempt
     ? [
-        preferredPatientSearchAttempt,
-        ...patientSearchAttempts.filter((attempt) => attempt !== preferredPatientSearchAttempt),
-      ]
+      preferredPatientSearchAttempt,
+      ...patientSearchAttempts.filter((attempt) => attempt !== preferredPatientSearchAttempt),
+    ]
     : patientSearchAttempts;
 
   for (const attempt of attempts) {
@@ -302,8 +302,8 @@ export const createAppointment = async (
 
 export interface ConcludeAppointmentResult {
   status: string;
-  /** IDs de documentos ainda em rascunho apos conclusao */
-  draftDocuments?: string[];
+  sentDocuments: Array<{ id: string; documentNumber?: string; type: string }>;
+  draftDocuments: Array<{ id: string; documentNumber?: string; type: string }>;
 }
 
 export const concludeAppointment = async (
@@ -312,12 +312,69 @@ export const concludeAppointment = async (
   const { data } = await api.post<unknown>(`/appointments/${appointmentId}/conclude`);
   const r = toRec(data) ?? {};
   const inner = toRec(r.data) ?? r;
+  const appointment = toRec(inner.appointment) ?? inner;
+  const mapDocArray = (arr: unknown): Array<{ id: string; documentNumber?: string; type: string }> =>
+    Array.isArray(arr)
+      ? (arr as unknown[])
+        .map((item) => {
+          const rec = toRec(item);
+          if (!rec) return null;
+          return {
+            id: toStr(rec.id),
+            documentNumber: rec.documentNumber ? toStr(rec.documentNumber) : undefined,
+            type: toStr(rec.type),
+          };
+        })
+        .filter((x): x is { id: string; documentNumber?: string; type: string } => Boolean(x?.id))
+      : [];
   return {
-    status: toStr(inner.status ?? inner.appointmentStatus ?? "COMPLETED"),
-    draftDocuments: Array.isArray(inner.draftDocuments)
-      ? (inner.draftDocuments as unknown[]).map(toStr)
-      : undefined,
+    status: toStr(appointment.status ?? inner.status ?? "COMPLETED"),
+    sentDocuments: mapDocArray(inner.sentDocuments),
+    draftDocuments: mapDocArray(inner.draftDocuments),
   };
+};
+
+export interface AppointmentDetail {
+  id: string;
+  status: string;
+  scheduledAt: string;
+  startTime: string;
+  patientName: string;
+  professionalName: string;
+  councilRegistration: string;
+}
+
+export const getAppointmentById = async (appointmentId: string): Promise<AppointmentDetail> => {
+  const { data } = await api.get<unknown>(`/appointments/${appointmentId}`);
+  const r = toRec(data) ?? {};
+  const inner = toRec(r.data) ?? r;
+  const patient = toRec(inner.patient) ?? {};
+  const professional = toRec(inner.professional) ?? {};
+  const councilType = toStr(professional.councilType ?? "");
+  const councilNumber = toStr(professional.councilNumber ?? "");
+  const councilState = toStr(professional.councilState ?? "");
+  const councilRegistration = councilType && councilNumber
+    ? `${councilType} ${councilNumber}${councilState ? `/${councilState}` : ""}`
+    : "";
+  return {
+    id: toStr(inner.id),
+    status: toStr(inner.status ?? "IN_PROGRESS"),
+    scheduledAt: toStr(inner.scheduledAt ?? ""),
+    startTime: toStr(inner.startTime ?? ""),
+    patientName: toStr(patient.name ?? ""),
+    professionalName: toStr(professional.name ?? ""),
+    councilRegistration,
+  };
+};
+
+export const patchAppointmentStatus = async (
+  appointmentId: string,
+  status: string,
+): Promise<{ status: string }> => {
+  const { data } = await api.patch<unknown>(`/appointments/${appointmentId}/status`, { status });
+  const r = toRec(data) ?? {};
+  const inner = toRec(r.data) ?? r;
+  return { status: toStr(inner.status ?? status) };
 };
 
 export interface CreateAddendumPayload {

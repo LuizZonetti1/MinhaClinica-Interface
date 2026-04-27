@@ -55,12 +55,15 @@ const normalizeDocument = (value: unknown): ClinicalDocumentItem | null => {
   if (!root) return null;
   const id = toTrimmedStringValue(root.id, "");
   if (!id) return null;
+  const documentNumber =
+    toTrimmedStringValue(root.documentNumber ?? root.document_number, "") || undefined;
   return {
     id,
     type: toTrimmedStringValue(root.type, "CLINICAL_REPORT") as ClinicalDocumentType,
     status: toTrimmedStringValue(root.status, "DRAFT") as ClinicalDocumentStatus,
     createdAt: toTrimmedStringValue(root.createdAt ?? root.created_at, ""),
     professionalName: toTrimmedStringValue(root.professionalName ?? root.professional_name, ""),
+    ...(documentNumber && { documentNumber }),
   };
 };
 
@@ -94,17 +97,18 @@ const normalizeClinicalDocumentsResult = (payload: unknown): ClinicalDocumentsRe
 export const listClinicalDocuments = async (
   appointmentId: string,
 ): Promise<ClinicalDocumentsResult> => {
-  const { data } = await api.get<unknown>(`/professional/appointments/${appointmentId}/documents`);
+  const { data } = await api.get<unknown>(`/appointments/${appointmentId}/documents`);
   return normalizeClinicalDocumentsResult(data);
 };
 
 export const createClinicalDocument = async (
   appointmentId: string,
   type: ClinicalDocumentType,
+  content: DocumentContent | Record<string, unknown> = {},
 ): Promise<ClinicalDocumentItem> => {
   const { data } = await api.post<unknown>(
-    `/professional/appointments/${appointmentId}/documents`,
-    { type },
+    `/appointments/${appointmentId}/documents`,
+    { type, content },
   );
   const root = (toRecord(data) as RecordValue | null) ?? {};
   const payload = (toRecord(root.data) as RecordValue | null) ?? root;
@@ -117,11 +121,24 @@ export const deleteClinicalDocument = async (
   appointmentId: string,
   documentId: string,
 ): Promise<void> => {
-  await api.delete(`/professional/appointments/${appointmentId}/documents/${documentId}`);
+  await api.delete(`/appointments/${appointmentId}/documents/${documentId}`);
 };
 
-export const finalizeAppointmentDocuments = async (appointmentId: string): Promise<void> => {
-  await api.patch(`/professional/appointments/${appointmentId}/finalize`);
+export const createClinicalDocumentAddendum = async (
+  appointmentId: string,
+  type: ClinicalDocumentType,
+  content: DocumentContent | Record<string, unknown>,
+  internalNotes?: string,
+): Promise<ClinicalDocumentItem> => {
+  const { data } = await api.post<unknown>(
+    `/appointments/${appointmentId}/addendum`,
+    { type, content, ...(internalNotes !== undefined && { internalNotes }) },
+  );
+  const root = (toRecord(data) as RecordValue | null) ?? {};
+  const payload = (toRecord(root.data) as RecordValue | null) ?? root;
+  const doc = normalizeDocument(payload);
+  if (!doc) throw new Error("Resposta inesperada ao criar adendo.");
+  return doc;
 };
 
 // ─── Single document operations ──────────────────────────────────────────────
@@ -155,29 +172,29 @@ const normalizeDocumentDetail = (payload: unknown): ClinicalDocumentDetail => {
     null) as RecordValue | null;
   const clinicInfo: DocumentClinicInfo | undefined = rawClinic
     ? {
-        tradeName:
-          toTrimmedStringValue(rawClinic.tradeName ?? rawClinic.trade_name, "") || undefined,
-        cnpj: toTrimmedStringValue(rawClinic.cnpj, "") || undefined,
-        phone: toTrimmedStringValue(rawClinic.phone, "") || undefined,
-        email:
-          toTrimmedStringValue(
-            rawClinic.email ?? rawClinic.clinicEmail ?? rawClinic.clinic_email,
-            "",
-          ) || undefined,
-        timezone: toTrimmedStringValue(rawClinic.timezone, "") || undefined,
-        address: (() => {
-          const addr = (toRecord(rawClinic.address) as RecordValue | null) ?? rawClinic;
-          return {
-            street: toTrimmedStringValue(addr.street, "") || undefined,
-            number: toTrimmedStringValue(addr.number, "") || undefined,
-            neighborhood: toTrimmedStringValue(addr.neighborhood, "") || undefined,
-            city: toTrimmedStringValue(addr.city, "") || undefined,
-            state: toTrimmedStringValue(addr.state, "") || undefined,
-            zipCode:
-              toTrimmedStringValue(addr.zipCode ?? addr.zip_code ?? addr.cep, "") || undefined,
-          };
-        })(),
-      }
+      tradeName:
+        toTrimmedStringValue(rawClinic.tradeName ?? rawClinic.trade_name, "") || undefined,
+      cnpj: toTrimmedStringValue(rawClinic.cnpj, "") || undefined,
+      phone: toTrimmedStringValue(rawClinic.phone, "") || undefined,
+      email:
+        toTrimmedStringValue(
+          rawClinic.email ?? rawClinic.clinicEmail ?? rawClinic.clinic_email,
+          "",
+        ) || undefined,
+      timezone: toTrimmedStringValue(rawClinic.timezone, "") || undefined,
+      address: (() => {
+        const addr = (toRecord(rawClinic.address) as RecordValue | null) ?? rawClinic;
+        return {
+          street: toTrimmedStringValue(addr.street, "") || undefined,
+          number: toTrimmedStringValue(addr.number, "") || undefined,
+          neighborhood: toTrimmedStringValue(addr.neighborhood, "") || undefined,
+          city: toTrimmedStringValue(addr.city, "") || undefined,
+          state: toTrimmedStringValue(addr.state, "") || undefined,
+          zipCode:
+            toTrimmedStringValue(addr.zipCode ?? addr.zip_code ?? addr.cep, "") || undefined,
+        };
+      })(),
+    }
     : undefined;
 
   return {
@@ -199,7 +216,7 @@ export const getClinicalDocument = async (
   documentId: string,
 ): Promise<ClinicalDocumentDetail> => {
   const { data } = await api.get<unknown>(
-    `/professional/appointments/${appointmentId}/documents/${documentId}`,
+    `/appointments/${appointmentId}/documents/${documentId}`,
   );
   return normalizeDocumentDetail(data);
 };
@@ -210,7 +227,7 @@ export const updateClinicalDocument = async (
   payload: UpdateClinicalDocumentPayload,
 ): Promise<ClinicalDocumentDetail> => {
   const { data } = await api.put<unknown>(
-    `/professional/appointments/${appointmentId}/documents/${documentId}`,
+    `/appointments/${appointmentId}/documents/${documentId}`,
     payload,
   );
   return normalizeDocumentDetail(data);
@@ -221,7 +238,7 @@ export const finalizeClinicalDocument = async (
   documentId: string,
 ): Promise<ClinicalDocumentDetail> => {
   const { data } = await api.patch<unknown>(
-    `/professional/appointments/${appointmentId}/documents/${documentId}/finalize`,
+    `/appointments/${appointmentId}/documents/${documentId}/finalize`,
   );
   return normalizeDocumentDetail(data);
 };
