@@ -22,10 +22,10 @@ import {
 import { theme } from "../../../themes/themes";
 import type { PatientDashboardData, PatientNextAppointment } from "../../../types/dashboard";
 import { formatIsoDateToBr, formatIsoDateToLongPtBr } from "../../../utils/dateParsers";
+import { getGreeting } from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { hasNoShowWindowElapsedForDate } from "../../../utils/timeParsers";
 import { notifyError, notifySuccess } from "../../../utils/toast";
-import { getGreeting } from "../../../utils/formatters";
 import {
   AppointmentAction,
   AppointmentBody,
@@ -34,12 +34,12 @@ import {
   AppointmentProfessional,
   type AppointmentStatusVariant,
   AppointmentTopBar,
-  DetailsGrid,
+  ConfirmPresenceButton,
   DetailItem,
   DetailLabel,
-  DetailValue,
-  ConfirmPresenceButton,
   DetailLink,
+  DetailsGrid,
+  DetailValue,
   EmptyCardText,
   HeroBanner,
   HeroSubtitle,
@@ -189,7 +189,7 @@ const mapChannelLabel = (channel: string): string => {
 };
 
 const formatAppointmentDateTime = (isoDate: string, time: string): string => {
-  const fallback = `${formatDate(isoDate)} as ${time}`;
+  const fallback = `${formatDate(isoDate)} às ${time}`;
   const match = isoDate.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (!match) return fallback;
 
@@ -202,7 +202,7 @@ const formatAppointmentDateTime = (isoDate: string, time: string): string => {
     year: "numeric",
   });
 
-  return `${prettyDate} as ${time}`;
+  return `${prettyDate} às ${time}`;
 };
 
 const PatientDashboard = () => {
@@ -224,7 +224,7 @@ const PatientDashboard = () => {
       } catch (error: unknown) {
         if (!mounted) return;
         notifyError(
-          getApiErrorMessage(error, "Nao foi possivel carregar o dashboard do paciente."),
+          getApiErrorMessage(error, "Não foi possível carregar o dashboard do paciente."),
         );
         setDashboardData(EMPTY_DASHBOARD);
       } finally {
@@ -255,25 +255,25 @@ const PatientDashboard = () => {
     {
       icon: <CalendarDays size={22} color="#2563EB" />,
       iconBg: theme.colors.featureBg.blue,
-      label: "Proximas consultas",
+      label: "Próximas consultas",
       value: String(upcomingAppointments.length),
     },
     {
       icon: <CheckCircle size={22} color="#16A34A" />,
       iconBg: theme.colors.featureBg.green,
-      label: "Concluidas",
+      label: "Concluídas",
       value: String(dashboardData.stats.completedCount),
     },
     {
       icon: <Clock3 size={22} color="#9333EA" />,
       iconBg: theme.colors.featureBg.purple,
-      label: "Ultima consulta",
+      label: "Última consulta",
       value: formatDate(dashboardData.stats.lastAppointmentDate),
     },
     {
       icon: <Bell size={22} color="#EA580C" />,
       iconBg: theme.colors.featureBg.orange,
-      label: "Nao lidas",
+      label: "Não lidas",
       value: String(dashboardData.stats.unreadNotifications),
     },
   ];
@@ -308,9 +308,9 @@ const PatientDashboard = () => {
         };
       });
 
-      notifySuccess("Presenca confirmada com sucesso.");
+      notifySuccess("Presença confirmada com sucesso.");
     } catch (error: unknown) {
-      notifyError(getApiErrorMessage(error, "Nao foi possivel confirmar presenca."));
+      notifyError(getApiErrorMessage(error, "Não foi possível confirmar presença."));
     } finally {
       setConfirmingAppointmentId(null);
     }
@@ -360,10 +360,10 @@ const PatientDashboard = () => {
         <SectionHeader>
           <SectionTitle>
             {loading
-              ? "Proximas Consultas"
+              ? "Próximas Consultas"
               : upcomingAppointments.length <= 1
-                ? "Proxima Consulta"
-                : "Proximas Consultas"}
+                ? "Próxima Consulta"
+                : "Próximas Consultas"}
           </SectionTitle>
         </SectionHeader>
         {loading ? (
@@ -402,7 +402,10 @@ const PatientDashboard = () => {
                   <StatusBadge $variant={mapStatusVariant(appointment.status)}>
                     {mapStatusLabel(appointment.status)}
                   </StatusBadge>
-                  <DetailLink type="button" onClick={() => setSelectedAppointmentId(appointment.id)}>
+                  <DetailLink
+                    type="button"
+                    onClick={() => setSelectedAppointmentId(appointment.id)}
+                  >
                     Ver detalhes
                     <ChevronRight size={14} />
                   </DetailLink>
@@ -493,42 +496,42 @@ const PatientDashboard = () => {
             </>
           }
         >
-            <DetailsGrid>
-              <DetailItem>
-                <DetailLabel>Profissional</DetailLabel>
-                <DetailValue>{selectedAppointment.professionalName}</DetailValue>
-              </DetailItem>
-              <DetailItem>
-                <DetailLabel>Status</DetailLabel>
-                <DetailValue>{mapStatusLabel(selectedAppointment.status)}</DetailValue>
-              </DetailItem>
-              <DetailItem>
-                <DetailLabel>Data</DetailLabel>
-                <DetailValue>{formatFullDate(selectedAppointment.appointmentDate)}</DetailValue>
-              </DetailItem>
-              <DetailItem>
-                <DetailLabel>Horario</DetailLabel>
-                <DetailValue>
-                  {selectedAppointment.startTime} - {selectedAppointment.endTime}
-                </DetailValue>
-              </DetailItem>
-              <DetailItem>
-                <DetailLabel>Tipo</DetailLabel>
-                <DetailValue>{mapTypeLabel(selectedAppointment.type)}</DetailValue>
-              </DetailItem>
-              <DetailItem>
-                <DetailLabel>Modalidade</DetailLabel>
-                <DetailValue>{mapChannelLabel(selectedAppointment.channel)}</DetailValue>
-              </DetailItem>
-              <DetailItem>
-                <DetailLabel>Clinica</DetailLabel>
-                <DetailValue>{selectedAppointment.clinicName ?? "Clinica nao informada"}</DetailValue>
-              </DetailItem>
-              <DetailItem>
-                <DetailLabel>Especialidade</DetailLabel>
-                <DetailValue>{selectedAppointment.primarySpecialty ?? "Nao informada"}</DetailValue>
-              </DetailItem>
-            </DetailsGrid>
+          <DetailsGrid>
+            <DetailItem>
+              <DetailLabel>Profissional</DetailLabel>
+              <DetailValue>{selectedAppointment.professionalName}</DetailValue>
+            </DetailItem>
+            <DetailItem>
+              <DetailLabel>Status</DetailLabel>
+              <DetailValue>{mapStatusLabel(selectedAppointment.status)}</DetailValue>
+            </DetailItem>
+            <DetailItem>
+              <DetailLabel>Data</DetailLabel>
+              <DetailValue>{formatFullDate(selectedAppointment.appointmentDate)}</DetailValue>
+            </DetailItem>
+            <DetailItem>
+              <DetailLabel>Horario</DetailLabel>
+              <DetailValue>
+                {selectedAppointment.startTime} - {selectedAppointment.endTime}
+              </DetailValue>
+            </DetailItem>
+            <DetailItem>
+              <DetailLabel>Tipo</DetailLabel>
+              <DetailValue>{mapTypeLabel(selectedAppointment.type)}</DetailValue>
+            </DetailItem>
+            <DetailItem>
+              <DetailLabel>Modalidade</DetailLabel>
+              <DetailValue>{mapChannelLabel(selectedAppointment.channel)}</DetailValue>
+            </DetailItem>
+            <DetailItem>
+              <DetailLabel>Clinica</DetailLabel>
+              <DetailValue>{selectedAppointment.clinicName ?? "Clinica nao informada"}</DetailValue>
+            </DetailItem>
+            <DetailItem>
+              <DetailLabel>Especialidade</DetailLabel>
+              <DetailValue>{selectedAppointment.primarySpecialty ?? "Nao informada"}</DetailValue>
+            </DetailItem>
+          </DetailsGrid>
         </Modal>
       )}
     </PageWrapper>
