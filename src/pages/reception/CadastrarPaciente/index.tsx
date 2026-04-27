@@ -7,7 +7,8 @@ import { registerPatientByReception } from "../../../services/reception.service"
 import type { BloodType, Gender, RegisterPatientByReceptionPayload } from "../../../types/patient";
 import { maskCPF, maskPhoneInput } from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
-import { notifySuccess, notifyError } from "../../../utils/toast";
+import { validateCPF } from "../../../utils/validateCPF";
+import { notifyError, notifySuccess } from "../../../utils/toast";
 import {
   FieldBlock,
   FieldError,
@@ -73,11 +74,28 @@ interface FormState {
 }
 
 const INITIAL: FormState = {
-  name: "", email: "", cpf: "", phone: "", dateOfBirth: "", gender: "",
-  rg: "", zipCode: "", street: "", number: "", complement: "",
-  neighborhood: "", city: "", state: "", alternativePhone: "", bloodType: "",
-  allergies: "", medications: "", conditions: "", observations: "",
-  emergencyContactName: "", emergencyContactPhone: "",
+  name: "",
+  email: "",
+  cpf: "",
+  phone: "",
+  dateOfBirth: "",
+  gender: "",
+  rg: "",
+  zipCode: "",
+  street: "",
+  number: "",
+  complement: "",
+  neighborhood: "",
+  city: "",
+  state: "",
+  alternativePhone: "",
+  bloodType: "",
+  allergies: "",
+  medications: "",
+  conditions: "",
+  observations: "",
+  emergencyContactName: "",
+  emergencyContactPhone: "",
 };
 
 type FormErrors = Partial<Record<keyof FormState, string>>;
@@ -93,18 +111,16 @@ const validate = (form: FormState): FormErrors => {
   if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
     errors.email = "E-mail inválido";
 
-  if (!form.cpf.trim())
-    errors.cpf = "CPF obrigatorio";
+  if (!form.cpf.trim()) errors.cpf = "CPF obrigatório";
+  else if (!validateCPF(form.cpf)) errors.cpf = "CPF inválido";
 
   const phoneDigits = form.phone.replace(/\D/g, "");
   if (!phoneDigits || phoneDigits.length < 10 || phoneDigits.length > 11)
     errors.phone = "Telefone inválido (10 ou 11 dígitos)";
 
-  if (!form.dateOfBirth)
-    errors.dateOfBirth = "Data de nascimento obrigatória";
+  if (!form.dateOfBirth) errors.dateOfBirth = "Data de nascimento obrigatória";
 
-  if (!form.gender)
-    errors.gender = "Gênero obrigatório";
+  if (!form.gender) errors.gender = "Gênero obrigatório";
 
   if (form.state && form.state.trim().length > 0 && form.state.trim().length !== 2)
     errors.state = "Use a sigla do estado (ex: SP)";
@@ -132,7 +148,7 @@ const buildPayload = (form: FormState): RegisterPatientByReceptionPayload => {
     city: opt(form.city),
     state: opt(form.state)?.toUpperCase() ?? null,
     alternativePhone: opt(form.alternativePhone),
-    bloodType: (opt(form.bloodType) as BloodType | null),
+    bloodType: opt(form.bloodType) as BloodType | null,
     allergies: opt(form.allergies),
     medications: opt(form.medications),
     conditions: opt(form.conditions),
@@ -164,14 +180,19 @@ const ReceptionCadastrarPacientePage = () => {
   const handleEmergencyPhone = (e: ChangeEvent<HTMLInputElement>) =>
     set("emergencyContactPhone", maskPhoneInput(e.target.value));
 
-  const handleCPF = (e: ChangeEvent<HTMLInputElement>) =>
-    set("cpf", maskCPF(e.target.value));
+  const handleCPF = (e: ChangeEvent<HTMLInputElement>) => set("cpf", maskCPF(e.target.value));
 
   const handleZipCode = (e: ChangeEvent<HTMLInputElement>) =>
     set("zipCode", maskZipCode(e.target.value));
 
   const handleState = (e: ChangeEvent<HTMLInputElement>) =>
-    set("state", e.target.value.replace(/[^a-zA-Z]/g, "").slice(0, 2).toUpperCase());
+    set(
+      "state",
+      e.target.value
+        .replace(/[^a-zA-Z]/g, "")
+        .slice(0, 2)
+        .toUpperCase(),
+    );
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -197,7 +218,6 @@ const ReceptionCadastrarPacientePage = () => {
       <PageTitle>Cadastrar Novo Paciente</PageTitle>
 
       <FormCard as="form" onSubmit={handleSubmit} noValidate>
-
         {/* ── Dados Pessoais ──────────────────────────────────────────── */}
         <FormSection>
           <SectionTitle>Dados Pessoais</SectionTitle>
@@ -257,7 +277,9 @@ const ReceptionCadastrarPacientePage = () => {
               >
                 <option value="">Selecione...</option>
                 {GENDER_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
                 ))}
               </FormSelect>
               {errors.gender && <FieldError>{errors.gender}</FieldError>}
@@ -349,13 +371,12 @@ const ReceptionCadastrarPacientePage = () => {
           <FormGrid>
             <FieldBlock>
               <FieldLabel>Tipo Sanguíneo</FieldLabel>
-              <FormSelect
-                value={form.bloodType}
-                onChange={(e) => set("bloodType", e.target.value)}
-              >
+              <FormSelect value={form.bloodType} onChange={(e) => set("bloodType", e.target.value)}>
                 <option value="">Selecione...</option>
                 {BLOOD_TYPE_OPTIONS.map((bt) => (
-                  <option key={bt} value={bt}>{bt}</option>
+                  <option key={bt} value={bt}>
+                    {bt}
+                  </option>
                 ))}
               </FormSelect>
             </FieldBlock>
@@ -433,23 +454,16 @@ const ReceptionCadastrarPacientePage = () => {
 
         {/* ── Ações ───────────────────────────────────────────────────── */}
         <FormActions>
-          <Button
-            variant="outline"
-            type="button"
-            onClick={() => navigate(-1)}
-            disabled={loading}
-          >
+          <Button variant="outline" type="button" onClick={() => navigate(-1)} disabled={loading}>
             Cancelar
           </Button>
           <Button variant="primary" type="submit" disabled={loading}>
             {loading ? "Cadastrando..." : "Cadastrar Paciente"}
           </Button>
         </FormActions>
-
       </FormCard>
     </PageWrapper>
   );
 };
 
 export default ReceptionCadastrarPacientePage;
-
