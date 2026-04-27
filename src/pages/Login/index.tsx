@@ -73,7 +73,7 @@ const Login = () => {
       <Card>
         <Container>
           <Logo variant="auth" showSubtitle={false} />
-          <Title>Minha Clinica</Title>
+          <Title>Minha Clínica</Title>
           <Subtitle>Bem-vindo de volta</Subtitle>
 
           <Form onSubmit={handleSubmit}>
@@ -127,7 +127,7 @@ const Login = () => {
 
           <Footer>
             <FooterText>
-              Nao tem uma conta? <FooterLink to="/registro/inicial">Cadastre-se</FooterLink>
+              Não tem uma conta? <FooterLink to="/registro/inicial">Cadastre-se</FooterLink>
             </FooterText>
           </Footer>
         </Container>
