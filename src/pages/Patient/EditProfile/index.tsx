@@ -12,7 +12,7 @@ import {
 } from "../../../services/patient-profile.service";
 import type { PatientProfileData, UpdatePatientProfilePayload } from "../../../types/patient-profile";
 import type { UpdateProfilePasswordPayload } from "../../../types/profile";
-import { maskPhoneInput, normalizePhoneDigits } from "../../../utils/formatters";
+import { getInitials, maskPhoneInput, normalizePhoneDigits } from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import {
@@ -92,14 +92,6 @@ const toNullWhenEmpty = (value: string) => {
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
 };
-
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
 
 const PASSWORD_REQUIREMENTS_MESSAGE =
   "A nova senha deve ter no minimo 8 caracteres, com letras maiusculas, minusculas e numeros.";

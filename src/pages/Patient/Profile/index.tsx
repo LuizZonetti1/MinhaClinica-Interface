@@ -16,7 +16,7 @@ import { useAuth } from "../../../contexts";
 import { getPatientProfile } from "../../../services/patient-profile.service";
 import type { PatientProfileData } from "../../../types/patient-profile";
 import { formatIsoDateToBr } from "../../../utils/dateParsers";
-import { formatPhoneNumber } from "../../../utils/formatters";
+import { formatPhoneNumber, getInitials } from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError } from "../../../utils/toast";
 import {
@@ -66,14 +66,6 @@ const EMPTY_PROFILE: PatientProfileData = {
     emergencyContactPhone: null,
   },
 };
-
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
 
 const toDash = (value: string | null | undefined) => {
   const normalized = (value ?? "").trim();

@@ -21,7 +21,7 @@ import { getDashboardSummary } from "../../../services/admin.service";
 import { getProfile } from "../../../services/profile.service";
 import type { ProfileData } from "../../../types/profile";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
-import { formatCurrencyBRL, formatDateDayMonthYear, formatPhoneNumber } from "../../../utils/formatters";
+import { formatCurrencyBRL, formatDateDayMonthYear, formatPhoneNumber, getInitials } from "../../../utils/formatters";
 import { notifyError } from "../../../utils/toast";
 import {
   AvatarCircle,
@@ -63,14 +63,6 @@ const EMPTY_PROFILE: ProfileData = {
   appointmentsThisMonth: 0,
   revenueCurrentMonth: "-",
 };
-
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
 
 const toDash = (value: string) => {
   const normalized = value.trim();

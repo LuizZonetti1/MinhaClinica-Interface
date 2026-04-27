@@ -17,7 +17,7 @@ import type {
   UpdateProfessionalProfilePayload,
   WorkingHour,
 } from "../../../types/professional-profile";
-import { maskPhoneInput, normalizePhoneDigits } from "../../../utils/formatters";
+import { maskPhoneInput, getInitials, normalizePhoneDigits } from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import {
@@ -93,14 +93,6 @@ type DayFormItem = {
   lunchBreakStart: string;
   lunchBreakEnd: string;
 };
-
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
 
 const normalizeApiValue = (value: string | null | undefined, fallback = "") =>
   value && value !== "-" ? value : fallback;

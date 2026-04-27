@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 import { useAuth } from "../../../contexts";
 import { getProfessionalProfile } from "../../../services/professional-profile.service";
 import type { ProfessionalProfileData, WorkingHour } from "../../../types/professional-profile";
-import { formatPhoneNumber } from "../../../utils/formatters";
+import { formatPhoneNumber, getInitials } from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError } from "../../../utils/toast";
 import {
@@ -60,14 +60,6 @@ const DAY_ORDER = [
   "SUNDAY",
 ] as const;
 
-const getInitials = (name: string): string =>
-  name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
-
 const formatSchedule = (workingHour: WorkingHour): string => {
   if (!workingHour.isWorking) return "Fechado";
   if (workingHour.lunchBreakStart && workingHour.lunchBreakEnd) {
@@ -121,11 +113,11 @@ const ProfessionalProfilePage = () => {
   const primarySpecialty = profile?.specialties.find((specialty) => specialty.isPrimary);
   const heroSubtitle = profile
     ? [
-        primarySpecialty?.name,
-        `${profile.professionalCouncil} ${profile.registrationNumber}/${profile.registrationState}`,
-      ]
-        .filter(Boolean)
-        .join(" - ")
+      primarySpecialty?.name,
+      `${profile.professionalCouncil} ${profile.registrationNumber}/${profile.registrationState}`,
+    ]
+      .filter(Boolean)
+      .join(" - ")
     : "";
 
   const formations = profile?.formations ? profile.formations.split("\n").filter(Boolean) : [];

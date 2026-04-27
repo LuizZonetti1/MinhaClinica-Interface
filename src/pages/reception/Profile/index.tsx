@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 import { useAuth } from "../../../contexts";
 import { getReceptionProfile } from "../../../services/reception.service";
 import type { ReceptionProfileData } from "../../../types/profile";
-import { formatPhoneNumber } from "../../../utils/formatters";
+import { formatPhoneNumber, getInitials } from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError } from "../../../utils/toast";
 import {
@@ -33,14 +33,6 @@ const EMPTY_PROFILE: ReceptionProfileData = {
   avatarUrl: "",
   role: "Recepcionista",
 };
-
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
 
 const toDash = (value: string) => {
   const normalized = value.trim();

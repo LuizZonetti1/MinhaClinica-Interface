@@ -11,7 +11,7 @@ import {
 } from "../../../services/profile.service";
 import type { ProfileData, UpdateProfilePayload } from "../../../types/profile";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
-import { maskPhoneInput, normalizePhoneDigits } from "../../../utils/formatters";
+import { getInitials, maskPhoneInput, normalizePhoneDigits } from "../../../utils/formatters";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import {
   ActionRow,
@@ -41,14 +41,6 @@ type ProfileBase = {
   name: string;
   phone: string;
 };
-
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
 
 const normalizeApiValue = (value: string, fallback = "") => (value === "-" ? fallback : value);
 
