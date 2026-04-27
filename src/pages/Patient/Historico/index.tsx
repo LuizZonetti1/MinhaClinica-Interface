@@ -56,13 +56,13 @@ const EMPTY_RESULT: PatientAppointmentsListResult = {
 const FILTER_OPTIONS: Array<{ key: FilterKey; label: string }> = [
   { key: "ALL", label: "Todos" },
   { key: "COMPLETED", label: "Compareceu" },
-  { key: "NO_SHOW", label: "Nao compareceu" },
+  { key: "NO_SHOW", label: "Não compareceu" },
   { key: "CANCELLED", label: "Cancelado" },
 ];
 
 const STATUS_META: Record<string, { label: string; variant: AppointmentBadgeVariant }> = {
   COMPLETED: { label: "Compareceu", variant: "completed" },
-  NO_SHOW: { label: "Nao compareceu", variant: "noshow" },
+  NO_SHOW: { label: "Não compareceu", variant: "noshow" },
   CANCELLED: { label: "Cancelado", variant: "cancelled" },
   RESCHEDULED: { label: "Reagendado", variant: "rescheduled" },
 };
@@ -170,7 +170,7 @@ const mapTypeLabel = (type: string): string => {
     case "EXAM":
       return "Exame";
     case "EMERGENCY":
-      return "Urgencia";
+      return "Urgência";
     default:
       return normalized || "Consulta";
   }
@@ -281,7 +281,7 @@ const PatientHistoryPage = () => {
       {
         icon: <Clock3 size={20} color="#DC2626" />,
         iconBg: theme.colors.featureBg.orange,
-        label: "Nao compareceu",
+        label: "Não compareceu",
         value: String(noShow),
       },
       {

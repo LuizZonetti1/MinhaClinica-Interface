@@ -78,8 +78,8 @@ import {
 const DOCUMENT_TYPES: DocumentTypeCard[] = [
   {
     type: ClinicalDocumentType.CLINICAL_REPORT,
-    label: "Relatorio Clinico",
-    description: "Resumo do quadro, sintomas, avaliacao e conduta",
+    label: "Relatório Clínico",
+    description: "Resumo do quadro, sintomas, avaliação e conduta",
     iconColor: "#3B82F6",
     bgColor: "#DBEAFE",
   },
@@ -92,22 +92,22 @@ const DOCUMENT_TYPES: DocumentTypeCard[] = [
   },
   {
     type: ClinicalDocumentType.ATTENDANCE_DECLARATION,
-    label: "Declaracao de Comparecimento",
-    description: "Comprovacao de comparecimento ou atendimento",
+    label: "Declaração de Comparecimento",
+    description: "Comprovação de comparecimento ou atendimento",
     iconColor: "#8B5CF6",
     bgColor: "#EDE9FE",
   },
   {
     type: ClinicalDocumentType.PRESCRIPTION,
     label: "Receita",
-    description: "Prescricao de medicamentos (comum ou controle especial)",
+    description: "Prescrição de medicamentos (comum ou controle especial)",
     iconColor: "#F97316",
     bgColor: "#FFEDD5",
   },
   {
     type: ClinicalDocumentType.EXAM_REQUEST,
-    label: "Solicitacao de Exame",
-    description: "Solicitacao de exame com justificativa clinica",
+    label: "Solicitação de Exame",
+    description: "Solicitação de exame com justificativa clínica",
     iconColor: "#10B981",
     bgColor: "#D1FAE5",
   },
@@ -121,35 +121,35 @@ const DOCUMENT_TYPES: DocumentTypeCard[] = [
   {
     type: ClinicalDocumentType.MEDICAL_REPORT,
     label: "Laudo",
-    description: "Documento formal com conclusao pericial clara",
+    description: "Documento formal com conclusão pericial clara",
     iconColor: "#6B7280",
     bgColor: "#F3F4F6",
   },
   {
     type: ClinicalDocumentType.CONTROLLED_PRESCRIPTION,
     label: "Receita Controlada",
-    description: "Prescricao de medicamentos com notificacao especial",
+    description: "Prescrição de medicamentos com notificação especial",
     iconColor: "#D97706",
     bgColor: "#FEF3C7",
   },
   {
     type: ClinicalDocumentType.CONSENT_FORM,
     label: "Termo de Consentimento",
-    description: "Autorizacao do paciente para procedimentos",
+    description: "Autorização do paciente para procedimentos",
     iconColor: "#059669",
     bgColor: "#D1FAE5",
   },
   {
     type: ClinicalDocumentType.TREATMENT_PLAN,
-    label: "Plano Terapeutico",
-    description: "Planejamento de intervencoes e acompanhamento",
+    label: "Plano Terapêutico",
+    description: "Planejamento de intervenções e acompanhamento",
     iconColor: "#7C3AED",
     bgColor: "#EDE9FE",
   },
   {
     type: ClinicalDocumentType.BUDGET,
-    label: "Orcamento",
-    description: "Orcamento de procedimentos e valores",
+    label: "Orçamento",
+    description: "Orçamento de procedimentos e valores",
     iconColor: "#0891B2",
     bgColor: "#CFFAFE",
   },
@@ -170,17 +170,17 @@ const DOC_TYPE_ICON: Record<string, React.ReactNode> = {
 };
 
 const DOC_TYPE_LABEL: Record<string, string> = {
-  CLINICAL_REPORT: "Relatorio Clinico",
+  CLINICAL_REPORT: "Relatório Clínico",
   CERTIFICATE: "Atestado",
-  ATTENDANCE_DECLARATION: "Declaracao de Comparecimento",
+  ATTENDANCE_DECLARATION: "Declaração de Comparecimento",
   PRESCRIPTION: "Receita",
-  EXAM_REQUEST: "Solicitacao de Exame",
+  EXAM_REQUEST: "Solicitação de Exame",
   REFERRAL: "Encaminhamento",
   MEDICAL_REPORT: "Laudo",
   CONTROLLED_PRESCRIPTION: "Receita Controlada",
   CONSENT_FORM: "Termo de Consentimento",
-  TREATMENT_PLAN: "Plano Terapeutico",
-  BUDGET: "Orcamento",
+  TREATMENT_PLAN: "Plano Terapêutico",
+  BUDGET: "Orçamento",
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -202,9 +202,9 @@ const resolveConsultaStatusLabel = (status: string): string => {
       return "Em andamento";
     case "COMPLETED":
     case "DONE":
-      return "Concluido";
+      return "Concluído";
     case "COMPLETED_WITH_ADDENDUM":
-      return "Concluido com adendo";
+      return "Concluído com adendo";
     case "SCHEDULED":
       return "Agendado";
     case "CONFIRMED":
@@ -212,7 +212,7 @@ const resolveConsultaStatusLabel = (status: string): string => {
     case "WAITING":
       return "Aguardando";
     case "NO_SHOW":
-      return "Nao compareceu";
+      return "Não compareceu";
     case "CANCELLED":
       return "Cancelado";
     default:

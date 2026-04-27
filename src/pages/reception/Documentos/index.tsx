@@ -97,12 +97,12 @@ const resolveConsultaStatusLabel = (status: string): string => {
   switch (status.trim().toUpperCase()) {
     case "IN_PROGRESS": return "Em andamento";
     case "COMPLETED":
-    case "DONE": return "Concluido";
-    case "COMPLETED_WITH_ADDENDUM": return "Concluido com adendo";
+    case "DONE": return "Concluído";
+    case "COMPLETED_WITH_ADDENDUM": return "Concluído com adendo";
     case "SCHEDULED": return "Agendado";
     case "CONFIRMED": return "Confirmado";
     case "WAITING": return "Aguardando";
-    case "NO_SHOW": return "Nao compareceu";
+    case "NO_SHOW": return "Não compareceu";
     case "CANCELLED": return "Cancelado";
     default: return status;
   }

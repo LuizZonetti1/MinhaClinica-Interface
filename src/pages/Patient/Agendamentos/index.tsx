@@ -112,7 +112,7 @@ const STATUS_META: Record<string, { label: string; variant: AppointmentBadgeVari
   WAITING: { label: "Aguardando", variant: "waiting" },
   IN_PROGRESS: { label: "Em atendimento", variant: "progress" },
   COMPLETED: { label: "Compareceu", variant: "completed" },
-  NO_SHOW: { label: "Nao compareceu", variant: "cancelled" },
+  NO_SHOW: { label: "Não compareceu", variant: "cancelled" },
   CANCELLED: { label: "Cancelado", variant: "cancelled" },
 };
 
@@ -120,7 +120,7 @@ const BOOKING_TYPE_OPTIONS: Array<{ value: PatientBookingAppointmentType; label:
   { value: "CONSULTATION", label: "Consulta" },
   { value: "RETURN", label: "Retorno" },
   { value: "EXAM", label: "Exame" },
-  { value: "EMERGENCY", label: "Emergencia" },
+  { value: "EMERGENCY", label: "Urgência" },
 ];
 
 const formatDateBr = (value: string): string => formatIsoDateToBr(value, "--/--/----");
@@ -142,7 +142,7 @@ const mapTypeLabel = (type: string): string => {
     case "EXAM":
       return "Exame";
     case "EMERGENCY":
-      return "Urgencia";
+      return "Urgência";
     default:
       return normalized || "Consulta";
   }

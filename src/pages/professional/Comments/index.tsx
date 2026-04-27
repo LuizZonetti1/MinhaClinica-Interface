@@ -61,7 +61,7 @@ const CONSULTATION_TYPE_META: Partial<Record<CommentConsultationType, Consultati
   RETURN: { label: "Retorno", variant: "neutral" },
   ROUTINE: { label: "Rotina", variant: "info" },
   EXAM: { label: "Exame", variant: "warning" },
-  EMERGENCY: { label: "Urgencia", variant: "warning" },
+  EMERGENCY: { label: "Urgência", variant: "warning" },
 };
 
 const getInitials = (name: string): string =>

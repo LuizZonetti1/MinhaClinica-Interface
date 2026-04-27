@@ -276,7 +276,7 @@ export const ExamRequestRenderer = ({ doc }: { doc: ClinicalDocumentDetail }) =>
       <DocFieldRow>
         {c.urgency && (
           <DocField>
-            <DocFieldLabel>Urgencia</DocFieldLabel>
+            <DocFieldLabel>Urgência</DocFieldLabel>
             <DocFieldValue>
               <DocBadge $color={urgencyColor}>{c.urgency}</DocBadge>
             </DocFieldValue>
@@ -291,7 +291,7 @@ export const ExamRequestRenderer = ({ doc }: { doc: ClinicalDocumentDetail }) =>
       </DocFieldRow>
       {c.clinicalIndication && (
         <DocSection>
-          <DocSectionTitle>Indicacao Clinica</DocSectionTitle>
+          <DocSectionTitle>Indicação Clínica</DocSectionTitle>
           <DocSectionText>{c.clinicalIndication}</DocSectionText>
         </DocSection>
       )}
@@ -333,7 +333,7 @@ export const ReferralRenderer = ({ doc }: { doc: ClinicalDocumentDetail }) => {
         )}
         {c.urgency && (
           <DocField>
-            <DocFieldLabel>Urgencia</DocFieldLabel>
+            <DocFieldLabel>Urgência</DocFieldLabel>
             <DocFieldValue>
               <DocBadge $color={urgencyColor}>{c.urgency}</DocBadge>
             </DocFieldValue>
@@ -354,7 +354,7 @@ export const ReferralRenderer = ({ doc }: { doc: ClinicalDocumentDetail }) => {
       )}
       {c.clinicalHistory && (
         <DocSection>
-          <DocSectionTitle>Historico Clinico</DocSectionTitle>
+          <DocSectionTitle>Histórico Clínico</DocSectionTitle>
           <DocSectionText>{c.clinicalHistory}</DocSectionText>
         </DocSection>
       )}
