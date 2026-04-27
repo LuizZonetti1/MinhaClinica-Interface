@@ -25,6 +25,7 @@ import { formatIsoDateToBr, formatIsoDateToLongPtBr } from "../../../utils/dateP
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { hasNoShowWindowElapsedForDate } from "../../../utils/timeParsers";
 import { notifyError, notifySuccess } from "../../../utils/toast";
+import { getGreeting } from "../../../utils/formatters";
 import {
   AppointmentAction,
   AppointmentBody,
@@ -75,13 +76,13 @@ const QUICK_ACCESS = [
   },
   {
     icon: <Clock3 size={20} />,
-    label: "Historico",
+    label: "Histórico",
     color: "#9333EA",
     path: "/paciente/historico",
   },
   {
     icon: <Bell size={20} />,
-    label: "Notificacoes",
+    label: "Notificações",
     color: "#EA580C",
     path: "/paciente/notificacoes",
   },
@@ -92,13 +93,6 @@ const QUICK_ACCESS = [
     path: "/paciente/perfil",
   },
 ];
-
-const getGreeting = () => {
-  const hour = new Date().getHours();
-  if (hour < 12) return "Bom dia";
-  if (hour < 18) return "Boa tarde";
-  return "Boa noite";
-};
 
 const shouldHideFromUpcoming = (appointment: PatientNextAppointment): boolean => {
   const normalizedStatus = appointment.status.trim().toUpperCase();
@@ -127,9 +121,9 @@ const mapStatusLabel = (status: string): string => {
     case "IN_PROGRESS":
       return "Em atendimento";
     case "COMPLETED":
-      return "Concluida";
+      return "Concluída";
     case "NO_SHOW":
-      return "Nao compareceu";
+      return "Não compareceu";
     case "CANCELLED":
       return "Cancelada";
     default:
@@ -173,7 +167,7 @@ const mapTypeLabel = (type: string): string => {
     case "EXAM":
       return "Exame";
     case "EMERGENCY":
-      return "Urgencia";
+      return "Urgência";
     default:
       return normalizedType || "Consulta";
   }
