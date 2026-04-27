@@ -61,6 +61,7 @@ const STATUS_META: Record<AgendaSlotStatus, { label: string; variant: StatusVari
   WAITING: { label: "Aguardando", variant: "waiting" },
   IN_PROGRESS: { label: "Em atendimento", variant: "progress" },
   COMPLETED: { label: "Concluído", variant: "done" },
+  COMPLETED_WITH_ADDENDUM: { label: "Concluído c/ adendo", variant: "done" },
   NO_SHOW: { label: "Não compareceu", variant: "cancelled" },
   CANCELLED: { label: "Cancelado", variant: "cancelled" },
 };
@@ -207,11 +208,18 @@ const ProfessionalAgendaPage = () => {
     goToNextMonth,
     goToCurrentMonth,
     selectDate,
+    refreshMonth,
   } = useProfessionalAgenda();
 
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const todayIso = toIsoDate(new Date());
   const effectiveSelectedDate = selectedDate || todayIso;
+
+  // Recarrega ao montar para refletir mudancas de status ao voltar de outra pagina
+  useEffect(() => {
+    void refreshMonth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (errorMessage) {
@@ -422,25 +430,27 @@ const ProfessionalAgendaPage = () => {
 
                             <AppointmentRowActions>
                               <StatusBadge $variant={status.variant}>{status.label}</StatusBadge>
-                              <ReportButton
-                                type="button"
-                                title="Documentos da consulta"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const params = new URLSearchParams({
-                                    consulta: appointment.id,
-                                    paciente: appointment.patientName,
-                                    profissional: appointment.professionalName ?? "",
-                                    horario: appointment.time,
-                                    data: day.date,
-                                    statusConsulta: appointment.status,
-                                  });
-                                  navigate(`/profissional/documentos?${params.toString()}`);
-                                }}
-                              >
-                                <FolderOpen size={14} />
-                                Documentos
-                              </ReportButton>
+                              {appointment.status !== "CANCELLED" && appointment.status !== "NO_SHOW" && (
+                                <ReportButton
+                                  type="button"
+                                  title="Documentos da consulta"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const params = new URLSearchParams({
+                                      consulta: appointment.id,
+                                      paciente: appointment.patientName,
+                                      profissional: appointment.professionalName ?? "",
+                                      horario: appointment.time,
+                                      data: day.date,
+                                      statusConsulta: appointment.status,
+                                    });
+                                    navigate(`/profissional/documentos?${params.toString()}`);
+                                  }}
+                                >
+                                  <FolderOpen size={14} />
+                                  Documentos
+                                </ReportButton>
+                              )}
                             </AppointmentRowActions>
                           </AppointmentRow>
 
@@ -531,25 +541,27 @@ const ProfessionalAgendaPage = () => {
 
                               <WeekAppointmentFooter>
                                 <StatusBadge $variant={status.variant}>{status.label}</StatusBadge>
-                                <ReportButton
-                                  type="button"
-                                  title="Documentos da consulta"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    const params = new URLSearchParams({
-                                      consulta: appointment.id,
-                                      paciente: appointment.patientName,
-                                      profissional: appointment.professionalName ?? "",
-                                      horario: appointment.time,
-                                      data: day.date,
-                                      statusConsulta: appointment.status,
-                                    });
-                                    navigate(`/profissional/documentos?${params.toString()}`);
-                                  }}
-                                >
-                                  <FolderOpen size={14} />
-                                  Documentos
-                                </ReportButton>
+                                {appointment.status !== "CANCELLED" && appointment.status !== "NO_SHOW" && (
+                                  <ReportButton
+                                    type="button"
+                                    title="Documentos da consulta"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const params = new URLSearchParams({
+                                        consulta: appointment.id,
+                                        paciente: appointment.patientName,
+                                        profissional: appointment.professionalName ?? "",
+                                        horario: appointment.time,
+                                        data: day.date,
+                                        statusConsulta: appointment.status,
+                                      });
+                                      navigate(`/profissional/documentos?${params.toString()}`);
+                                    }}
+                                  >
+                                    <FolderOpen size={14} />
+                                    Documentos
+                                  </ReportButton>
+                                )}
                               </WeekAppointmentFooter>
                             </WeekAppointmentCard>
                           );
