@@ -12,6 +12,7 @@ import type {
   ProfessionalDashboardSummary,
 } from "../../../types/dashboard";
 import { notifyError } from "../../../utils/toast";
+import { getFormattedDate, getGreeting } from "../../../utils/formatters";
 import {
   AppointmentTypeLabel,
   EmptyStateCell,
@@ -33,21 +34,6 @@ import {
   TimeLabel,
 } from "./styles";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const getGreeting = () => {
-  const h = new Date().getHours();
-  if (h < 12) return "Bom dia";
-  if (h < 18) return "Boa tarde";
-  return "Boa noite";
-};
-
-const getFormattedDate = () =>
-  new Date().toLocaleDateString("pt-BR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
 
 // ─── Static config ────────────────────────────────────────────────────────────
 

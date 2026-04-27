@@ -20,6 +20,7 @@ import { useAuth } from "../../../contexts";
 import { getDashboardHistorical, getDashboardSummary } from "../../../services/admin.service";
 import { theme } from "../../../themes/themes";
 import type { DashboardSummary, HistoricalItem } from "../../../types/dashboard";
+import { getFormattedDate, getGreeting } from "../../../utils/formatters";
 import {
   AlertsList,
   AlertsSection,
@@ -120,22 +121,6 @@ const QUICK_ACCESS = [
     path: "/admin/perfil",
   },
 ];
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const getGreeting = () => {
-  const hour = new Date().getHours();
-  if (hour < 12) return "Bom dia";
-  if (hour < 18) return "Boa tarde";
-  return "Boa noite";
-};
-
-const getFormattedDate = () =>
-  new Date().toLocaleDateString("pt-BR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -244,10 +229,10 @@ const AdminDashboard = () => {
         return months.map((month, i) =>
           i === months.length - 1
             ? {
-                month,
-                consultations: summary.appointmentsThisMonth,
-                revenue: summary.monthlyBalance,
-              }
+              month,
+              consultations: summary.appointmentsThisMonth,
+              revenue: summary.monthlyBalance,
+            }
             : { month, consultations: 0, revenue: 0 },
         );
       };
