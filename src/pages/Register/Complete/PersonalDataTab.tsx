@@ -91,8 +91,8 @@ export const PersonalDataTab = ({
 
       {showRequirementsHint && (
         <RequirementsText>
-          Para avancar: CPF com 11 digitos, telefone com 10 ou 11 digitos, senha com no minimo 6
-          caracteres (maiuscula, minuscula e numero) e confirmacao igual.
+          Para avançar: CPF com 11 dígitos, telefone com 10 ou 11 dígitos, senha com no mínimo 6
+          caracteres (maiúscula, minúscula e número) e confirmação igual.
         </RequirementsText>
       )}
 
