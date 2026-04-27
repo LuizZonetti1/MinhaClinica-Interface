@@ -53,8 +53,8 @@ const normalizeAppointment = (value: unknown): PatientAppointmentListItem | null
     return (
       toTrimmedStringValue(
         nestedProfessional?.name ??
-          nestedProfessional?.fullName ??
-          nestedProfessional?.professionalName,
+        nestedProfessional?.fullName ??
+        nestedProfessional?.professionalName,
         "Profissional",
       ) || "Profissional"
     );
@@ -89,8 +89,8 @@ const normalizeAppointment = (value: unknown): PatientAppointmentListItem | null
     primarySpecialty:
       toTrimmedStringValue(
         root.primarySpecialty ??
-          nestedProfessional?.specialty ??
-          nestedProfessional?.primarySpecialty,
+        nestedProfessional?.specialty ??
+        nestedProfessional?.primarySpecialty,
         "",
       ) || null,
     clinicName: resolveClinicName(),
@@ -108,8 +108,8 @@ const normalizeAppointmentsResult = (payload: unknown): PatientAppointmentsListR
   const listValue = data.appointments ?? data.items ?? [];
   const list = Array.isArray(listValue)
     ? listValue
-        .map(normalizeAppointment)
-        .filter((item): item is PatientAppointmentListItem => item !== null)
+      .map(normalizeAppointment)
+      .filter((item): item is PatientAppointmentListItem => item !== null)
     : [];
 
   return {
@@ -149,4 +149,35 @@ export const rescheduleAppointment = async (
 
 export const cancelAppointment = async (id: string): Promise<void> => {
   await api.patch(`/patients/me/appointments/${id}/cancel`);
+};
+
+// ─── Patient appointment detail ───────────────────────────────────────────────
+
+export interface PatientAppointmentDetail {
+  id: string;
+  appointmentDate: string;
+  startTime: string;
+  status: string;
+  professionalName: string;
+  clinicName: string;
+  primarySpecialty: string | null;
+}
+
+export const getPatientAppointmentDetail = async (
+  appointmentId: string,
+): Promise<PatientAppointmentDetail> => {
+  const { data } = await api.get<unknown>(`/patients/me/appointments/${appointmentId}`);
+  const root = toRecord(data) as Record<string, unknown> | null ?? {};
+  const inner = (toRecord(root.data) as Record<string, unknown> | null) ?? root;
+  return {
+    id: toTrimmedStringValue(inner.id, ""),
+    appointmentDate: toTrimmedStringValue(inner.appointmentDate, ""),
+    startTime: toTrimmedStringValue(inner.startTime, "--:--"),
+    status: toTrimmedStringValue(inner.status, ""),
+    professionalName: toTrimmedStringValue(inner.professionalName, ""),
+    clinicName: toTrimmedStringValue(inner.clinicName, ""),
+    primarySpecialty: inner.primarySpecialty
+      ? toTrimmedStringValue(inner.primarySpecialty, "")
+      : null,
+  };
 };
