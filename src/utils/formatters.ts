@@ -89,3 +89,65 @@ export const formatCurrencyBRL = (value: number): string =>
     style: "currency",
     currency: "BRL",
   });
+
+// ─── Iniciais do nome ─────────────────────────────────────────────────────────
+
+export const getInitials = (name: string): string =>
+  name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+
+// ─── Saudação e data formatada ────────────────────────────────────────────────
+
+export const getGreeting = (): string => {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Bom dia";
+  if (hour < 18) return "Boa tarde";
+  return "Boa noite";
+};
+
+export const getFormattedDate = (): string =>
+  new Date().toLocaleDateString("pt-BR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+// ─── Máscara de CPF ───────────────────────────────────────────────────────────
+
+export const maskCPF = (value: string): string => {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+  if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+};
+
+// ─── Formatação de input de moeda ─────────────────────────────────────────────
+
+export const formatCurrencyInput = (rawValue: string): string => {
+  const digits = rawValue.replace(/\D/g, "");
+  if (!digits) return "";
+  const amount = Number(digits) / 100;
+  return amount.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
+export const parseNumberFromInput = (value: unknown): number | null => {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string") {
+    const normalized = value
+      .trim()
+      .replace(/\s+/g, "")
+      .replace(/\.(?=\d{3}\b)/g, "")
+      .replace(",", ".");
+    const parsed = Number(normalized);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
+};
