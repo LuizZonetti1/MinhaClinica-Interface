@@ -9,8 +9,8 @@ import type {
   AppointmentStatusUpdate,
   TodayAppointmentItem,
 } from "../../../types/dashboard";
-import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { getInitials } from "../../../utils/formatters";
+import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import {
   ActionsCell,
@@ -128,12 +128,12 @@ const APPOINTMENT_TYPE_LABELS: Record<string, string> = {
   CONSULTATION: "Consulta",
   RETURN: "Retorno",
   EXAM: "Exame",
-  EMERGENCY: "Emergencia",
+  EMERGENCY: "Emergência",
   FIRST_CONSULTATION: "Primeira Consulta",
   CONSULTA: "Consulta",
   RETORNO: "Retorno",
   EXAME: "Exame",
-  EMERGENCIA: "Emergencia",
+  EMERGENCIA: "Emergência",
 };
 
 const getFormattedDate = () =>
@@ -270,7 +270,7 @@ const ReceptionCheckinPage = () => {
           if (!original) return prev;
           return prev.map((a) => (a.id === id ? original : a));
         });
-        notifyError(getApiErrorMessage(err, "Nao foi possivel atualizar o status."));
+        notifyError(getApiErrorMessage(err, "Não foi possível atualizar o status."));
       } finally {
         setUpdating(null);
       }

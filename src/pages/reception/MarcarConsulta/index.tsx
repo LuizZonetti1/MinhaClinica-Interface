@@ -80,12 +80,12 @@ const getInitials = (name: string): string => {
 };
 
 const getPatientMeta = (patient: PatientSearchResult): string => {
-  const details = [maskCPF(patient.cpf) || "CPF nao informado"];
-  if (patient.isEmailVerified === false) details.push("email nao verificado");
+  const details = [maskCPF(patient.cpf) || "CPF não informado"];
+  if (patient.isEmailVerified === false) details.push("e-mail não verificado");
   return details.join(" • ");
 };
 
-const PAST_APPOINTMENT_ERROR = "nao e permitido agendar em horario ja passado";
+const PAST_APPOINTMENT_ERROR = "Não é permitido agendar em horário já passado";
 
 const normalizeText = (value: string): string =>
   value
@@ -133,11 +133,11 @@ const CONSULTATION_TYPE_OPTIONS: Array<{
   value: AppointmentType;
   label: string;
 }> = [
-    { value: AppointmentType.CONSULTATION, label: "Consulta" },
-    { value: AppointmentType.RETURN, label: "Retorno" },
-    { value: AppointmentType.EXAM, label: "Exame" },
-    { value: AppointmentType.EMERGENCY, label: "Emergência" },
-  ];
+  { value: AppointmentType.CONSULTATION, label: "Consulta" },
+  { value: AppointmentType.RETURN, label: "Retorno" },
+  { value: AppointmentType.EXAM, label: "Exame" },
+  { value: AppointmentType.EMERGENCY, label: "Emergência" },
+];
 
 const getConsultationTypeLabel = (value: AppointmentType): string =>
   CONSULTATION_TYPE_OPTIONS.find((option) => option.value === value)?.label ?? "Consulta";
@@ -303,7 +303,7 @@ const ReceptionMarcarConsultaPage = () => {
       .catch(() => {
         setSlots([]);
         setSelectedSlot("");
-        notifyError("Erro ao carregar horarios.");
+        notifyError("Erro ao carregar horários.");
       })
       .finally(() => setSlotsLoading(false));
   }, [selectedProfId, selectedDate]);
@@ -347,7 +347,7 @@ const ReceptionMarcarConsultaPage = () => {
     const selectedSlotData = slots.find((slot) => slot.time === selectedSlot);
     if (!selectedSlotData || !isSlotSelectable(selectedSlotData)) {
       setSelectedSlot("");
-      notifyError("O horario selecionado nao esta mais disponivel.");
+      notifyError("O horário selecionado não está mais disponível.");
       return;
     }
 
@@ -362,7 +362,7 @@ const ReceptionMarcarConsultaPage = () => {
     if (!selectedSlotData || !isSlotSelectable(selectedSlotData)) {
       setSelectedSlot("");
       setStep(2);
-      notifyError("O horario selecionado nao esta mais disponivel.");
+      notifyError("O horário selecionado não está mais disponível.");
       return;
     }
 
@@ -406,7 +406,7 @@ const ReceptionMarcarConsultaPage = () => {
         } catch {
           setSlots([]);
           setSelectedSlot("");
-          notifyError("Erro ao recarregar horarios.");
+          notifyError("Erro ao recarregar horários.");
         } finally {
           setSlotsLoading(false);
         }
