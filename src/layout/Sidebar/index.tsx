@@ -21,6 +21,7 @@ import {
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "../../contexts";
+import { getInitials } from "../../utils/formatters";
 import { UserRole } from "../../types/enums";
 import type { NavLink } from "../../types/layout";
 import {
@@ -108,14 +109,6 @@ const getProfilePathByRole = (role?: string): string | null => {
       return null;
   }
 };
-
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
 
 const getRoleLabel = (role: string) => {
   const labels: Record<string, string> = {

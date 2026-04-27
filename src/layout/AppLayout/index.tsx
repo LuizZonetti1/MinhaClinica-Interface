@@ -12,6 +12,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 import { useAuth, useThemeMode } from "../../contexts";
+import { getInitials } from "../../utils/formatters";
 import { getPatientProfile } from "../../services/patient-profile.service";
 import { getProfessionalProfile } from "../../services/professional-profile.service";
 import { getProfile } from "../../services/profile.service";
@@ -47,21 +48,21 @@ import {
 } from "./styles";
 
 const PAGE_TITLES: Record<string, string> = {
-  "/admin/dashboard": "Inicio",
+  "/admin/dashboard": "Início",
   "/admin/profissional": "Profissionais",
   "/admin/profissional/dashboard": "Profissionais",
   "/admin/paciente/dashboard": "Pacientes",
-  "/admin/relatorios": "Relatorios",
-  "/admin/configuracoes": "Configuracoes",
+  "/admin/relatorios": "Relatórios",
+  "/admin/configuracoes": "Configurações",
   "/admin/perfil": "Meu Perfil",
   "/admin/perfil/editar": "Editar Perfil",
-  "/paciente/dashboard": "Inicio",
+  "/paciente/dashboard": "Início",
   "/paciente/agendamentos": "Agendamentos",
-  "/paciente/historico": "Historico",
-  "/paciente/notificacoes": "Notificacoes",
+  "/paciente/historico": "Histórico",
+  "/paciente/notificacoes": "Notificações",
   "/paciente/perfil": "Perfil",
   "/paciente/perfil/editar": "Editar Perfil",
-  "/recepcao/dashboard": "Inicio",
+  "/recepcao/dashboard": "Início",
   "/recepcao/marcar-consulta": "Marcar Consulta",
   "/recepcao/cadastrar-paciente": "Cadastrar Paciente",
   "/recepcao/agendas": "Ver Agendas",
@@ -69,13 +70,13 @@ const PAGE_TITLES: Record<string, string> = {
   "/recepcao/historico": "Histórico de Pacientes",
   "/recepcao/transacoes": "Transações",
   "/recepcao/perfil": "Meu Perfil",
-  "/profissional/dashboard": "Inicio",
+  "/profissional/dashboard": "Início",
   "/profissional/agenda": "Agenda",
-  "/profissional/comentarios": "Comentarios",
+  "/profissional/comentarios": "Comentários",
   "/profissional/perfil": "Meu Perfil",
   "/profissional/perfil/editar": "Editar Perfil",
   "/profissional/documentos": "Documentos da Consulta",
-  "/profissional/documentos/formulario": "Formulario do Documento",
+  "/profissional/documentos/formulario": "Formulário do Documento",
   "/profissional/documentos/visualizar": "Visualizar Documento",
   "/paciente/documentos": "Meus Documentos",
   "/paciente/documentos/visualizar": "Visualizar Documento",
@@ -87,43 +88,43 @@ const PAGE_TITLES: Record<string, string> = {
 
 const PAGE_BREADCRUMBS: Record<string, BreadcrumbItem> = {
   "/admin/profissional/dashboard": {
-    parent: "Inicio",
+    parent: "Início",
     parentPath: "/admin/dashboard",
     current: "Profissionais",
     currentPath: "/admin/profissional",
   },
   "/admin/profissional": {
-    parent: "Inicio",
+    parent: "Início",
     parentPath: "/admin/dashboard",
     current: "Profissionais",
     currentPath: "/admin/profissional",
   },
   "/admin/paciente/dashboard": {
-    parent: "Inicio",
+    parent: "Início",
     parentPath: "/admin/dashboard",
     current: "Pacientes",
     currentPath: "/admin/paciente/dashboard",
   },
   "/admin/relatorios": {
-    parent: "Inicio",
+    parent: "Início",
     parentPath: "/admin/dashboard",
-    current: "Relatorios",
+    current: "Relatórios",
     currentPath: "/admin/relatorios",
   },
   "/admin/configuracoes": {
-    parent: "Inicio",
+    parent: "Início",
     parentPath: "/admin/dashboard",
-    current: "Configuracoes",
+    current: "Configurações",
     currentPath: "/admin/configuracoes",
   },
   "/admin/perfil": {
-    parent: "Inicio",
+    parent: "Início",
     parentPath: "/admin/dashboard",
     current: "Meu Perfil",
     currentPath: "/admin/perfil",
   },
   "/admin/perfil/editar": {
-    grandParent: "Inicio",
+    grandParent: "Início",
     grandParentPath: "/admin/dashboard",
     parent: "Perfil",
     parentPath: "/admin/perfil",
@@ -131,31 +132,31 @@ const PAGE_BREADCRUMBS: Record<string, BreadcrumbItem> = {
     currentPath: "/admin/perfil/editar",
   },
   "/recepcao/marcar-consulta": {
-    parent: "Inicio",
+    parent: "Início",
     parentPath: "/recepcao/dashboard",
     current: "Marcar Consulta",
     currentPath: "/recepcao/marcar-consulta",
   },
   "/recepcao/cadastrar-paciente": {
-    parent: "Inicio",
+    parent: "Início",
     parentPath: "/recepcao/dashboard",
     current: "Cadastrar Paciente",
     currentPath: "/recepcao/cadastrar-paciente",
   },
   "/recepcao/agendas": {
-    parent: "Inicio",
+    parent: "Início",
     parentPath: "/recepcao/dashboard",
     current: "Ver Agendas",
     currentPath: "/recepcao/agendas",
   },
   "/recepcao/checkin": {
-    parent: "Inicio",
+    parent: "Início",
     parentPath: "/recepcao/dashboard",
     current: "Check-in",
     currentPath: "/recepcao/checkin",
   },
   "/recepcao/historico": {
-    parent: "Inicio",
+    parent: "Início",
     parentPath: "/recepcao/dashboard",
     current: "Histórico de Pacientes",
     currentPath: "/recepcao/historico",
@@ -175,19 +176,19 @@ const PAGE_BREADCRUMBS: Record<string, BreadcrumbItem> = {
     currentPath: "/recepcao/documentos/visualizar",
   },
   "/recepcao/transacoes": {
-    parent: "Inicio",
+    parent: "Início",
     parentPath: "/recepcao/dashboard",
     current: "Transações",
     currentPath: "/recepcao/transacoes",
   },
   "/recepcao/perfil": {
-    parent: "Inicio",
+    parent: "Início",
     parentPath: "/recepcao/dashboard",
     current: "Meu Perfil",
     currentPath: "/recepcao/perfil",
   },
   "/profissional/agenda": {
-    parent: "Inicio",
+    parent: "Início",
     parentPath: "/profissional/dashboard",
     current: "Agenda",
     currentPath: "/profissional/agenda",
@@ -207,21 +208,21 @@ const PAGE_BREADCRUMBS: Record<string, BreadcrumbItem> = {
     currentPath: "/admin/documentos/visualizar",
   },
   "/profissional/documentos": {
-    parent: "Inicio",
+    parent: "Início",
     parentPath: "/profissional/dashboard",
     current: "Documentos da Consulta",
     currentPath: "/profissional/documentos",
   },
   "/profissional/documentos/formulario": {
-    grandParent: "Inicio",
+    grandParent: "Início",
     grandParentPath: "/profissional/dashboard",
     parent: "Documentos",
     parentPath: "/profissional/documentos",
-    current: "Formulario",
+    current: "Formulário",
     currentPath: "/profissional/documentos/formulario",
   },
   "/profissional/documentos/visualizar": {
-    grandParent: "Inicio",
+    grandParent: "Início",
     grandParentPath: "/profissional/dashboard",
     parent: "Documentos",
     parentPath: "/profissional/documentos",
@@ -229,19 +230,19 @@ const PAGE_BREADCRUMBS: Record<string, BreadcrumbItem> = {
     currentPath: "/profissional/documentos/visualizar",
   },
   "/profissional/comentarios": {
-    parent: "Inicio",
+    parent: "Início",
     parentPath: "/profissional/dashboard",
-    current: "Comentarios",
+    current: "Comentários",
     currentPath: "/profissional/comentarios",
   },
   "/profissional/perfil": {
-    parent: "Inicio",
+    parent: "Início",
     parentPath: "/profissional/dashboard",
     current: "Meu Perfil",
     currentPath: "/profissional/perfil",
   },
   "/profissional/perfil/editar": {
-    grandParent: "Inicio",
+    grandParent: "Início",
     grandParentPath: "/profissional/dashboard",
     parent: "Perfil",
     parentPath: "/profissional/perfil",
@@ -249,7 +250,7 @@ const PAGE_BREADCRUMBS: Record<string, BreadcrumbItem> = {
     currentPath: "/profissional/perfil/editar",
   },
   "/paciente/agendamentos": {
-    parent: "Inicio",
+    parent: "Início",
     parentPath: "/paciente/dashboard",
     current: "Agendamentos",
     currentPath: "/paciente/agendamentos",
@@ -269,25 +270,25 @@ const PAGE_BREADCRUMBS: Record<string, BreadcrumbItem> = {
     currentPath: "/paciente/documentos/visualizar",
   },
   "/paciente/historico": {
-    parent: "Inicio",
+    parent: "Início",
     parentPath: "/paciente/dashboard",
-    current: "Historico",
+    current: "Histórico",
     currentPath: "/paciente/historico",
   },
   "/paciente/notificacoes": {
-    parent: "Inicio",
+    parent: "Início",
     parentPath: "/paciente/dashboard",
-    current: "Notificacoes",
+    current: "Notificações",
     currentPath: "/paciente/notificacoes",
   },
   "/paciente/perfil": {
-    parent: "Inicio",
+    parent: "Início",
     parentPath: "/paciente/dashboard",
     current: "Perfil",
     currentPath: "/paciente/perfil",
   },
   "/paciente/perfil/editar": {
-    grandParent: "Inicio",
+    grandParent: "Início",
     grandParentPath: "/paciente/dashboard",
     parent: "Perfil",
     parentPath: "/paciente/perfil",
@@ -295,14 +296,6 @@ const PAGE_BREADCRUMBS: Record<string, BreadcrumbItem> = {
     currentPath: "/paciente/perfil/editar",
   },
 };
-
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
 
 const getRoleLabel = (role?: string) => {
   const labels: Record<string, string> = {
@@ -312,7 +305,7 @@ const getRoleLabel = (role?: string) => {
     PATIENT: "Paciente",
   };
 
-  if (!role) return "Usuario";
+  if (!role) return "Usuário";
   return labels[role] ?? role;
 };
 
@@ -604,7 +597,7 @@ export const AppLayout = () => {
                       )}
                     </ProfileMenuAvatar>
                     <ProfileMenuIdentity>
-                      <ProfileMenuName>{user?.name ?? "Usuario"}</ProfileMenuName>
+                      <ProfileMenuName>{user?.name ?? "Usuário"}</ProfileMenuName>
                       <ProfileMenuInfo>
                         <Briefcase />
                         <span>
