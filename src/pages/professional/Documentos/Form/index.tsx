@@ -6,6 +6,7 @@ import {
   finalizeClinicalDocument,
   getClinicalDocument,
   updateClinicalDocument,
+  createClinicalDocumentAddendum,
 } from "../../../../services/clinical-documents.service";
 import type {
   AttendanceDeclarationContent,
@@ -169,6 +170,53 @@ const DOC_TYPE_LABEL: Record<string, string> = {
 
 const AUTOSAVE_INTERVAL_MS = 30_000;
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const computeCanFinalize = (type: string, content: DocumentContent): boolean => {
+  if (type === ClinicalDocumentType.CONSENT_FORM) {
+    return Boolean((content as ConsentFormContent).patientAcknowledged);
+  }
+  if (type === ClinicalDocumentType.BUDGET) {
+    return Boolean((content as BudgetContent).patientAcknowledged);
+  }
+  return true;
+};
+
+const renderFormForType = (
+  type: string,
+  content: DocumentContent,
+  onChange: <K extends string>(field: K, value: unknown) => void,
+  errors: Partial<Record<string, string>>,
+  disabled: boolean,
+) => {
+  switch (type) {
+    case ClinicalDocumentType.CLINICAL_REPORT:
+      return <ClinicalReportForm content={content as ClinicalReportContent} onChange={onChange} errors={errors} disabled={disabled} />;
+    case ClinicalDocumentType.CERTIFICATE:
+      return <CertificateForm content={content as CertificateContent} onChange={onChange} errors={errors} disabled={disabled} />;
+    case ClinicalDocumentType.ATTENDANCE_DECLARATION:
+      return <AttendanceDeclarationForm content={content as AttendanceDeclarationContent} onChange={onChange} errors={errors} disabled={disabled} appointmentContext={{ appointmentId: "", patientName: "", appointmentDate: "", startTime: "--:--", professionalName: "", councilRegistration: "", appointmentStatus: "" }} />;
+    case ClinicalDocumentType.PRESCRIPTION:
+      return <PrescriptionForm content={content as PrescriptionContent} onChange={onChange} errors={errors} disabled={disabled} />;
+    case ClinicalDocumentType.CONTROLLED_PRESCRIPTION:
+      return <ControlledPrescriptionForm content={content as ControlledPrescriptionContent} onChange={onChange} errors={errors} disabled={disabled} />;
+    case ClinicalDocumentType.EXAM_REQUEST:
+      return <ExamRequestForm content={content as ExamRequestContent} onChange={onChange} errors={errors} disabled={disabled} />;
+    case ClinicalDocumentType.REFERRAL:
+      return <ReferralForm content={content as ReferralContent} onChange={onChange} errors={errors} disabled={disabled} />;
+    case ClinicalDocumentType.MEDICAL_REPORT:
+      return <MedicalReportForm content={content as MedicalReportContent} onChange={onChange} errors={errors} disabled={disabled} />;
+    case ClinicalDocumentType.CONSENT_FORM:
+      return <ConsentFormForm content={content as ConsentFormContent} onChange={onChange} errors={errors} disabled={disabled} />;
+    case ClinicalDocumentType.TREATMENT_PLAN:
+      return <TreatmentPlanForm content={content as TreatmentPlanContent} onChange={onChange} errors={errors} disabled={disabled} />;
+    case ClinicalDocumentType.BUDGET:
+      return <BudgetForm content={content as BudgetContent} onChange={onChange} errors={errors} disabled={disabled} />;
+    default:
+      return <p>Tipo de documento nao suportado.</p>;
+  }
+};
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 const DocumentFormPage = () => {
@@ -177,6 +225,8 @@ const DocumentFormPage = () => {
   const appointmentId = searchParams.get("consulta") ?? "";
   const documentId = searchParams.get("documento") ?? "";
   const viewMode = searchParams.get("modo") === "visualizar";
+  const isAddendoMode = searchParams.get("modo") === "adendo";
+  const addendoTipo = (searchParams.get("tipo") ?? "") as ClinicalDocumentType;
 
   const [document, setDocument] = useState<ClinicalDocumentDetail | null>(null);
   const [content, setContent] = useState<DocumentContent | null>(null);
@@ -205,6 +255,18 @@ const DocumentFormPage = () => {
 
   // ── Load document ──
   const loadDocument = useCallback(async () => {
+    if (isAddendoMode) {
+      // Adendo mode: skip loading, use type from URL param
+      if (!addendoTipo || !DEFAULT_CONTENT[addendoTipo]) {
+        setErrorMessage("Tipo de adendo invalido.");
+        setLoading(false);
+        return;
+      }
+      const defaultContent = DEFAULT_CONTENT[addendoTipo]();
+      setContent(defaultContent);
+      setLoading(false);
+      return;
+    }
     if (!appointmentId || !documentId) {
       setErrorMessage("Parametros de consulta ou documento ausentes.");
       setLoading(false);
@@ -226,7 +288,7 @@ const DocumentFormPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [appointmentId, documentId]);
+  }, [appointmentId, documentId, isAddendoMode, addendoTipo]);
 
   useEffect(() => {
     void loadDocument();
@@ -234,8 +296,8 @@ const DocumentFormPage = () => {
 
   // ── Autosave ──
   const saveDraft = useCallback(
-    async (silent = false) => {
-      if (!appointmentId || !documentId || !contentRef.current) return;
+    async (silent = false): Promise<boolean> => {
+      if (!appointmentId || !documentId || !contentRef.current) return false;
       if (!silent) setSaving(true);
       try {
         await updateClinicalDocument(appointmentId, documentId, {
@@ -249,12 +311,14 @@ const DocumentFormPage = () => {
           `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`,
         );
         if (!silent) notifySuccess("Rascunho salvo.");
+        return true;
       } catch (err: unknown) {
         if (silent) {
           setAutosaveError(true);
         } else {
           notifyError(getApiErrorMessage(err, "Nao foi possivel salvar o rascunho."));
         }
+        return false;
       } finally {
         if (!silent) setSaving(false);
       }
@@ -302,11 +366,32 @@ const DocumentFormPage = () => {
     navigate(`/profissional/documentos?consulta=${appointmentId}`);
   };
 
-  const handleSaveDraft = () => {
-    void saveDraft(false);
+  const handleSaveDraft = async () => {
+    const ok = await saveDraft(false);
+    if (ok) navigate(`/profissional/documentos?consulta=${appointmentId}`);
   };
 
   const handleFinalize = async () => {
+    if (isAddendoMode) {
+      // Adendo mode: create addendum document
+      if (!appointmentId || !contentRef.current) return;
+      setFinalizing(true);
+      try {
+        await createClinicalDocumentAddendum(
+          appointmentId,
+          addendoTipo,
+          contentRef.current,
+          internalNotesRef.current || undefined,
+        );
+        notifySuccess("Adendo criado com sucesso.");
+        navigate(`/profissional/documentos?consulta=${appointmentId}`);
+      } catch (err: unknown) {
+        notifyError(getApiErrorMessage(err, "Nao foi possivel criar o adendo."));
+      } finally {
+        setFinalizing(false);
+      }
+      return;
+    }
     if (!appointmentId || !documentId || !contentRef.current) return;
     setFinalizing(true);
     try {
@@ -345,6 +430,69 @@ const DocumentFormPage = () => {
     return (
       <FormPageWrapper>
         <LoadingWrapper>Carregando documento...</LoadingWrapper>
+      </FormPageWrapper>
+    );
+  }
+
+  if (isAddendoMode) {
+    if (errorMessage || !content) {
+      return (
+        <FormPageWrapper>
+          <ErrorWrapper>
+            <p>{errorMessage ?? "Tipo de adendo nao reconhecido."}</p>
+            <Button variant="outline" size="small" onClick={handleCancel}>
+              Voltar
+            </Button>
+          </ErrorWrapper>
+        </FormPageWrapper>
+      );
+    }
+
+    const addendoTypeLabel = DOC_TYPE_LABEL[addendoTipo] ?? "Adendo";
+
+    return (
+      <FormPageWrapper>
+        <FormHeader>
+          <FormTitleGroup>
+            <FormTitle>Novo adendo — {addendoTypeLabel}</FormTitle>
+            <FormSubtitle>Preencha o conteudo do adendo. Ele sera criado ao clicar em "Criar adendo".</FormSubtitle>
+          </FormTitleGroup>
+          <Button variant="outline" size="small" icon={<ArrowLeft size={14} />} onClick={handleCancel}>
+            Voltar
+          </Button>
+        </FormHeader>
+
+        <DocumentFixedFields
+          appointmentContext={{
+            appointmentId,
+            patientName: "",
+            appointmentDate: "",
+            startTime: "--:--",
+            professionalName: "",
+            councilRegistration: "",
+            appointmentStatus: "COMPLETED",
+          }}
+          status="DRAFT"
+          internalNotes={internalNotes}
+          onInternalNotesChange={handleInternalNotesChange}
+          disabled={false}
+          onBlurAutosave={() => { }}
+        />
+
+        {renderFormForType(addendoTipo, content, handleContentChange, errors, false)}
+
+        <DocumentFormFooter
+          onCancel={handleCancel}
+          onSaveDraft={() => { }}
+          onFinalize={() => void handleFinalize()}
+          saving={false}
+          finalizing={finalizing}
+          canFinalize={computeCanFinalize(addendoTipo, content)}
+          lastSavedAt={null}
+          autosaveError={false}
+          disabled={false}
+          finalizeLabel="Criar adendo"
+        />
       </FormPageWrapper>
     );
   }
@@ -395,7 +543,7 @@ const DocumentFormPage = () => {
             onChange={handleContentChange}
             errors={errors}
             disabled={disabled}
-            patientName={document.appointmentContext.patientName}
+            appointmentContext={document.appointmentContext}
           />
         );
       case ClinicalDocumentType.PRESCRIPTION:
@@ -528,7 +676,7 @@ const DocumentFormPage = () => {
           onFinalize={() => void handleFinalize()}
           saving={saving}
           finalizing={finalizing}
-          canFinalize={true}
+          canFinalize={computeCanFinalize(document.type, content)}
           lastSavedAt={lastSavedAt}
           autosaveError={autosaveError}
           disabled={disabled}
