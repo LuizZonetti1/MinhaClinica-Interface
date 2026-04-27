@@ -1,5 +1,6 @@
-import { Calendar, ChevronRight, Clock3, MapPin, Plus, RotateCcw, Search } from "lucide-react";
+import { Calendar, ChevronRight, Clock3, FileText, MapPin, Plus, RotateCcw, Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router";
 import { Button } from "../../../components/Button";
 import { Input } from "../../../components/Input";
 import { Modal } from "../../../components/Modal";
@@ -220,6 +221,7 @@ const getStatusMeta = (status: string) =>
   STATUS_META[normalizeAppointmentStatus(status)] ?? { label: status, variant: "default" as const };
 
 const PatientAppointmentsPage = () => {
+  const navigate = useNavigate();
   const todayIso = useMemo(() => formatDateToIsoDate(new Date()), []);
   const allClinicsCacheRef = useRef<PatientBookingClinicItem[] | null>(null);
 
@@ -667,6 +669,19 @@ const PatientAppointmentsPage = () => {
                             Ver detalhes
                             <ChevronRight size={14} />
                           </ViewButton>
+                          {displayStatus === "COMPLETED" && (
+                            <ViewButton
+                              type="button"
+                              onClick={() =>
+                                navigate(
+                                  `/paciente/documentos?consulta=${appointment.id}&paciente=${encodeURIComponent(appointment.professionalName)}`,
+                                )
+                              }
+                            >
+                              <FileText size={14} />
+                              Ver documentos
+                            </ViewButton>
+                          )}
                         </ActionRow>
                       </ProfessionalBlock>
 

@@ -1,5 +1,6 @@
-import { Calendar, CalendarCheck2, ChevronRight, Clock3, MapPin, Search, X } from "lucide-react";
+import { Calendar, CalendarCheck2, ChevronRight, Clock3, FileText, MapPin, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router";
 import { Button } from "../../../components/Button";
 import { Input } from "../../../components/Input";
 import { Modal } from "../../../components/Modal";
@@ -193,6 +194,7 @@ const mapChannelLabel = (channel: string): string => {
 };
 
 const PatientHistoryPage = () => {
+  const navigate = useNavigate();
   const [result, setResult] = useState<PatientAppointmentsListResult>(EMPTY_RESULT);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -244,8 +246,7 @@ const PatientHistoryPage = () => {
       .filter((appointment) => {
         if (!query) return true;
         const haystack = normalizeSearch(
-          `${appointment.professionalName} ${appointment.clinicName ?? ""} ${
-            appointment.primarySpecialty ?? ""
+          `${appointment.professionalName} ${appointment.clinicName ?? ""} ${appointment.primarySpecialty ?? ""
           } ${mapTypeLabel(appointment.type)}`,
         );
         return haystack.includes(query);
@@ -363,6 +364,19 @@ const PatientHistoryPage = () => {
                             Ver detalhes
                             <ChevronRight size={14} />
                           </ViewButton>
+                          {displayStatus === "COMPLETED" && (
+                            <ViewButton
+                              type="button"
+                              onClick={() =>
+                                navigate(
+                                  `/paciente/documentos?consulta=${appointment.id}&paciente=${encodeURIComponent(appointment.professionalName)}`,
+                                )
+                              }
+                            >
+                              <FileText size={14} />
+                              Ver documentos
+                            </ViewButton>
+                          )}
                         </ActionRow>
                       </ProfessionalBlock>
 
@@ -392,42 +406,42 @@ const PatientHistoryPage = () => {
             </Button>
           }
         >
-            <ModalGrid>
-              <ModalItem>
-                <ModalLabel>Profissional</ModalLabel>
-                <ModalValue>{selectedAppointment.professionalName}</ModalValue>
-              </ModalItem>
-              <ModalItem>
-                <ModalLabel>Status</ModalLabel>
-                <ModalValue>{getStatusMeta(resolveDisplayStatus(selectedAppointment)).label}</ModalValue>
-              </ModalItem>
-              <ModalItem>
-                <ModalLabel>Data</ModalLabel>
-                <ModalValue>{formatLongDate(selectedAppointment.appointmentDate)}</ModalValue>
-              </ModalItem>
-              <ModalItem>
-                <ModalLabel>Horario</ModalLabel>
-                <ModalValue>
-                  {selectedAppointment.startTime} - {selectedAppointment.endTime}
-                </ModalValue>
-              </ModalItem>
-              <ModalItem>
-                <ModalLabel>Tipo</ModalLabel>
-                <ModalValue>{mapTypeLabel(selectedAppointment.type)}</ModalValue>
-              </ModalItem>
-              <ModalItem>
-                <ModalLabel>Modalidade</ModalLabel>
-                <ModalValue>{mapChannelLabel(selectedAppointment.channel)}</ModalValue>
-              </ModalItem>
-              <ModalItem>
-                <ModalLabel>Clinica</ModalLabel>
-                <ModalValue>{selectedAppointment.clinicName ?? "Clinica nao informada"}</ModalValue>
-              </ModalItem>
-              <ModalItem>
-                <ModalLabel>Observacoes</ModalLabel>
-                <ModalValue>{selectedAppointment.notes ?? "Sem observacoes."}</ModalValue>
-              </ModalItem>
-            </ModalGrid>
+          <ModalGrid>
+            <ModalItem>
+              <ModalLabel>Profissional</ModalLabel>
+              <ModalValue>{selectedAppointment.professionalName}</ModalValue>
+            </ModalItem>
+            <ModalItem>
+              <ModalLabel>Status</ModalLabel>
+              <ModalValue>{getStatusMeta(resolveDisplayStatus(selectedAppointment)).label}</ModalValue>
+            </ModalItem>
+            <ModalItem>
+              <ModalLabel>Data</ModalLabel>
+              <ModalValue>{formatLongDate(selectedAppointment.appointmentDate)}</ModalValue>
+            </ModalItem>
+            <ModalItem>
+              <ModalLabel>Horario</ModalLabel>
+              <ModalValue>
+                {selectedAppointment.startTime} - {selectedAppointment.endTime}
+              </ModalValue>
+            </ModalItem>
+            <ModalItem>
+              <ModalLabel>Tipo</ModalLabel>
+              <ModalValue>{mapTypeLabel(selectedAppointment.type)}</ModalValue>
+            </ModalItem>
+            <ModalItem>
+              <ModalLabel>Modalidade</ModalLabel>
+              <ModalValue>{mapChannelLabel(selectedAppointment.channel)}</ModalValue>
+            </ModalItem>
+            <ModalItem>
+              <ModalLabel>Clinica</ModalLabel>
+              <ModalValue>{selectedAppointment.clinicName ?? "Clinica nao informada"}</ModalValue>
+            </ModalItem>
+            <ModalItem>
+              <ModalLabel>Observacoes</ModalLabel>
+              <ModalValue>{selectedAppointment.notes ?? "Sem observacoes."}</ModalValue>
+            </ModalItem>
+          </ModalGrid>
         </Modal>
       )}
     </PageWrapper>
