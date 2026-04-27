@@ -121,6 +121,20 @@ export const ProfessionalAgendaProvider = ({ children }: { children: React.React
     void loadMonth(currentMonth);
   }, [currentMonth]);
 
+  // Auto-refresh a cada 60s enquanto o mês exibido for o mês atual,
+  // para refletir transições automáticas de NO_SHOW sem recarregar a página.
+  useEffect(() => {
+    const isCurrentMonth = toMonthKey(currentMonth) === toMonthKey(getMonthStart(new Date()));
+    if (!isCurrentMonth) return;
+
+    const timer = window.setInterval(() => {
+      cacheRef.current.delete(toMonthKey(currentMonth));
+      void loadMonth(currentMonth, true);
+    }, 60_000);
+
+    return () => window.clearInterval(timer);
+  }, [currentMonth]);
+
   const goToPreviousMonth = () => {
     setCurrentMonth((current) => {
       if (current.getTime() <= minAllowedMonth.getTime()) {
