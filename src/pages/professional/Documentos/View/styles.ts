@@ -38,7 +38,7 @@ export const ViewHeaderActions = styled.div`
 export const PrintWrapper = styled.div`
   background: #fff;
   border: 1px solid ${theme.colors.border.light};
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
   max-width: 860px;
   margin: 0 auto;
@@ -62,19 +62,20 @@ export const DocHeaderSection = styled.div`
   align-items: center;
   gap: 20px;
   padding: 24px 32px 20px;
-  border-bottom: 2px solid ${theme.colors.primary};
+  border-bottom: 1px solid #c8c8c8;
 `;
 
 export const ClinicLogoMark = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 12px;
-  background: ${theme.colors.primary};
-  color: #fff;
-  font-size: 22px;
+  width: 48px;
+  height: 48px;
+  border-radius: 4px;
+  border: 1px solid #c8c8c8;
+  background: #fff;
+  color: #1a1a1a;
+  font-size: 20px;
   font-weight: 700;
   font-family: "Roboto", sans-serif;
   flex-shrink: 0;
@@ -89,22 +90,22 @@ export const ClinicHeaderInfo = styled.div`
 
 export const ClinicName = styled.span`
   font-family: "Roboto", sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
-  color: ${theme.colors.text.primary};
+  color: #1a1a1a;
 `;
 
 export const ClinicDetail = styled.span`
   font-family: "Roboto", sans-serif;
-  font-size: 12px;
-  color: ${theme.colors.text.muted};
+  font-size: 11.5px;
+  color: #555;
 `;
 
 export const DocTypeTag = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 4px;
+  gap: 3px;
   flex-shrink: 0;
 `;
 
@@ -114,13 +115,13 @@ export const DocTypeLabel = styled.span`
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: ${theme.colors.primary};
+  color: #1a1a1a;
 `;
 
 export const DocNumberLabel = styled.span`
   font-family: "Roboto", sans-serif;
   font-size: 11px;
-  color: ${theme.colors.text.muted};
+  color: #777;
 `;
 
 // ─── Addendum banner ─────────────────────────────────────────────────────────
@@ -129,12 +130,13 @@ export const AddendumBanner = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 32px;
-  background: #ede9fe;
-  border-bottom: 1px solid #c4b5fd;
+  padding: 8px 32px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #c8c8c8;
   font-family: "Roboto", sans-serif;
-  font-size: 12px;
-  color: #5b21b6;
+  font-size: 11.5px;
+  color: #444;
+  font-style: italic;
 `;
 
 // ─── Identification block ─────────────────────────────────────────────────────
@@ -143,7 +145,7 @@ export const IdentificationBlock = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0;
-  border-bottom: 1px solid ${theme.colors.border.light};
+  border-bottom: 1px solid #c8c8c8;
 
   @media (max-width: 600px) {
     grid-template-columns: 1fr 1fr;
@@ -151,8 +153,8 @@ export const IdentificationBlock = styled.div`
 `;
 
 export const IdentificationCell = styled.div`
-  padding: 12px 32px;
-  border-right: 1px solid ${theme.colors.border.light};
+  padding: 10px 32px;
+  border-right: 1px solid #c8c8c8;
 
   &:last-child {
     border-right: none;
@@ -168,19 +170,19 @@ export const IdentificationCell = styled.div`
 export const IdentificationLabel = styled.span`
   display: block;
   font-family: "Roboto", sans-serif;
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: ${theme.colors.text.muted};
+  color: #777;
   margin-bottom: 2px;
 `;
 
 export const IdentificationValue = styled.span`
   display: block;
   font-family: "Roboto", sans-serif;
-  font-size: 13px;
-  color: ${theme.colors.text.primary};
+  font-size: 12.5px;
+  color: #1a1a1a;
 `;
 
 // ─── Document body ────────────────────────────────────────────────────────────
@@ -189,7 +191,7 @@ export const DocBody = styled.div`
   padding: 28px 32px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 22px;
 
   @media print {
     flex: 1;
@@ -205,21 +207,21 @@ export const DocSection = styled.div`
 export const DocSectionTitle = styled.h3`
   margin: 0;
   font-family: "Roboto", sans-serif;
-  font-size: 11px;
+  font-size: 9.5px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: ${theme.colors.text.muted};
+  color: #555;
   padding-bottom: 4px;
-  border-bottom: 1px solid ${theme.colors.border.light};
+  border-bottom: 1px solid #c8c8c8;
 `;
 
 export const DocSectionText = styled.p`
   margin: 0;
   font-family: "Roboto", sans-serif;
-  font-size: 13.5px;
-  color: ${theme.colors.text.primary};
-  line-height: 1.65;
+  font-size: 13px;
+  color: #1a1a1a;
+  line-height: 1.7;
   white-space: pre-wrap;
 `;
 
@@ -237,68 +239,17 @@ export const DocField = styled.div`
 
 export const DocFieldLabel = styled.span`
   font-family: "Roboto", sans-serif;
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: ${theme.colors.text.muted};
+  color: #777;
 `;
 
 export const DocFieldValue = styled.span`
   font-family: "Roboto", sans-serif;
-  font-size: 13.5px;
-  color: ${theme.colors.text.primary};
-`;
-
-// ─── Highlight / alert blocks ─────────────────────────────────────────────────
-
-export const DocHighlightBlock = styled.div<{
-  $color?: "amber" | "purple" | "blue" | "green" | "red";
-}>`
-  padding: 14px 18px;
-  border-radius: 8px;
-  background: ${({ $color }) =>
-    $color === "amber"
-      ? "#fef3c7"
-      : $color === "purple"
-        ? "#ede9fe"
-        : $color === "blue"
-          ? "#dbeafe"
-          : $color === "green"
-            ? "#dcfce7"
-            : $color === "red"
-              ? "#fee2e2"
-              : theme.colors.surfaceMuted};
-  border: 1px solid ${({ $color }) =>
-    $color === "amber"
-      ? "#fcd34d"
-      : $color === "purple"
-        ? "#c4b5fd"
-        : $color === "blue"
-          ? "#93c5fd"
-          : $color === "green"
-            ? "#86efac"
-            : $color === "red"
-              ? "#fca5a5"
-              : theme.colors.border.light};
-`;
-
-export const DocHighlightTitle = styled.p`
-  margin: 0 0 4px;
-  font-family: "Roboto", sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: inherit;
-`;
-
-export const DocHighlightText = styled.p`
-  margin: 0;
-  font-family: "Roboto", sans-serif;
   font-size: 13px;
-  line-height: 1.55;
-  white-space: pre-wrap;
+  color: #1a1a1a;
 `;
 
 // ─── Medication / item list ───────────────────────────────────────────────────
@@ -306,30 +257,26 @@ export const DocHighlightText = styled.p`
 export const MedList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 `;
 
 export const MedItem = styled.div`
-  padding: 14px 18px;
-  border: 1px solid ${theme.colors.border.light};
-  border-radius: 8px;
-  background: ${theme.colors.surfaceMuted};
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 `;
 
 export const MedItemName = styled.span`
   font-family: "Roboto", sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  color: ${theme.colors.text.primary};
+  color: #1a1a1a;
 `;
 
 export const MedItemDetail = styled.span`
   font-family: "Roboto", sans-serif;
-  font-size: 12.5px;
-  color: ${theme.colors.text.secondary};
+  font-size: 12px;
+  color: #555;
 `;
 
 // ─── Budget table ─────────────────────────────────────────────────────────────
@@ -340,24 +287,24 @@ export const BudgetTable = styled.table`
 `;
 
 export const BudgetTh = styled.th`
-  padding: 8px 12px;
+  padding: 7px 12px;
   font-family: "Roboto", sans-serif;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: ${theme.colors.text.muted};
+  color: #555;
   text-align: left;
-  background: ${theme.colors.surfaceMuted};
-  border: 1px solid ${theme.colors.border.light};
+  background: #f5f5f5;
+  border: 1px solid #c8c8c8;
 `;
 
 export const BudgetTd = styled.td`
-  padding: 8px 12px;
+  padding: 7px 12px;
   font-family: "Roboto", sans-serif;
-  font-size: 13px;
-  color: ${theme.colors.text.primary};
-  border: 1px solid ${theme.colors.border.light};
+  font-size: 12.5px;
+  color: #1a1a1a;
+  border: 1px solid #c8c8c8;
 `;
 
 export const BudgetTotals = styled.div`
@@ -372,9 +319,9 @@ export const BudgetTotalRow = styled.div<{ $highlight?: boolean }>`
   display: flex;
   gap: 16px;
   font-family: "Roboto", sans-serif;
-  font-size: ${({ $highlight }) => ($highlight ? "15px" : "13px")};
+  font-size: ${({ $highlight }) => ($highlight ? "14px" : "12.5px")};
   font-weight: ${({ $highlight }) => ($highlight ? "700" : "400")};
-  color: ${({ $highlight }) => ($highlight ? theme.colors.text.primary : theme.colors.text.secondary)};
+  color: #1a1a1a;
 `;
 
 // ─── Signature line ───────────────────────────────────────────────────────────
@@ -389,13 +336,13 @@ export const SignatureBlock = styled.div`
 
 export const SignatureLine = styled.div`
   width: 260px;
-  border-bottom: 1px solid ${theme.colors.text.primary};
+  border-bottom: 1px solid #1a1a1a;
 `;
 
 export const SignatureLabel = styled.span`
   font-family: "Roboto", sans-serif;
-  font-size: 12px;
-  color: ${theme.colors.text.muted};
+  font-size: 11.5px;
+  color: #555;
 `;
 
 // ─── Footer ───────────────────────────────────────────────────────────────────
@@ -403,72 +350,45 @@ export const SignatureLabel = styled.span`
 export const DocFooter = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 20px 32px 28px;
-  border-top: 1px solid ${theme.colors.border.light};
+  gap: 4px;
+  padding: 18px 32px 24px;
+  border-top: 1px solid #c8c8c8;
   align-items: center;
 `;
 
 export const DocFooterProfessional = styled.span`
   font-family: "Roboto", sans-serif;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
-  color: ${theme.colors.text.primary};
+  color: #1a1a1a;
 `;
 
 export const DocFooterCouncil = styled.span`
   font-family: "Roboto", sans-serif;
-  font-size: 12px;
-  color: ${theme.colors.text.muted};
+  font-size: 11.5px;
+  color: #555;
 `;
 
 export const DocFooterIssuedAt = styled.span`
   font-family: "Roboto", sans-serif;
-  font-size: 11px;
-  color: ${theme.colors.text.muted};
+  font-size: 10px;
+  color: #888;
   margin-top: 4px;
 `;
 
 // ─── Badge ────────────────────────────────────────────────────────────────────
+/* Badges no documento impresso são sempre neutros — sem cores. */
 
 export const DocBadge = styled.span<{ $color?: "amber" | "red" | "green" | "purple" | "blue" }>`
   display: inline-flex;
   align-items: center;
-  padding: 3px 10px;
-  border-radius: 20px;
+  padding: 2px 10px;
   font-family: "Roboto", sans-serif;
   font-size: 11px;
   font-weight: 600;
-  background: ${({ $color }) =>
-    $color === "amber"
-      ? "#fef3c7"
-      : $color === "red"
-        ? "#fee2e2"
-        : $color === "green"
-          ? "#dcfce7"
-          : $color === "purple"
-            ? "#ede9fe"
-            : "#dbeafe"};
-  color: ${({ $color }) =>
-    $color === "amber"
-      ? "#92400e"
-      : $color === "red"
-        ? "#991b1b"
-        : $color === "green"
-          ? "#166534"
-          : $color === "purple"
-            ? "#5b21b6"
-            : "#1e40af"};
-  border: 1px solid ${({ $color }) =>
-    $color === "amber"
-      ? "#fcd34d"
-      : $color === "red"
-        ? "#fca5a5"
-        : $color === "green"
-          ? "#86efac"
-          : $color === "purple"
-            ? "#c4b5fd"
-            : "#93c5fd"};
+  background: #f0f0f0;
+  color: #333;
+  border: 1px solid #c8c8c8;
 `;
 
 // ─── Loading / Error ──────────────────────────────────────────────────────────
@@ -494,16 +414,17 @@ export const DocItemList = styled.ul`
 
 export const DocItemListItem = styled.li`
   font-family: "Roboto", sans-serif;
-  font-size: 13.5px;
-  color: ${theme.colors.text.primary};
-  line-height: 1.65;
+  font-size: 13px;
+  color: #1a1a1a;
+  line-height: 1.7;
   padding-left: 16px;
   position: relative;
 
   &::before {
-    content: "•";
+    content: "—";
     position: absolute;
-    left: 4px;
-    color: ${theme.colors.text.muted};
+    left: 0;
+    color: #888;
+    font-size: 11px;
   }
 `;
