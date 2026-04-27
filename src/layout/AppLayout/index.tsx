@@ -12,7 +12,6 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 import { useAuth, useThemeMode } from "../../contexts";
-import { getInitials } from "../../utils/formatters";
 import { getPatientProfile } from "../../services/patient-profile.service";
 import { getProfessionalProfile } from "../../services/professional-profile.service";
 import { getProfile } from "../../services/profile.service";
@@ -20,6 +19,7 @@ import { getReceptionProfile } from "../../services/reception.service";
 import { theme } from "../../themes/themes";
 import { UserRole } from "../../types/enums";
 import type { BreadcrumbItem } from "../../types/layout";
+import { getInitials } from "../../utils/formatters";
 import { Sidebar } from "../Sidebar";
 import {
   BellWrapper,

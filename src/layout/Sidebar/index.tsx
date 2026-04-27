@@ -21,9 +21,9 @@ import {
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "../../contexts";
-import { getInitials } from "../../utils/formatters";
 import { UserRole } from "../../types/enums";
 import type { NavLink } from "../../types/layout";
+import { getInitials } from "../../utils/formatters";
 import {
   Avatar,
   LogoIconWrapper,
@@ -41,42 +41,42 @@ import {
 } from "./styles";
 
 const ADMIN_NAV_LINKS: NavLink[] = [
-  { label: "Inicio", path: "/admin/dashboard", icon: LayoutDashboard },
+  { label: "Início", path: "/admin/dashboard", icon: LayoutDashboard },
   { label: "Profissionais", path: "/admin/profissional", icon: Stethoscope },
   { label: "Pacientes", path: "/admin/paciente/dashboard", icon: Users },
-  { label: "Relatorios", path: "/admin/relatorios", icon: BarChart2 },
-  { label: "Configuracoes", path: "/admin/configuracoes", icon: Settings },
+  { label: "Relatórios", path: "/admin/relatorios", icon: BarChart2 },
+  { label: "Configurações", path: "/admin/configuracoes", icon: Settings },
   { label: "Perfil", path: "/admin/perfil", icon: User },
 ];
 
 const RECEPTION_NAV_LINKS: NavLink[] = [
-  { label: "Inicio", path: "/recepcao/dashboard", icon: LayoutDashboard },
+  { label: "Início", path: "/recepcao/dashboard", icon: LayoutDashboard },
   { label: "Marcar Consulta", path: "/recepcao/marcar-consulta", icon: CalendarPlus2 },
   { label: "Cadastrar Paciente", path: "/recepcao/cadastrar-paciente", icon: UserPlus },
   { label: "Ver Agendas", path: "/recepcao/agendas", icon: CalendarCheck2 },
   { label: "Check-in", path: "/recepcao/checkin", icon: ClipboardCheck },
-  { label: "Historico", path: "/recepcao/historico", icon: History },
+  { label: "Histórico", path: "/recepcao/historico", icon: History },
   { label: "Transações", path: "/recepcao/transacoes", icon: Wallet },
   { label: "Perfil", path: "/recepcao/perfil", icon: User },
 ];
 
 const PROFESSIONAL_NAV_LINKS: NavLink[] = [
-  { label: "Inicio", path: "/profissional/dashboard", icon: LayoutDashboard },
+  { label: "Início", path: "/profissional/dashboard", icon: LayoutDashboard },
   { label: "Agenda", path: "/profissional/agenda", icon: CalendarDays },
-  { label: "Comentarios", path: "/profissional/comentarios", icon: MessageSquare },
+  { label: "Comentários", path: "/profissional/comentarios", icon: MessageSquare },
   { label: "Perfil", path: "/profissional/perfil", icon: User },
 ];
 
 const PATIENT_NAV_LINKS: NavLink[] = [
-  { label: "Inicio", path: "/paciente/dashboard", icon: LayoutDashboard },
+  { label: "Início", path: "/paciente/dashboard", icon: LayoutDashboard },
   {
     label: "Agendamentos",
     path: "/paciente/agendamentos",
     icon: CalendarDays,
     altPaths: ["/paciente/documentos"],
   },
-  { label: "Historico", path: "/paciente/historico", icon: Clock3 },
-  { label: "Notificacoes", path: "/paciente/notificacoes", icon: Bell },
+  { label: "Histórico", path: "/paciente/historico", icon: Clock3 },
+  { label: "Notificações", path: "/paciente/notificacoes", icon: Bell },
   { label: "Perfil", path: "/paciente/perfil", icon: User },
 ];
 
@@ -112,7 +112,7 @@ const getProfilePathByRole = (role?: string): string | null => {
 
 const getRoleLabel = (role: string) => {
   const labels: Record<string, string> = {
-    ADMIN: "Proprietario",
+    ADMIN: "Proprietário",
     PROFESSIONAL: "Profissional",
     RECEPTIONIST: "Recepcionista",
     PATIENT: "Paciente",
@@ -149,7 +149,7 @@ export const Sidebar = () => {
         <LogoIconWrapper>
           <Stethoscope size={18} />
         </LogoIconWrapper>
-        <LogoText>Minha Clinica</LogoText>
+        <LogoText>Minha Clínica</LogoText>
       </LogoRow>
 
       <Nav>
@@ -180,7 +180,7 @@ export const Sidebar = () => {
             {shouldRenderAvatarImage ? (
               <img
                 src={avatarUrl}
-                alt={`Foto de ${user?.name ?? "Usuario"}`}
+                alt={`Foto de ${user?.name ?? "Usuário"}`}
                 onError={() => setHasAvatarLoadError(true)}
               />
             ) : (
@@ -188,7 +188,7 @@ export const Sidebar = () => {
             )}
           </Avatar>
           <UserInfo>
-            <UserName>{user?.name ?? "Usuario"}</UserName>
+            <UserName>{user?.name ?? "Usuário"}</UserName>
             <UserRoleLabel>{roleLabel}</UserRoleLabel>
           </UserInfo>
         </UserRow>
