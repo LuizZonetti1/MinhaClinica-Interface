@@ -35,7 +35,12 @@ import { theme } from "../../../themes/themes";
 import type { BarSeries } from "../../../types/components";
 import type { ReportData } from "../../../types/dashboard";
 import { toInputDate } from "../../../utils/dateParsers";
-import { formatCurrencyBRL, formatCurrencyInput, formatDateDayMonthYear, parseNumberFromInput } from "../../../utils/formatters";
+import {
+  formatCurrencyBRL,
+  formatCurrencyInput,
+  formatDateDayMonthYear,
+  parseNumberFromInput,
+} from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import {
@@ -460,7 +465,7 @@ const TransactionModal = ({ onClose, onCreated }: TransactionModalProps) => {
 
     const amountNumber = parseNumberFromInput(form.amount);
     if (amountNumber === null || amountNumber <= 0) {
-      notifyError("Informe um valor valido maior que zero.");
+      notifyError("Informe um valor válido maior que zero.");
       return;
     }
 
@@ -583,10 +588,10 @@ const TransactionModal = ({ onClose, onCreated }: TransactionModalProps) => {
             >
               <option value="">Não informado</option>
               <option value="CASH">Dinheiro</option>
-              <option value="DEBIT_CARD">Cartao de debito</option>
-              <option value="CREDIT_CARD">Cartao de credito</option>
+              <option value="DEBIT_CARD">Cartão de débito</option>
+              <option value="CREDIT_CARD">Cartão de crédito</option>
               <option value="PIX">Pix</option>
-              <option value="BANK_TRANSFER">Transferencia bancaria</option>
+              <option value="BANK_TRANSFER">Transferência bancária</option>
               <option value="CHECK">Cheque</option>
             </FormSelect>
           </FormField>
@@ -639,7 +644,7 @@ const TransactionEditModal = ({ transaction, onClose, onUpdated }: TransactionEd
 
     const amountNumber = Number(form.amount);
     if (!Number.isFinite(amountNumber) || amountNumber <= 0) {
-      notifyError("Informe um valor valido maior que zero.");
+      notifyError("Informe um valor válido maior que zero.");
       return;
     }
 
@@ -768,31 +773,31 @@ const buildStats = (
   totalEntradas: number,
   totalSaidas: number,
 ) => [
-    {
-      icon: <CalendarDays size={24} color="#2563EB" />,
-      iconBg: theme.colors.featureBg.blue,
-      label: "Consultas no período",
-      value: totalConsultas.toLocaleString("pt-BR"),
-    },
-    {
-      icon: <Ban size={24} color="#EA580C" />,
-      iconBg: theme.colors.featureBg.orange,
-      label: "Cancelamentos",
-      value: totalCancelamentos.toLocaleString("pt-BR"),
-    },
-    {
-      icon: <TrendingUp size={24} color="#16A34A" />,
-      iconBg: theme.colors.featureBg.green,
-      label: "Entradas no período",
-      value: formatCurrency(totalEntradas),
-    },
-    {
-      icon: <TrendingDown size={24} color={EXPENSE_ACCENT_COLOR} />,
-      iconBg: EXPENSE_BG_COLOR,
-      label: "Saídas no período",
-      value: formatCurrency(totalSaidas),
-    },
-  ];
+  {
+    icon: <CalendarDays size={24} color="#2563EB" />,
+    iconBg: theme.colors.featureBg.blue,
+    label: "Consultas no período",
+    value: totalConsultas.toLocaleString("pt-BR"),
+  },
+  {
+    icon: <Ban size={24} color="#EA580C" />,
+    iconBg: theme.colors.featureBg.orange,
+    label: "Cancelamentos",
+    value: totalCancelamentos.toLocaleString("pt-BR"),
+  },
+  {
+    icon: <TrendingUp size={24} color="#16A34A" />,
+    iconBg: theme.colors.featureBg.green,
+    label: "Entradas no período",
+    value: formatCurrency(totalEntradas),
+  },
+  {
+    icon: <TrendingDown size={24} color={EXPENSE_ACCENT_COLOR} />,
+    iconBg: EXPENSE_BG_COLOR,
+    label: "Saídas no período",
+    value: formatCurrency(totalSaidas),
+  },
+];
 
 const formatTransactionDate = (value: string) => formatDateDayMonthYear(value, "-");
 
