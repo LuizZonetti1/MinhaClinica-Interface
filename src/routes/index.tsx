@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import { ProfessionalAgendaProvider, ThemeModeProvider } from "../contexts";
 import { AppLayout } from "../layout/AppLayout";
 import AdminDashboard from "../pages/Admin/Dashboard";
+import AdminDocumentosPage from "../pages/Admin/Documentos";
 import EditProfilePage from "../pages/Admin/EditProfile";
 import PatientsPage from "../pages/Admin/Patients";
 import ProfessionalsPage from "../pages/Admin/Professionals";
@@ -13,6 +14,8 @@ import Login from "../pages/Login";
 import PatientAccess from "../pages/Patient/Access";
 import PatientAppointmentsPage from "../pages/Patient/Agendamentos";
 import PatientDashboard from "../pages/Patient/Dashboard";
+import PatientDocumentosPage from "../pages/Patient/Documentos";
+import PatientDocumentoViewPage from "../pages/Patient/Documentos/View";
 import PatientEditProfilePage from "../pages/Patient/EditProfile";
 import PatientHistoryPage from "../pages/Patient/Historico";
 import PatientNotificationsPage from "../pages/Patient/Notificacoes";
@@ -29,6 +32,7 @@ import ReceptionAgendasPage from "../pages/Reception/Agendas";
 import ReceptionCadastrarPacientePage from "../pages/Reception/CadastrarPaciente";
 import ReceptionCheckinPage from "../pages/Reception/Checkin";
 import ReceptionDashboard from "../pages/Reception/Dashboard";
+import ReceptionDocumentosPage from "../pages/Reception/Documentos";
 import ReceptionEditProfilePage from "../pages/Reception/EditProfile";
 import ReceptionHistoricoPage from "../pages/Reception/Historico";
 import ReceptionMarcarConsultaPage from "../pages/Reception/MarcarConsulta";
@@ -147,6 +151,8 @@ const AppRoutes = () => {
               <Route path="/admin/profissional" element={<ProfessionalsPage />} />
               <Route path="/admin/paciente/dashboard" element={<PatientsPage />} />
               <Route path="/admin/relatorios" element={<ReportsPage />} />
+              <Route path="/admin/documentos" element={<AdminDocumentosPage />} />
+              <Route path="/admin/documentos/visualizar" element={<ProfessionalDocumentoViewPage />} />
               <Route path="/admin/configuracoes" element={<SettingsPage />} />
               <Route path="/admin/perfil" element={<ProfilePage />} />
               <Route path="/admin/perfil/editar" element={<EditProfilePage />} />
@@ -158,6 +164,8 @@ const AppRoutes = () => {
               <Route path="/paciente/dashboard" element={<PatientDashboard />} />
               <Route path="/paciente/agendamentos" element={<PatientAppointmentsPage />} />
               <Route path="/paciente/historico" element={<PatientHistoryPage />} />
+              <Route path="/paciente/documentos" element={<PatientDocumentosPage />} />
+              <Route path="/paciente/documentos/visualizar" element={<PatientDocumentoViewPage />} />
               <Route path="/paciente/notificacoes" element={<PatientNotificationsPage />} />
               <Route path="/paciente/perfil" element={<PatientProfilePage />} />
               <Route path="/paciente/perfil/editar" element={<PatientEditProfilePage />} />
@@ -175,6 +183,8 @@ const AppRoutes = () => {
               <Route path="/recepcao/agendas" element={<ReceptionAgendasPage />} />
               <Route path="/recepcao/checkin" element={<ReceptionCheckinPage />} />
               <Route path="/recepcao/historico" element={<ReceptionHistoricoPage />} />
+              <Route path="/recepcao/documentos" element={<ReceptionDocumentosPage />} />
+              <Route path="/recepcao/documentos/visualizar" element={<ProfessionalDocumentoViewPage />} />
               <Route path="/recepcao/transacoes" element={<ReceptionTransacoesPage />} />
               <Route path="/recepcao/perfil" element={<ReceptionProfilePage />} />
               <Route path="/recepcao/perfil/editar" element={<ReceptionEditProfilePage />} />
