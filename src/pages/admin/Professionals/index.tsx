@@ -24,8 +24,8 @@ import type {
   UpdateProfessionalPayload,
   UpdateReceptionistPayload,
 } from "../../../types/professional";
-import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { formatPhoneNumber } from "../../../utils/formatters";
+import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import {
   ActionsGroup,
@@ -363,19 +363,19 @@ const ProfessionalsPage = () => {
 
     const errors: Record<string, string> = {};
     if (editType === "professional") {
-      if (!professionalEdit.name.trim()) errors.name = "Nome obrigatorio.";
-      if (!professionalEdit.email.trim()) errors.email = "Email obrigatorio.";
-      if (!professionalEdit.specialty.trim()) errors.specialty = "Especialidade obrigatoria.";
+      if (!professionalEdit.name.trim()) errors.name = "Nome obrigatório.";
+      if (!professionalEdit.email.trim()) errors.email = "Email obrigatório.";
+      if (!professionalEdit.specialty.trim()) errors.specialty = "Especialidade obrigatória.";
       if (!professionalEdit.professionalCouncil.trim())
-        errors.professionalCouncil = "Conselho obrigatorio.";
+        errors.professionalCouncil = "Conselho obrigatório.";
       if (!professionalEdit.registrationNumber.trim())
-        errors.registrationNumber = "Registro obrigatorio.";
+        errors.registrationNumber = "Registro obrigatório.";
       if (!/^[A-Z]{2}$/.test(professionalEdit.registrationState.trim().toUpperCase())) {
-        errors.registrationState = "UF invalida.";
+        errors.registrationState = "UF inválida.";
       }
     } else {
-      if (!receptionEdit.name.trim()) errors.name = "Nome obrigatorio.";
-      if (!receptionEdit.email.trim()) errors.email = "Email obrigatorio.";
+      if (!receptionEdit.name.trim()) errors.name = "Nome obrigatório.";
+      if (!receptionEdit.email.trim()) errors.email = "Email obrigatório.";
     }
 
     if (Object.keys(errors).length > 0) {
@@ -522,18 +522,18 @@ const ProfessionalsPage = () => {
                   <TableHeaderCell>PROFISSIONAL</TableHeaderCell>
                   <TableHeaderCell>ESPECIALIDADES</TableHeaderCell>
                   <TableHeaderCell>CONSELHO</TableHeaderCell>
-                  <TableHeaderCell>CONSULTAS (MES)</TableHeaderCell>
+                  <TableHeaderCell>CONSULTAS (MÊS)</TableHeaderCell>
                   <TableHeaderCell>STATUS</TableHeaderCell>
-                  <TableHeaderCell>ACOES</TableHeaderCell>
+                  <TableHeaderCell>AÇÕES</TableHeaderCell>
                 </TableHeaderRow>
               ) : (
                 <TableHeaderRow>
                   <TableHeaderCell>RECEPCIONISTA</TableHeaderCell>
                   <TableHeaderCell>TELEFONE</TableHeaderCell>
-                  <TableHeaderCell>FUNCAO</TableHeaderCell>
-                  <TableHeaderCell>CONSULTAS (MES)</TableHeaderCell>
+                  <TableHeaderCell>FUNÇÃO</TableHeaderCell>
+                  <TableHeaderCell>CONSULTAS (MÊS)</TableHeaderCell>
                   <TableHeaderCell>STATUS</TableHeaderCell>
-                  <TableHeaderCell>ACOES</TableHeaderCell>
+                  <TableHeaderCell>AÇÕES</TableHeaderCell>
                 </TableHeaderRow>
               )}
             </thead>
@@ -591,7 +591,7 @@ const ProfessionalsPage = () => {
                 <TableHeaderCell>PROFISSIONAL</TableHeaderCell>
                 <TableHeaderCell>ESPECIALIDADES</TableHeaderCell>
                 <TableHeaderCell>CONSELHO</TableHeaderCell>
-                <TableHeaderCell>CONSULTAS (MES)</TableHeaderCell>
+                <TableHeaderCell>CONSULTAS (MÊS)</TableHeaderCell>
                 <TableHeaderCell>STATUS</TableHeaderCell>
                 <TableHeaderCell>AÇÕES</TableHeaderCell>
               </TableHeaderRow>
@@ -683,7 +683,7 @@ const ProfessionalsPage = () => {
                 <TableHeaderCell>RECEPCIONISTA</TableHeaderCell>
                 <TableHeaderCell>TELEFONE</TableHeaderCell>
                 <TableHeaderCell>FUNÇÃO</TableHeaderCell>
-                <TableHeaderCell>CONSULTAS (MES)</TableHeaderCell>
+                <TableHeaderCell>CONSULTAS (MÊS)</TableHeaderCell>
                 <TableHeaderCell>STATUS</TableHeaderCell>
                 <TableHeaderCell>AÇÕES</TableHeaderCell>
               </TableHeaderRow>
@@ -761,7 +761,9 @@ const ProfessionalsPage = () => {
         <Modal
           isOpen={isCreateModalOpen}
           onClose={handleCloseCreateModal}
-          title={createFormData.role === "PROFESSIONAL" ? "Novo Profissional" : "Novo Recepcionista"}
+          title={
+            createFormData.role === "PROFESSIONAL" ? "Novo Profissional" : "Novo Recepcionista"
+          }
           actions={
             <>
               <Button
@@ -808,7 +810,9 @@ const ProfessionalsPage = () => {
               <ModalSelect
                 id="new-staff-role"
                 value={createFormData.role}
-                onChange={(event) => handleCreateFieldChange("role", event.target.value as StaffRole)}
+                onChange={(event) =>
+                  handleCreateFieldChange("role", event.target.value as StaffRole)
+                }
               >
                 <option value="PROFESSIONAL">Profissional</option>
                 <option value="RECEPTIONIST">Recepção</option>
