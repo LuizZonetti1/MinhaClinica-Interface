@@ -101,7 +101,7 @@ const PatientProfilePage = () => {
         setProfile(data);
       } catch (error: unknown) {
         if (!mounted) return;
-        notifyError(getApiErrorMessage(error, "Nao foi possivel carregar o perfil."));
+        notifyError(getApiErrorMessage(error, "Não foi possível carregar o perfil."));
         setProfile({
           ...EMPTY_PROFILE,
           personal: {
@@ -153,7 +153,11 @@ const PatientProfilePage = () => {
         </AvatarCircle>
         <HeroName>{loading ? <Skeleton width={220} height={34} /> : fullName}</HeroName>
         <HeroRole>{loading ? <Skeleton width={78} height={14} /> : "Paciente"}</HeroRole>
-        <EditButton type="button" onClick={() => navigate("/paciente/perfil/editar")} disabled={loading}>
+        <EditButton
+          type="button"
+          onClick={() => navigate("/paciente/perfil/editar")}
+          disabled={loading}
+        >
           <Pencil size={15} />
           Editar Perfil
         </EditButton>
@@ -161,7 +165,7 @@ const PatientProfilePage = () => {
 
       <CardGrid>
         <InfoCard>
-          <CardTitle>Informacoes Pessoais</CardTitle>
+          <CardTitle>Informações Pessoais</CardTitle>
           <InfoRow>
             <InfoLeft>
               <User size={16} />
@@ -193,41 +197,49 @@ const PatientProfilePage = () => {
           <InfoRow>
             <InfoLeft>
               <MapPin size={16} />
-              <InfoLabel>Endereco</InfoLabel>
+              <InfoLabel>Endereço</InfoLabel>
             </InfoLeft>
             <InfoValue>{loading ? <Skeleton width={240} height={14} /> : address}</InfoValue>
           </InfoRow>
         </InfoCard>
 
         <InfoCard>
-          <CardTitle>Informacoes Medicas</CardTitle>
+          <CardTitle>Informações Médicas</CardTitle>
           <InfoRow>
             <InfoLeft>
               <Droplet size={16} />
               <InfoLabel>Tipo Sanguineo</InfoLabel>
             </InfoLeft>
-            <InfoValue>{loading ? <Skeleton width={56} height={14} /> : toDash(medical.bloodType)}</InfoValue>
+            <InfoValue>
+              {loading ? <Skeleton width={56} height={14} /> : toDash(medical.bloodType)}
+            </InfoValue>
           </InfoRow>
           <InfoRow>
             <InfoLeft>
               <UserRoundCheck size={16} />
               <InfoLabel>Contato de Emergencia</InfoLabel>
             </InfoLeft>
-            <InfoValue>{loading ? <Skeleton width={220} height={14} /> : emergencyContact}</InfoValue>
+            <InfoValue>
+              {loading ? <Skeleton width={220} height={14} /> : emergencyContact}
+            </InfoValue>
           </InfoRow>
           <InfoRow>
             <InfoLeft>
               <NotebookPen size={16} />
               <InfoLabel>Medicacoes</InfoLabel>
             </InfoLeft>
-            <InfoValue>{loading ? <Skeleton width={180} height={14} /> : toDash(medical.medications)}</InfoValue>
+            <InfoValue>
+              {loading ? <Skeleton width={180} height={14} /> : toDash(medical.medications)}
+            </InfoValue>
           </InfoRow>
           <InfoRow>
             <InfoLeft>
               <NotebookPen size={16} />
               <InfoLabel>Observacoes</InfoLabel>
             </InfoLeft>
-            <InfoValue>{loading ? <Skeleton width={180} height={14} /> : toDash(medical.observations)}</InfoValue>
+            <InfoValue>
+              {loading ? <Skeleton width={180} height={14} /> : toDash(medical.observations)}
+            </InfoValue>
           </InfoRow>
         </InfoCard>
       </CardGrid>
@@ -241,7 +253,7 @@ const PatientProfilePage = () => {
             ))}
           </TagsWrap>
         ) : conditionTags.length > 0 ? (
-            <TagsWrap>
+          <TagsWrap>
             {conditionTags.map((tag, index) => (
               <Tag key={`${tag}-${index}`}>{tag}</Tag>
             ))}

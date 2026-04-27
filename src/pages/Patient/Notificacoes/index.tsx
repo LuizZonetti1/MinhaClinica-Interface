@@ -1,7 +1,7 @@
 const PatientNotificationsPage = () => {
   return (
     <div>
-      <h1>Notificacoes</h1>
+      <h1>Notificações</h1>
     </div>
   );
 };
