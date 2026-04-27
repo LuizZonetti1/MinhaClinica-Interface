@@ -1,6 +1,7 @@
 import { Calendar, Eye, EyeOff, Lock, Phone, User } from "lucide-react";
 import { useState } from "react";
 import { Input } from "../../../components/Input";
+import { maskCPF } from "../../../utils/formatters";
 import { FieldGroup, Label, RadioButton, RadioGroup, RequirementsText, Row } from "./styles";
 
 interface PersonalDataTabProps {
@@ -16,14 +17,6 @@ interface PersonalDataTabProps {
   cpfError?: string;
   showRequirementsHint?: boolean;
 }
-
-const maskCPF = (value: string) =>
-  value
-    .replace(/\D/g, "")
-    .slice(0, 11)
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
 
 const maskPhone = (value: string) =>
   value

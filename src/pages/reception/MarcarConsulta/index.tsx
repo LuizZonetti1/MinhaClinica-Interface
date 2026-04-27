@@ -19,6 +19,7 @@ import {
 } from "../../../types/appointment";
 import type { Step } from "../../../types/components";
 import { formatDateToIsoDate, formatIsoDateToBr } from "../../../utils/dateParsers";
+import { maskCPF } from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { isPastTimeSlotForDate } from "../../../utils/timeParsers";
 import { notifyError, notifySuccess } from "../../../utils/toast";
@@ -70,14 +71,6 @@ const getStepperConfig = (step: number): Step[] => [
 ];
 
 const formatDateBR = (d: string): string => formatIsoDateToBr(d, "-", { strictIsoOnly: true });
-
-const maskCPF = (cpf: string): string => {
-  const d = cpf.replace(/\D/g, "");
-  if (d.length <= 3) return d;
-  if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`;
-  if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`;
-  return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
-};
 
 const getInitials = (name: string): string => {
   const parts = name.trim().split(/\s+/).filter(Boolean).slice(0, 2);

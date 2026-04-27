@@ -10,6 +10,7 @@ import { Stepper } from "../../../components/Stepper";
 import { useAuth } from "../../../contexts";
 import { professionalRegisterComplete } from "../../../services/professional.service";
 import { storeAuthToken } from "../../../utils/authStorage";
+import { maskCPF } from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import { stripCPF } from "../../../utils/validateCPF";
@@ -38,14 +39,6 @@ const INITIAL_FORM_DATA: ProfessionalCompleteFormData = {
 };
 
 const onlyDigits = (value: string) => value.replace(/\D/g, "");
-
-const maskCPF = (value: string) =>
-  value
-    .replace(/\D/g, "")
-    .slice(0, 11)
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
 
 const maskPhone = (value: string) =>
   value

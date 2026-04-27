@@ -1,17 +1,10 @@
 import { Calendar, Lock, Phone, User } from "lucide-react";
 import { Input } from "../../../components/Input";
+import { maskCPF } from "../../../utils/formatters";
 import { FieldGroup, Label, RadioButton, RadioGroup, RequirementsText, Row } from "./styles";
 
 const PASSWORD_REQUIREMENTS_TEXT =
   "Senha com no minimo 6 caracteres, incluindo letra maiuscula, minuscula e numero.";
-
-const maskCPF = (value: string) =>
-  value
-    .replace(/\D/g, "")
-    .slice(0, 11)
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
 
 const maskPhone = (value: string) =>
   value

@@ -10,6 +10,7 @@ import { Stepper } from "../../../components/Stepper";
 import { useAuth } from "../../../contexts";
 import { receptionRegisterComplete } from "../../../services/reception.service";
 import { storeAuthToken } from "../../../utils/authStorage";
+import { maskCPF } from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import { stripCPF } from "../../../utils/validateCPF";
@@ -28,14 +29,6 @@ const INITIAL_FORM_DATA: ReceptionCompleteFormData = {
 };
 
 const onlyDigits = (value: string) => value.replace(/\D/g, "");
-
-const maskCPF = (value: string) =>
-  value
-    .replace(/\D/g, "")
-    .slice(0, 11)
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
 
 const maskPhone = (value: string) =>
   value
