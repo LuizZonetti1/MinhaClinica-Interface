@@ -24,6 +24,7 @@ import type { ClinicalDocumentItem } from "../../../types/clinical-document";
 import { formatIsoDateToBr } from "../../../utils/dateParsers";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError } from "../../../utils/toast";
+import type { ConsultaStatusVariant, DocStatusVariant } from "../../Professional/Documentos/styles";
 import {
   AppointmentInfoBar,
   DocActionBtn,
@@ -49,7 +50,6 @@ import {
   SectionTitle,
   StatusMessage,
 } from "../../Professional/Documentos/styles";
-import type { ConsultaStatusVariant, DocStatusVariant } from "../../Professional/Documentos/styles";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -94,16 +94,25 @@ const resolveConsultaStatusVariant = (status: string): ConsultaStatusVariant => 
 
 const resolveConsultaStatusLabel = (status: string): string => {
   switch (status.trim().toUpperCase()) {
-    case "IN_PROGRESS": return "Em andamento";
+    case "IN_PROGRESS":
+      return "Em andamento";
     case "COMPLETED":
-    case "DONE": return "Concluído";
-    case "COMPLETED_WITH_ADDENDUM": return "Concluído com adendo";
-    case "SCHEDULED": return "Agendado";
-    case "CONFIRMED": return "Confirmado";
-    case "WAITING": return "Aguardando";
-    case "NO_SHOW": return "Não compareceu";
-    case "CANCELLED": return "Cancelado";
-    default: return status;
+    case "DONE":
+      return "Concluído";
+    case "COMPLETED_WITH_ADDENDUM":
+      return "Concluído com adendo";
+    case "SCHEDULED":
+      return "Agendado";
+    case "CONFIRMED":
+      return "Confirmado";
+    case "WAITING":
+      return "Aguardando";
+    case "NO_SHOW":
+      return "Não compareceu";
+    case "CANCELLED":
+      return "Cancelado";
+    default:
+      return status;
   }
 };
 
@@ -230,7 +239,7 @@ const AdminDocumentosPage = () => {
                 <DocsTableTh>Data</DocsTableTh>
                 <DocsTableTh>Profissional</DocsTableTh>
                 <DocsTableTh>Status</DocsTableTh>
-                <DocsTableTh>Acoes</DocsTableTh>
+                <DocsTableTh>Ações</DocsTableTh>
               </tr>
             </DocsTableHead>
             <DocsTableBody>
