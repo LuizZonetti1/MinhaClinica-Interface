@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Button } from "../../../../components/Button";
 import {
+  deleteClinicalDocument,
   finalizeClinicalDocument,
   getClinicalDocument,
   updateClinicalDocument,
@@ -227,6 +228,7 @@ const DocumentFormPage = () => {
   const viewMode = searchParams.get("modo") === "visualizar";
   const isAddendoMode = searchParams.get("modo") === "adendo";
   const addendoTipo = (searchParams.get("tipo") ?? "") as ClinicalDocumentType;
+  const isNew = searchParams.get("novo") === "1";
 
   const [document, setDocument] = useState<ClinicalDocumentDetail | null>(null);
   const [content, setContent] = useState<DocumentContent | null>(null);
@@ -362,7 +364,15 @@ const DocumentFormPage = () => {
     isDirtyRef.current = true;
   }, []);
 
-  const handleCancel = () => {
+  const handleCancel = async () => {
+    const isUntouched = isNew && !isDirtyRef.current && lastSavedAt === null;
+    if (isUntouched && appointmentId && documentId) {
+      try {
+        await deleteClinicalDocument(appointmentId, documentId);
+      } catch {
+        // ignora erro de deleção, navega de volta mesmo assim
+      }
+    }
     navigate(`/profissional/documentos?consulta=${appointmentId}`);
   };
 

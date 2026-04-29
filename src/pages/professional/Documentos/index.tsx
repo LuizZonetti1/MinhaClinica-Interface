@@ -37,7 +37,7 @@ import {
 } from "../../../services/clinical-documents.service";
 import type { ClinicalDocumentItem, DocumentTypeCard } from "../../../types/clinical-document";
 import { ClinicalDocumentType } from "../../../types/clinical-document";
-import { formatIsoDateToBr } from "../../../utils/dateParsers";
+import { formatIsoDateToBr, formatIsoDateTimeToBr } from "../../../utils/dateParsers";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import type { ConsultaStatusVariant, DocStatusVariant } from "./styles";
@@ -184,6 +184,9 @@ const DOC_TYPE_LABEL: Record<string, string> = {
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const formatDocDateTime = (iso: string): string =>
+  formatIsoDateTimeToBr(iso, "America/Sao_Paulo", "--");
 
 const resolveConsultaStatusVariant = (status: string): ConsultaStatusVariant => {
   const normalized = status.trim().toUpperCase();
@@ -340,8 +343,15 @@ const ProfessionalDocumentosPage = () => {
         try {
           const patched = await patchAppointmentStatus(appointmentId, "IN_PROGRESS");
           currentStatus = patched.status;
-        } catch (patchErr: unknown) {
-          notifyError(getApiErrorMessage(patchErr, "Não foi possível iniciar o atendimento."));
+        } catch {
+          // PATCH falhou (ex: consulta já estava IN_PROGRESS no banco mas o GET retornou status defasado).
+          // Re-busca o status real para evitar exibir status incorreto na UI.
+          try {
+            const fresh = await getAppointmentById(appointmentId);
+            currentStatus = fresh.status;
+          } catch {
+            // Se o re-fetch também falhar, mantém o status do GET original
+          }
         }
       }
 
@@ -378,7 +388,7 @@ const ProfessionalDocumentosPage = () => {
     try {
       const doc = await createClinicalDocument(appointmentId, type);
       notifySuccess(`${DOC_TYPE_LABEL[type] ?? "Documento"} criado com sucesso.`);
-      navigate(`/profissional/documentos/formulario?consulta=${appointmentId}&documento=${doc.id}`);
+      navigate(`/profissional/documentos/formulario?consulta=${appointmentId}&documento=${doc.id}&novo=1`);
     } catch (err: unknown) {
       notifyError(getApiErrorMessage(err, "Nao foi possivel criar o documento."));
     } finally {
@@ -655,8 +665,7 @@ const ProfessionalDocumentosPage = () => {
               <DocsTableHead>
                 <tr>
                   <DocsTableTh>Tipo</DocsTableTh>
-                  <DocsTableTh>Data</DocsTableTh>
-                  <DocsTableTh>Profissional</DocsTableTh>
+                  <DocsTableTh>Enviado em</DocsTableTh>
                   <DocsTableTh>Status</DocsTableTh>
                   <DocsTableTh>Acoes</DocsTableTh>
                 </tr>
@@ -664,7 +673,7 @@ const ProfessionalDocumentosPage = () => {
               <DocsTableBody>
                 {documents.length === 0 ? (
                   <tr>
-                    <EmptyTableMessage colSpan={5}>
+                    <EmptyTableMessage colSpan={4}>
                       Nenhum documento criado para esta consulta.
                     </EmptyTableMessage>
                   </tr>
@@ -693,8 +702,7 @@ const ProfessionalDocumentosPage = () => {
                     return (
                       <DocsTableRow key={doc.id}>
                         <DocsTableTd>{DOC_TYPE_LABEL[doc.type] ?? doc.type}</DocsTableTd>
-                        <DocsTableTd>{formatDocDate(doc.createdAt)}</DocsTableTd>
-                        <DocsTableTd>{doc.professionalName}</DocsTableTd>
+                        <DocsTableTd>{formatDocDateTime(doc.createdAt)}</DocsTableTd>
                         <DocsTableTd>
                           <DocStatusBadge $variant={statusVariant}>{statusLabel}</DocStatusBadge>
                         </DocsTableTd>

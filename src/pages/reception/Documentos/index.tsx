@@ -21,7 +21,7 @@ import { Button } from "../../../components/Button";
 import { getAppointmentById } from "../../../services/appointment.service";
 import { listClinicalDocuments } from "../../../services/clinical-documents.service";
 import type { ClinicalDocumentItem } from "../../../types/clinical-document";
-import { formatIsoDateToBr } from "../../../utils/dateParsers";
+import { formatIsoDateToBr, formatIsoDateTimeToBr } from "../../../utils/dateParsers";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError } from "../../../utils/toast";
 import {
@@ -112,6 +112,9 @@ const formatDocDate = (iso: string): string => {
   if (!iso) return "--/--/----";
   return formatIsoDateToBr(iso.split("T")[0], "--/--/----");
 };
+
+const formatDocDateTime = (iso: string): string =>
+  formatIsoDateTimeToBr(iso, "America/Sao_Paulo", "--");
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -231,8 +234,7 @@ const ReceptionDocumentosPage = () => {
             <DocsTableHead>
               <tr>
                 <DocsTableTh>Tipo</DocsTableTh>
-                <DocsTableTh>Data</DocsTableTh>
-                <DocsTableTh>Profissional</DocsTableTh>
+                <DocsTableTh>Enviado em</DocsTableTh>
                 <DocsTableTh>Status</DocsTableTh>
                 <DocsTableTh>Acoes</DocsTableTh>
               </tr>
@@ -240,7 +242,7 @@ const ReceptionDocumentosPage = () => {
             <DocsTableBody>
               {documents.length === 0 ? (
                 <tr>
-                  <EmptyTableMessage colSpan={5}>
+                  <EmptyTableMessage colSpan={4}>
                     Nenhum documento encontrado para esta consulta.
                   </EmptyTableMessage>
                 </tr>
@@ -267,8 +269,7 @@ const ReceptionDocumentosPage = () => {
                   return (
                     <DocsTableRow key={doc.id}>
                       <DocsTableTd>{DOC_TYPE_LABEL[doc.type] ?? doc.type}</DocsTableTd>
-                      <DocsTableTd>{formatDocDate(doc.createdAt)}</DocsTableTd>
-                      <DocsTableTd>{doc.professionalName}</DocsTableTd>
+                      <DocsTableTd>{formatDocDateTime(doc.createdAt)}</DocsTableTd>
                       <DocsTableTd>
                         <DocStatusBadge $variant={statusVariant}>{statusLabel}</DocStatusBadge>
                       </DocsTableTd>
