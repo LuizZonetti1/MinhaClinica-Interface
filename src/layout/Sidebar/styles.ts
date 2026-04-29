@@ -197,3 +197,63 @@ export const LogoutButton = styled.button`
     opacity: 0.75;
   }
 `;
+
+export const NotificationButton = styled.button`
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: ${theme.borderRadius.sm};
+  border: none;
+  margin-bottom: 4px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  background: transparent;
+  transition: background-color 0.15s;
+
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: ${theme.colors.text.onDark};
+
+  svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: ${theme.colors.text.onDark};
+  }
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.07);
+  }
+
+  &.active {
+    background-color: ${theme.colors.primaryHover};
+    color: ${theme.colors.text.inverse};
+
+    svg {
+      color: ${theme.colors.text.inverse};
+    }
+  }
+`;
+
+export const NotificationBadge = styled.span`
+  position: absolute;
+  top: 8px;
+  left: 28px;
+  min-width: 17px;
+  height: 17px;
+  border-radius: 999px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  background: #EF4444;
+  color: #fff;
+  pointer-events: none;
+`;
+

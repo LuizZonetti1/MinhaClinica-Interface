@@ -1,12 +1,12 @@
 import {
   BarChart2,
   Bell,
+  Building2,
   CalendarCheck2,
   CalendarDays,
   CalendarPlus2,
   ClipboardCheck,
   Clock3,
-  FolderOpen,
   History,
   LayoutDashboard,
   LogOut,
@@ -18,9 +18,10 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
-import { useAuth } from "../../contexts";
+import { NotificationPanel } from "../../components/NotificationPanel";
+import { useAuth, useNotifications } from "../../contexts";
 import { UserRole } from "../../types/enums";
 import type { NavLink } from "../../types/layout";
 import { getInitials } from "../../utils/formatters";
@@ -32,6 +33,8 @@ import {
   LogoutButton,
   Nav,
   NavItem,
+  NotificationBadge,
+  NotificationButton,
   SidebarWrapper,
   UserInfo,
   UserName,
@@ -76,7 +79,12 @@ const PATIENT_NAV_LINKS: NavLink[] = [
     altPaths: ["/paciente/documentos"],
   },
   { label: "Histórico", path: "/paciente/historico", icon: Clock3 },
-  { label: "Notificações", path: "/paciente/notificacoes", icon: Bell },
+  {
+    label: "Clínicas",
+    path: "/paciente/clinicas",
+    icon: Building2,
+    altPaths: ["/paciente/clinicas/"],
+  },
   { label: "Perfil", path: "/paciente/perfil", icon: User },
 ];
 
@@ -122,6 +130,8 @@ const getRoleLabel = (role: string) => {
 
 export const Sidebar = () => {
   const { user, logout } = useAuth();
+  const { unreadCount, openPanel, isPanelOpen } = useNotifications();
+  const bellButtonRef = useRef<HTMLButtonElement>(null);
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [hasAvatarLoadError, setHasAvatarLoadError] = useState(false);
@@ -144,60 +154,82 @@ export const Sidebar = () => {
   }, [avatarUrl]);
 
   return (
-    <SidebarWrapper>
-      <LogoRow>
-        <LogoIconWrapper>
-          <Stethoscope size={18} />
-        </LogoIconWrapper>
-        <LogoText>Minha Clínica</LogoText>
-      </LogoRow>
+    <>
+      <SidebarWrapper>
+        <LogoRow>
+          <LogoIconWrapper>
+            <Stethoscope size={18} />
+          </LogoIconWrapper>
+          <LogoText>Minha Clínica</LogoText>
+        </LogoRow>
 
-      <Nav>
-        {navLinks.map((link) => {
-          const isForceActive = link.altPaths?.some((p) => pathname.startsWith(p)) ?? false;
-          return (
-            <NavItem
-              key={link.path}
-              to={link.path}
-              end={link.path.endsWith("/dashboard")}
-              className={isForceActive ? () => "active" : undefined}
-            >
-              <link.icon size={20} />
-              {link.label}
-            </NavItem>
-          );
-        })}
-      </Nav>
+        <Nav>
+          {navLinks.map((link) => {
+            // O item de Notificações abre o painel lateral em vez de navegar
+            if (link.label === "Notificações") {
+              return (
+                <NotificationButton
+                  key={link.path}
+                  ref={bellButtonRef}
+                  type="button"
+                  onClick={() => openPanel(bellButtonRef.current)}
+                  className={isPanelOpen ? "active" : undefined}
+                >
+                  <link.icon size={20} />
+                  {link.label}
+                  {unreadCount > 0 && (
+                    <NotificationBadge>{unreadCount > 99 ? "99+" : unreadCount}</NotificationBadge>
+                  )}
+                </NotificationButton>
+              );
+            }
 
-      <UserSection>
-        <UserRow
-          type="button"
-          onClick={() => profilePath && navigate(profilePath)}
-          aria-label="Abrir perfil"
-          disabled={!profilePath}
-        >
-          <Avatar>
-            {shouldRenderAvatarImage ? (
-              <img
-                src={avatarUrl}
-                alt={`Foto de ${user?.name ?? "Usuário"}`}
-                onError={() => setHasAvatarLoadError(true)}
-              />
-            ) : (
-              <span>{initials}</span>
-            )}
-          </Avatar>
-          <UserInfo>
-            <UserName>{user?.name ?? "Usuário"}</UserName>
-            <UserRoleLabel>{roleLabel}</UserRoleLabel>
-          </UserInfo>
-        </UserRow>
+            const isForceActive = link.altPaths?.some((p) => pathname.startsWith(p)) ?? false;
+            return (
+              <NavItem
+                key={link.path}
+                to={link.path}
+                end={link.path.endsWith("/dashboard")}
+                className={isForceActive ? () => "active" : undefined}
+              >
+                <link.icon size={20} />
+                {link.label}
+              </NavItem>
+            );
+          })}
+        </Nav>
 
-        <LogoutButton type="button" onClick={handleLogout}>
-          <LogOut size={16} />
-          Sair
-        </LogoutButton>
-      </UserSection>
-    </SidebarWrapper>
+        <UserSection>
+          <UserRow
+            type="button"
+            onClick={() => profilePath && navigate(profilePath)}
+            aria-label="Abrir perfil"
+            disabled={!profilePath}
+          >
+            <Avatar>
+              {shouldRenderAvatarImage ? (
+                <img
+                  src={avatarUrl}
+                  alt={`Foto de ${user?.name ?? "Usuário"}`}
+                  onError={() => setHasAvatarLoadError(true)}
+                />
+              ) : (
+                <span>{initials}</span>
+              )}
+            </Avatar>
+            <UserInfo>
+              <UserName>{user?.name ?? "Usuário"}</UserName>
+              <UserRoleLabel>{roleLabel}</UserRoleLabel>
+            </UserInfo>
+          </UserRow>
+
+          <LogoutButton type="button" onClick={handleLogout}>
+            <LogOut size={16} />
+            Sair
+          </LogoutButton>
+        </UserSection>
+      </SidebarWrapper>
+      <NotificationPanel />
+    </>
   );
 };
