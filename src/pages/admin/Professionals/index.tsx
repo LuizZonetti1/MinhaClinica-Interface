@@ -559,9 +559,11 @@ const ProfessionalsPage = () => {
                       <Skeleton width={112} height={14} />
                     )}
                   </td>
+                  {activeTab === "professionals" && (
                   <td>
                     <Skeleton width={96} height={14} />
                   </td>
+                  )}
                   <td>
                     <Skeleton width={24} height={14} />
                   </td>
@@ -682,7 +684,6 @@ const ProfessionalsPage = () => {
               <TableHeaderRow>
                 <TableHeaderCell>RECEPCIONISTA</TableHeaderCell>
                 <TableHeaderCell>TELEFONE</TableHeaderCell>
-                <TableHeaderCell>FUNÇÃO</TableHeaderCell>
                 <TableHeaderCell>CONSULTAS (MÊS)</TableHeaderCell>
                 <TableHeaderCell>STATUS</TableHeaderCell>
                 <TableHeaderCell>AÇÕES</TableHeaderCell>
@@ -691,7 +692,7 @@ const ProfessionalsPage = () => {
             <tbody>
               {filteredReceptionists.length === 0 && (
                 <TableRow>
-                  <EmptyStateCell colSpan={6}>Nenhum recepcionista encontrado.</EmptyStateCell>
+                  <EmptyStateCell colSpan={5}>Nenhum recepcionista encontrado.</EmptyStateCell>
                 </TableRow>
               )}
               {filteredReceptionists.map((r, i) => (
@@ -717,9 +718,6 @@ const ProfessionalsPage = () => {
                   </td>
                   <td>
                     <PhoneText>{formatPhoneNumber(r.phone)}</PhoneText>
-                  </td>
-                  <td>
-                    <RoleBadge>{r.role}</RoleBadge>
                   </td>
                   <td>{r.appointmentsThisMonth}</td>
                   <td>

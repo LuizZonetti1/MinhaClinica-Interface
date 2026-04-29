@@ -71,13 +71,27 @@ const APPT_STATUS_LABELS: Record<string, string> = {
   WAITING: "Aguardando",
   CHECKED_IN: "Check-in realizado",
   IN_PROGRESS: "Em atendimento",
-  DONE: "Concluída",
+  DONE: "Conclída",
   COMPLETED: "Concluída",
   CANCELLED: "Cancelada",
   NO_SHOW: "Não compareceu",
   SCHEDULED: "Agendada",
   CONFIRMED: "Confirmada",
   RESCHEDULED: "Reagendada",
+};
+
+const APPT_TYPE_LABELS: Record<string, string> = {
+  CONSULTATION: "Consulta",
+  FIRST_CONSULTATION: "Primeira consulta",
+  RETURN: "Retorno",
+  ROUTINE: "Rotina",
+  EXAM: "Exame",
+  EMERGENCY: "Urgência",
+};
+
+const apptTypeLabel = (type: string | null | undefined): string | null => {
+  if (!type) return null;
+  return APPT_TYPE_LABELS[type.trim().toUpperCase()] ?? type;
 };
 
 const STATUS_UPDATE_OPTIONS: Array<{ value: AppointmentStatusUpdate; label: string }> = [
@@ -197,7 +211,7 @@ const AppointmentItem = ({ appt, onStatusChange }: AppointmentItemProps) => {
       ? `${appt.startTime} – ${appt.endTime}`
       : appt.startTime
     : null;
-  const typeParts = [appt.professionalSpecialty, appt.appointmentType].filter(Boolean);
+  const typeParts = [appt.professionalSpecialty, apptTypeLabel(appt.appointmentType)].filter(Boolean);
   const meta = [timeLabel, ...typeParts].filter(Boolean).join(" · ");
   const rawStatus = (appt.status ?? "").toUpperCase();
 

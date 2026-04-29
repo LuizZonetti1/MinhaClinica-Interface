@@ -32,7 +32,11 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401 && !isPublicRoute(error.config?.url)) {
+        if (
+            error.response?.status === 401 &&
+            !isPublicRoute(error.config?.url) &&
+            window.location.pathname !== "/login"
+        ) {
             clearAuthStorage();
             window.location.href = "/login";
         }

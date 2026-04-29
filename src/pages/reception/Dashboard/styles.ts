@@ -176,3 +176,29 @@ export const EmptyStateCell = styled.td`
   font-size: 14px;
   color: ${theme.colors.text.muted};
 `;
+
+export const CheckInButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: ${theme.borderRadius.md};
+  border: 1px solid #6ee7b7;
+  background: #d1fae5;
+  color: #065f46;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: filter 0.15s;
+
+  &:hover:not(:disabled) {
+    filter: brightness(0.95);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+`;

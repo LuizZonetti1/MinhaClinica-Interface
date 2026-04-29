@@ -76,6 +76,7 @@ export type AppointmentStatusUpdate =
   | "SCHEDULED"
   | "CONFIRMED"
   | "WAITING"
+  | "CHECKED_IN"
   | "IN_PROGRESS"
   | "COMPLETED"
   | "NO_SHOW"
@@ -144,7 +145,8 @@ export type AgendaSlotStatus =
   | "COMPLETED"
   | "COMPLETED_WITH_ADDENDUM"
   | "NO_SHOW"
-  | "CANCELLED";
+  | "CANCELLED"
+  | "RESCHEDULED";
 
 export interface ProfessionalAppointment {
   id: string;

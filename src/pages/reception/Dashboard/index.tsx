@@ -13,7 +13,7 @@ import { useNavigate } from "react-router";
 import { QuickAccessCard } from "../../../components/QuickAccessCard";
 import { StatCard } from "../../../components/StatCard";
 import { useAuth } from "../../../contexts";
-import { getReceptionDashboard } from "../../../services/reception.service";
+import { getReceptionDashboard, updateAppointmentStatus } from "../../../services/reception.service";
 import { theme } from "../../../themes/themes";
 import type {
   AppointmentStatus,
@@ -21,8 +21,9 @@ import type {
   ReceptionDashboardSummary,
 } from "../../../types/dashboard";
 import { getFormattedDate, getGreeting } from "../../../utils/formatters";
-import { notifyError } from "../../../utils/toast";
+import { notifyError, notifySuccess } from "../../../utils/toast";
 import {
+  CheckInButton,
   DoctorLabel,
   EmptyStateCell,
   HeroBanner,
@@ -126,6 +127,33 @@ const ReceptionDashboard = () => {
   const navigate = useNavigate();
   const [dashData, setDashData] = useState<ReceptionDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [checkingInId, setCheckingInId] = useState<string | null>(null);
+
+  const handleCheckin = async (id: string) => {
+    setCheckingInId(id);
+    try {
+      await updateAppointmentStatus(id, "WAITING");
+      setDashData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          appointments: prev.appointments.map((a) =>
+            a.id === id ? { ...a, status: "CHECKED_IN" as AppointmentStatus } : a,
+          ),
+          summary: {
+            ...prev.summary,
+            awaitingCheckin: Math.max(0, prev.summary.awaitingCheckin - 1),
+            checkinsDone: (prev.summary.checkinsDone ?? 0) + 1,
+          },
+        };
+      });
+      notifySuccess("Check-in realizado com sucesso.");
+    } catch {
+      notifyError("Erro ao realizar check-in.");
+    } finally {
+      setCheckingInId(null);
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -211,16 +239,17 @@ const ReceptionDashboard = () => {
                 <TableHeaderCell>Paciente</TableHeaderCell>
                 <TableHeaderCell>Profissional</TableHeaderCell>
                 <TableHeaderCell>Status</TableHeaderCell>
+                <TableHeaderCell>Ação</TableHeaderCell>
               </TableHeaderRow>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <EmptyStateCell colSpan={4}>Carregando...</EmptyStateCell>
+                  <EmptyStateCell colSpan={5}>Carregando...</EmptyStateCell>
                 </tr>
               ) : !dashData || dashData.appointments.length === 0 ? (
                 <tr>
-                  <EmptyStateCell colSpan={4}>Nenhum paciente agendado para hoje.</EmptyStateCell>
+                  <EmptyStateCell colSpan={5}>Nenhum paciente agendado para hoje.</EmptyStateCell>
                 </tr>
               ) : (
                 dashData.appointments.map((appt) => {
@@ -236,6 +265,18 @@ const ReceptionDashboard = () => {
                       </TableCell>
                       <TableCell>
                         <StatusBadge $variant={config.variant}>{config.label}</StatusBadge>
+                      </TableCell>
+                      <TableCell>
+                        {appt.status === "WAITING" ? (
+                          <CheckInButton
+                            type="button"
+                            disabled={checkingInId === appt.id}
+                            onClick={() => void handleCheckin(appt.id)}
+                          >
+                            <CheckCircle size={14} />
+                            {checkingInId === appt.id ? "Aguarde..." : "Check-in"}
+                          </CheckInButton>
+                        ) : null}
                       </TableCell>
                     </TableRow>
                   );

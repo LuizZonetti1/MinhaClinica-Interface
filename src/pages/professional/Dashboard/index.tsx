@@ -13,6 +13,7 @@ import type {
 } from "../../../types/dashboard";
 import { notifyError } from "../../../utils/toast";
 import { getFormattedDate, getGreeting } from "../../../utils/formatters";
+import { APPOINTMENT_TYPE_LABELS } from "../../../utils/statusLabels";
 import {
   AppointmentTypeLabel,
   EmptyStateCell,
@@ -193,7 +194,9 @@ const ProfessionalDashboard = () => {
                       </TableCell>
                       <TableCell>{appt.patientName}</TableCell>
                       <TableCell>
-                        <AppointmentTypeLabel>{appt.appointmentType ?? "—"}</AppointmentTypeLabel>
+                        <AppointmentTypeLabel>
+                          {APPOINTMENT_TYPE_LABELS[appt.appointmentType ?? ""] ?? appt.appointmentType ?? "—"}
+                        </AppointmentTypeLabel>
                       </TableCell>
                       <TableCell>
                         <StatusBadge $variant={cfg.variant}>{cfg.label}</StatusBadge>

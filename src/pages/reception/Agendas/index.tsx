@@ -67,6 +67,7 @@ const mapAgendaStatusToDashboardStatus = (status: AgendaSlotStatus): Appointment
       return "DONE";
     case "NO_SHOW":
     case "CANCELLED":
+    case "RESCHEDULED":
       return "CANCELLED";
   }
 };

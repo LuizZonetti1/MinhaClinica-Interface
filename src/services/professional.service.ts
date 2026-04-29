@@ -367,6 +367,13 @@ const normalizeProfessionalAppointmentItem = (item: unknown): ProfessionalAppoin
 };
 
 const getAppointmentIdentity = (appointment: ProfessionalAppointment): string => {
+  // Prefer the real appointment UUID when available.
+  // Synthetic fallback IDs always contain '|'; real UUIDs never do.
+  if (appointment.id && !appointment.id.includes("|")) {
+    return appointment.id;
+  }
+
+  // Fallback for appointments without a real ID
   const patientId = appointment.patientId?.trim();
   const patientName = appointment.patientName.trim().toLowerCase();
   const appointmentType = (appointment.appointmentType ?? "").trim().toLowerCase();

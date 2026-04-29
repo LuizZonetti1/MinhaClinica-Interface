@@ -76,6 +76,20 @@ const APPT_STATUS_LABELS: Record<string, string> = {
   RESCHEDULED: "Reagendada",
 };
 
+const APPT_TYPE_LABELS: Record<string, string> = {
+  CONSULTATION: "Consulta",
+  FIRST_CONSULTATION: "Primeira consulta",
+  RETURN: "Retorno",
+  ROUTINE: "Rotina",
+  EXAM: "Exame",
+  EMERGENCY: "Urgência",
+};
+
+const apptTypeLabel = (type: string | null | undefined): string | null => {
+  if (!type) return null;
+  return APPT_TYPE_LABELS[type.trim().toUpperCase()] ?? type;
+};
+
 const statusLabel = (status: string | null | undefined): string => {
   if (!status) return "—";
   return APPT_STATUS_LABELS[status.toUpperCase()] ?? status;
@@ -185,7 +199,7 @@ const AppointmentItem = ({ appt, onStatusChange }: AppointmentItemProps) => {
       ? `${appt.startTime} \u2013 ${appt.endTime}`
       : appt.startTime
     : null;
-  const typeParts = [appt.professionalSpecialty, appt.appointmentType].filter(Boolean);
+  const typeParts = [appt.professionalSpecialty, apptTypeLabel(appt.appointmentType)].filter(Boolean);
   const meta = [timeLabel, ...typeParts].filter(Boolean).join(" · ");
   const rawStatus = (appt.status ?? "").toUpperCase();
 
