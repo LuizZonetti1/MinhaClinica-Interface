@@ -13,12 +13,17 @@ import Home from "../pages/Home";
 import Login from "../pages/Login";
 import PatientAccess from "../pages/Patient/Access";
 import PatientAppointmentsPage from "../pages/Patient/Agendamentos";
+import PatientClinicsPage from "../pages/Patient/Clinicas";
+import PatientClinicProfessionalsPage from "../pages/Patient/Clinicas/Profissionais";
 import PatientDashboard from "../pages/Patient/Dashboard";
 import PatientDocumentosPage from "../pages/Patient/Documentos";
 import PatientDocumentoViewPage from "../pages/Patient/Documentos/View";
 import PatientEditProfilePage from "../pages/Patient/EditProfile";
 import PatientHistoryPage from "../pages/Patient/Historico";
 import PatientNotificationsPage from "../pages/Patient/Notificacoes";
+import AdminNotificationsPage from "../pages/Admin/Notificacoes";
+import ReceptionNotificationsPage from "../pages/Reception/Notificacoes";
+import ProfessionalNotificationsPage from "../pages/Professional/Notificacoes";
 import PatientProfilePage from "../pages/Patient/Profile";
 import ProfessionalAgendaPage from "../pages/Professional/Agenda";
 import ProfessionalCommentsPage from "../pages/Professional/Comments";
@@ -154,6 +159,7 @@ const AppRoutes = () => {
               <Route path="/admin/documentos" element={<AdminDocumentosPage />} />
               <Route path="/admin/documentos/visualizar" element={<ProfessionalDocumentoViewPage />} />
               <Route path="/admin/configuracoes" element={<SettingsPage />} />
+              <Route path="/admin/notificacoes" element={<AdminNotificationsPage />} />
               <Route path="/admin/perfil" element={<ProfilePage />} />
               <Route path="/admin/perfil/editar" element={<EditProfilePage />} />
             </Route>
@@ -167,6 +173,8 @@ const AppRoutes = () => {
               <Route path="/paciente/documentos" element={<PatientDocumentosPage />} />
               <Route path="/paciente/documentos/visualizar" element={<PatientDocumentoViewPage />} />
               <Route path="/paciente/notificacoes" element={<PatientNotificationsPage />} />
+              <Route path="/paciente/clinicas" element={<PatientClinicsPage />} />
+              <Route path="/paciente/clinicas/:clinicId/profissionais" element={<PatientClinicProfessionalsPage />} />
               <Route path="/paciente/perfil" element={<PatientProfilePage />} />
               <Route path="/paciente/perfil/editar" element={<PatientEditProfilePage />} />
             </Route>
@@ -186,6 +194,7 @@ const AppRoutes = () => {
               <Route path="/recepcao/documentos" element={<ReceptionDocumentosPage />} />
               <Route path="/recepcao/documentos/visualizar" element={<ProfessionalDocumentoViewPage />} />
               <Route path="/recepcao/transacoes" element={<ReceptionTransacoesPage />} />
+              <Route path="/recepcao/notificacoes" element={<ReceptionNotificationsPage />} />
               <Route path="/recepcao/perfil" element={<ReceptionProfilePage />} />
               <Route path="/recepcao/perfil/editar" element={<ReceptionEditProfilePage />} />
             </Route>
@@ -203,6 +212,7 @@ const AppRoutes = () => {
                 }
               />
               <Route path="/profissional/comentarios" element={<ProfessionalCommentsPage />} />
+              <Route path="/profissional/notificacoes" element={<ProfessionalNotificationsPage />} />
               <Route path="/profissional/documentos" element={<ProfessionalDocumentosPage />} />
               <Route
                 path="/profissional/documentos/formulario"

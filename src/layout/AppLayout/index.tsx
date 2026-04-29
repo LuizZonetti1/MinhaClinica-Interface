@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
-import { useAuth, useThemeMode } from "../../contexts";
+import { useAuth, useNotifications, useThemeMode } from "../../contexts";
 import { getPatientProfile } from "../../services/patient-profile.service";
 import { getProfessionalProfile } from "../../services/professional-profile.service";
 import { getProfile } from "../../services/profile.service";
@@ -56,6 +56,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/admin/configuracoes": "Configurações",
   "/admin/perfil": "Meu Perfil",
   "/admin/perfil/editar": "Editar Perfil",
+  "/admin/notificacoes": "Notificações",
   "/paciente/dashboard": "Início",
   "/paciente/agendamentos": "Agendamentos",
   "/paciente/historico": "Histórico",
@@ -70,14 +71,17 @@ const PAGE_TITLES: Record<string, string> = {
   "/recepcao/historico": "Histórico de Pacientes",
   "/recepcao/transacoes": "Transações",
   "/recepcao/perfil": "Meu Perfil",
+  "/recepcao/notificacoes": "Notificações",
   "/profissional/dashboard": "Início",
   "/profissional/agenda": "Agenda",
   "/profissional/comentarios": "Comentários",
   "/profissional/perfil": "Meu Perfil",
+  "/profissional/notificacoes": "Notificações",
   "/profissional/perfil/editar": "Editar Perfil",
   "/profissional/documentos": "Documentos da Consulta",
   "/profissional/documentos/formulario": "Formulário do Documento",
   "/profissional/documentos/visualizar": "Visualizar Documento",
+  "/paciente/clinicas": "Clínicas",
   "/paciente/documentos": "Meus Documentos",
   "/paciente/documentos/visualizar": "Visualizar Documento",
   "/recepcao/documentos": "Documentos da Consulta",
@@ -116,6 +120,12 @@ const PAGE_BREADCRUMBS: Record<string, BreadcrumbItem> = {
     parentPath: "/admin/dashboard",
     current: "Configurações",
     currentPath: "/admin/configuracoes",
+  },
+  "/admin/notificacoes": {
+    parent: "Início",
+    parentPath: "/admin/dashboard",
+    current: "Notificações",
+    currentPath: "/admin/notificacoes",
   },
   "/admin/perfil": {
     parent: "Início",
@@ -187,6 +197,12 @@ const PAGE_BREADCRUMBS: Record<string, BreadcrumbItem> = {
     current: "Meu Perfil",
     currentPath: "/recepcao/perfil",
   },
+  "/recepcao/notificacoes": {
+    parent: "Início",
+    parentPath: "/recepcao/dashboard",
+    current: "Notificações",
+    currentPath: "/recepcao/notificacoes",
+  },
   "/profissional/agenda": {
     parent: "Início",
     parentPath: "/profissional/dashboard",
@@ -234,6 +250,12 @@ const PAGE_BREADCRUMBS: Record<string, BreadcrumbItem> = {
     parentPath: "/profissional/dashboard",
     current: "Comentários",
     currentPath: "/profissional/comentarios",
+  },
+  "/profissional/notificacoes": {
+    parent: "Início",
+    parentPath: "/profissional/dashboard",
+    current: "Notificações",
+    currentPath: "/profissional/notificacoes",
   },
   "/profissional/perfil": {
     parent: "Início",
@@ -295,6 +317,12 @@ const PAGE_BREADCRUMBS: Record<string, BreadcrumbItem> = {
     current: "Editar",
     currentPath: "/paciente/perfil/editar",
   },
+  "/paciente/clinicas": {
+    parent: "Início",
+    parentPath: "/paciente/dashboard",
+    current: "Clínicas",
+    currentPath: "/paciente/clinicas",
+  },
 };
 
 const getRoleLabel = (role?: string) => {
@@ -326,7 +354,9 @@ export const AppLayout = () => {
   const navigate = useNavigate();
   const { user, setUser, logout } = useAuth();
   const { mode, toggleMode } = useThemeMode();
+  const { unreadCount, openPanel, markAllRead } = useNotifications();
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  const bellRef = useRef<HTMLDivElement>(null);
 
   const [avatarUrl, setAvatarUrl] = useState<string>(normalizeAvatarUrl(user?.avatarUrl));
   const [hasAvatarLoadError, setHasAvatarLoadError] = useState(false);
@@ -334,8 +364,20 @@ export const AppLayout = () => {
   const [staffRoleOrSpecialty, setStaffRoleOrSpecialty] = useState<string>("-");
   const [staffClinicName, setStaffClinicName] = useState<string>("-");
 
-  const title = PAGE_TITLES[location.pathname] ?? "Dashboard";
-  const breadcrumb = PAGE_BREADCRUMBS[location.pathname];
+  const isClinicProfessionalsPath = /^\/paciente\/clinicas\/[^/]+\/profissionais/.test(
+    location.pathname,
+  );
+  const title = PAGE_TITLES[location.pathname] ?? (isClinicProfessionalsPath ? "Profissionais" : "Dashboard");
+  const breadcrumb =
+    PAGE_BREADCRUMBS[location.pathname] ??
+    (isClinicProfessionalsPath
+      ? {
+        parent: "Clínicas",
+        parentPath: "/paciente/clinicas",
+        current: "Profissionais",
+        currentPath: location.pathname,
+      }
+      : undefined);
 
   useEffect(() => {
     setAvatarUrl(normalizeAvatarUrl(user?.avatarUrl));
@@ -553,9 +595,19 @@ export const AppLayout = () => {
               <Search />
               <span>Buscar...</span>
             </SearchBox>
-            <BellWrapper>
+            <BellWrapper
+              ref={bellRef}
+              role="button"
+              tabIndex={0}
+              onClick={() => openPanel(bellRef.current)}
+              onMouseEnter={() => unreadCount > 0 && markAllRead()}
+              title="Notificações"
+              aria-label="Abrir notificações"
+            >
               <Bell />
-              <NotificationBadge>2</NotificationBadge>
+              {unreadCount > 0 && (
+                <NotificationBadge>{unreadCount > 99 ? "99+" : unreadCount}</NotificationBadge>
+              )}
             </BellWrapper>
             <ProfileMenuWrapper ref={profileMenuRef}>
               <HeaderAvatar
