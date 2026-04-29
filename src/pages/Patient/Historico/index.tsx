@@ -6,6 +6,7 @@ import { Input } from "../../../components/Input";
 import { Modal } from "../../../components/Modal";
 import { StatCard } from "../../../components/StatCard";
 import { listPatientAppointments } from "../../../services/patient-appointments.service";
+import { confirmPatientAppointment } from "../../../services/patient-dashboard.service";
 import { theme } from "../../../themes/themes";
 import type { PatientAppointmentListItem, PatientAppointmentsListResult } from "../../../types/patient";
 import { formatIsoDateToBr, formatIsoDateToLongPtBr } from "../../../utils/dateParsers";
@@ -15,13 +16,14 @@ import {
   hasNoShowWindowElapsedForDate,
   parseTimeToMinutes,
 } from "../../../utils/timeParsers";
-import { notifyError } from "../../../utils/toast";
+import { notifyError, notifySuccess } from "../../../utils/toast";
 import {
   ActionRow,
   CardBody,
   CardCode,
   CardTopBar,
   ClinicText,
+  ConfirmPresenceBtn,
   DatePill,
   EmptyState,
   FilterChip,
@@ -38,6 +40,7 @@ import {
   ProfessionalBlock,
   ProfessionalName,
   SearchRow,
+  SectionTitle,
   SpecialtyText,
   StatsGrid,
   StatusBadge,
@@ -65,6 +68,13 @@ const STATUS_META: Record<string, { label: string; variant: AppointmentBadgeVari
   NO_SHOW: { label: "Não compareceu", variant: "noshow" },
   CANCELLED: { label: "Cancelado", variant: "cancelled" },
   RESCHEDULED: { label: "Reagendado", variant: "rescheduled" },
+};
+
+const UPCOMING_STATUS_META: Record<string, { label: string; variant: AppointmentBadgeVariant }> = {
+  SCHEDULED: { label: "Agendada", variant: "upcoming" },
+  CONFIRMED: { label: "Confirmada", variant: "confirmed" },
+  WAITING: { label: "Aguardando", variant: "confirmed" },
+  IN_PROGRESS: { label: "Em atendimento", variant: "confirmed" },
 };
 
 const STATUS_ALIASES: Record<string, string> = {
@@ -203,6 +213,7 @@ const PatientHistoryPage = () => {
   const [selectedAppointment, setSelectedAppointment] = useState<PatientAppointmentListItem | null>(
     null,
   );
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -237,6 +248,32 @@ const PatientHistoryPage = () => {
     () => result.appointments.filter(isHistoricalAppointment),
     [result.appointments],
   );
+
+  const upcomingAppointments = useMemo(
+    () =>
+      result.appointments
+        .filter((appt) => !isHistoricalAppointment(appt))
+        .sort((a, b) => toSortStamp(a) - toSortStamp(b)),
+    [result.appointments],
+  );
+
+  const handleConfirmPresence = async (id: string) => {
+    setConfirmingId(id);
+    try {
+      await confirmPatientAppointment(id);
+      setResult((prev) => ({
+        ...prev,
+        appointments: prev.appointments.map((a) =>
+          a.id === id ? { ...a, status: "CONFIRMED" } : a,
+        ),
+      }));
+      notifySuccess("Presença confirmada com sucesso.");
+    } catch (err) {
+      notifyError(getApiErrorMessage(err, "Não foi possível confirmar presença."));
+    } finally {
+      setConfirmingId(null);
+    }
+  };
 
   const filteredAppointments = useMemo(() => {
     const query = normalizeSearch(searchTerm);
@@ -327,6 +364,55 @@ const PatientHistoryPage = () => {
           </FilterChip>
         ))}
       </FiltersRow>
+
+      {!loading && !errorMessage && upcomingAppointments.length > 0 && (
+        <div>
+          <SectionTitle>Próximas Consultas</SectionTitle>
+          <HistoryList>
+            {upcomingAppointments.map((appt, index) => {
+              const st = appt.status ?? "SCHEDULED";
+              const meta =
+                UPCOMING_STATUS_META[st] ?? { label: "Agendada", variant: "upcoming" as AppointmentBadgeVariant };
+              return (
+                <HistoryCard key={appt.id || `up-${index}`}>
+                  <CardTopBar>
+                    <StatusBadge $variant={meta.variant}>{meta.label}</StatusBadge>
+                  </CardTopBar>
+                  <CardBody>
+                    <ProfessionalBlock>
+                      <ProfessionalName>{appt.professionalName}</ProfessionalName>
+                      <SpecialtyText>
+                        {appt.primarySpecialty ?? "Especialidade não informada"}
+                      </SpecialtyText>
+                      <ClinicText>
+                        <MapPin size={13} />
+                        {appt.clinicName ?? "Clínica não informada"}
+                      </ClinicText>
+                      <ActionRow>
+                        {st === "SCHEDULED" && (
+                          <ConfirmPresenceBtn
+                            type="button"
+                            disabled={confirmingId === appt.id}
+                            onClick={() => void handleConfirmPresence(appt.id)}
+                          >
+                            {confirmingId === appt.id ? "Confirmando..." : "Confirmar Presença"}
+                          </ConfirmPresenceBtn>
+                        )}
+                      </ActionRow>
+                    </ProfessionalBlock>
+                    <DatePill>
+                      <Calendar size={14} />
+                      {formatDateBr(appt.appointmentDate)}
+                      <Clock3 size={14} />
+                      {appt.startTime}
+                    </DatePill>
+                  </CardBody>
+                </HistoryCard>
+              );
+            })}
+          </HistoryList>
+        </div>
+      )}
 
       {loading && <StatusMessage>Carregando historico...</StatusMessage>}
       {!loading && errorMessage && <StatusMessage $error>{errorMessage}</StatusMessage>}

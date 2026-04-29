@@ -92,7 +92,7 @@ export const CardTopBar = styled.div`
   padding: 6px 16px;
 `;
 
-export type AppointmentBadgeVariant = "completed" | "noshow" | "cancelled" | "rescheduled" | "default";
+export type AppointmentBadgeVariant = "completed" | "noshow" | "cancelled" | "rescheduled" | "upcoming" | "confirmed" | "default";
 
 const badgeVariantStyles: Record<AppointmentBadgeVariant, ReturnType<typeof css>> = {
   completed: css`
@@ -114,6 +114,16 @@ const badgeVariantStyles: Record<AppointmentBadgeVariant, ReturnType<typeof css>
     color: var(--mc-status-waiting-text, #92400e);
     background: var(--mc-status-waiting-bg, #fef3c7);
     border: 1px solid var(--mc-status-waiting-border, #fcd34d);
+  `,
+  upcoming: css`
+    color: var(--mc-status-progress-text, #1e40af);
+    background: var(--mc-status-progress-bg, #dbeafe);
+    border: 1px solid var(--mc-status-progress-border, #93c5fd);
+  `,
+  confirmed: css`
+    color: #166534;
+    background: #dcfce7;
+    border: 1px solid #86efac;
   `,
   default: css`
     color: ${theme.colors.text.secondary};
@@ -238,6 +248,39 @@ export const StatusMessage = styled.p<{ $error?: boolean }>`
   font-family: "Roboto", sans-serif;
   font-size: 14px;
   color: ${({ $error }) => ($error ? theme.colors.error : theme.colors.text.secondary)};
+`;
+
+export const SectionTitle = styled.h2`
+  font-family: "Inter", sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: ${theme.colors.text.primary};
+  margin: 0 0 12px;
+`;
+
+export const ConfirmPresenceBtn = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: ${theme.borderRadius.md};
+  border: 1px solid #86efac;
+  background: #dcfce7;
+  color: #166534;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s;
+
+  &:hover:not(:disabled) {
+    filter: brightness(0.95);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
 `;
 
 export const EmptyState = styled.div`
