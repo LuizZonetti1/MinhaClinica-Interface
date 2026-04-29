@@ -5,6 +5,7 @@ import {
   CheckCircle,
   ChevronRight,
   Clock3,
+  FileText,
   User,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -15,16 +16,22 @@ import { QuickAccessCard } from "../../../components/QuickAccessCard";
 import { Skeleton } from "../../../components/Skeleton";
 import { StatCard } from "../../../components/StatCard";
 import { useAuth } from "../../../contexts";
+import { listPatientAppointments } from "../../../services/patient-appointments.service";
 import {
   confirmPatientAppointment,
   getPatientDashboard,
 } from "../../../services/patient-dashboard.service";
 import { theme } from "../../../themes/themes";
 import type { PatientDashboardData, PatientNextAppointment } from "../../../types/dashboard";
+import type { PatientAppointmentListItem } from "../../../types/patient";
 import { formatIsoDateToBr, formatIsoDateToLongPtBr } from "../../../utils/dateParsers";
 import { getGreeting } from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
-import { hasNoShowWindowElapsedForDate } from "../../../utils/timeParsers";
+import {
+  getNowInTimeZone,
+  hasNoShowWindowElapsedForDate,
+  parseTimeToMinutes,
+} from "../../../utils/timeParsers";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import {
   AppointmentAction,
@@ -99,6 +106,48 @@ const shouldHideFromUpcoming = (appointment: PatientNextAppointment): boolean =>
   if (!["SCHEDULED", "CONFIRMED"].includes(normalizedStatus)) return false;
   return hasNoShowWindowElapsedForDate(appointment.appointmentDate, appointment.startTime);
 };
+
+// ─── Recent history helpers ────────────────────────────────────────────────────
+
+const HIST_STATUS_ALIASES: Record<string, string> = {
+  DONE: "COMPLETED", FINISHED: "COMPLETED", CONCLUDED: "COMPLETED",
+  NOSHOW: "NO_SHOW", CANCELED: "CANCELLED",
+};
+
+const normalizeHistSt = (status: string): string => {
+  const up = status.trim().toUpperCase().replace(/[\s-]+/g, "_");
+  return HIST_STATUS_ALIASES[up] ?? up;
+};
+
+const isHistoricalAppt = (appt: PatientAppointmentListItem): boolean => {
+  const st = normalizeHistSt(appt.status);
+  if (["COMPLETED", "NO_SHOW", "CANCELLED", "RESCHEDULED"].includes(st)) return true;
+  const now = getNowInTimeZone();
+  if (appt.appointmentDate < now.dateIso) return true;
+  if (appt.appointmentDate > now.dateIso) return false;
+  const mins = parseTimeToMinutes(appt.endTime) ?? parseTimeToMinutes(appt.startTime);
+  return mins !== null && now.minutesOfDay >= mins;
+};
+
+const histSortStamp = (appt: PatientAppointmentListItem): number => {
+  const m = appt.appointmentDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return 0;
+  return Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])) +
+    (parseTimeToMinutes(appt.startTime) ?? 0) * 60_000;
+};
+
+const HIST_STATUS_META: Record<string, { label: string; variant: AppointmentStatusVariant }> = {
+  COMPLETED: { label: "Realizada", variant: "neutral" },
+  NO_SHOW: { label: "Não compareceu", variant: "danger" },
+  CANCELLED: { label: "Cancelada", variant: "danger" },
+  RESCHEDULED: { label: "Reagendada", variant: "warning" },
+  IN_PROGRESS: { label: "Em atendimento", variant: "warning" },
+  WAITING: { label: "Aguardando", variant: "warning" },
+  CONFIRMED: { label: "Confirmada", variant: "success" },
+  SCHEDULED: { label: "Agendada", variant: "info" },
+};
+
+const RECENT_HISTORY_LIMIT = 6;
 
 const formatDate = (isoDate: string | null | undefined): string => {
   return formatIsoDateToBr(isoDate, "--/--/----");
@@ -212,15 +261,24 @@ const PatientDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [confirmingAppointmentId, setConfirmingAppointmentId] = useState<string | null>(null);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
+  const [recentHistory, setRecentHistory] = useState<PatientAppointmentListItem[]>([]);
 
   useEffect(() => {
     let mounted = true;
 
     const loadDashboard = async () => {
       try {
-        const data = await getPatientDashboard();
+        const [data, histResult] = await Promise.all([
+          getPatientDashboard(),
+          listPatientAppointments().catch(() => ({ total: 0, appointments: [] })),
+        ]);
         if (!mounted) return;
         setDashboardData(data);
+        const recent = histResult.appointments
+          .filter(isHistoricalAppt)
+          .sort((a, b) => histSortStamp(b) - histSortStamp(a))
+          .slice(0, RECENT_HISTORY_LIMIT);
+        setRecentHistory(recent);
       } catch (error: unknown) {
         if (!mounted) return;
         notifyError(
@@ -468,6 +526,62 @@ const PatientDashboard = () => {
           ))}
         </QuickAccessGrid>
       </QuickAccessSection>
+
+      {/* Consultas Anteriores */}
+      {!loading && recentHistory.length > 0 && (
+        <div>
+          <SectionHeader>
+            <SectionTitle>Consultas Anteriores</SectionTitle>
+            <DetailLink type="button" onClick={() => navigate("/paciente/historico")}>
+              Ver histórico completo
+              <ChevronRight size={14} />
+            </DetailLink>
+          </SectionHeader>
+          <NextAppointmentsList>
+            {recentHistory.map((appt, index) => {
+              const st = normalizeHistSt(appt.status);
+              const meta = HIST_STATUS_META[st] ?? { label: st, variant: "info" as AppointmentStatusVariant };
+              return (
+                <NextAppointmentCard key={appt.id || `hist-${index}`}>
+                  <AppointmentTopBar>
+                    <StatusBadge $variant={meta.variant}>{meta.label}</StatusBadge>
+                  </AppointmentTopBar>
+                  <NextAppointmentContent>
+                    <AppointmentBody>
+                      <div>
+                        <AppointmentProfessional>{appt.professionalName}</AppointmentProfessional>
+                        <AppointmentMeta>
+                          {appt.clinicName ?? "Clínica não informada"}
+                          {appt.primarySpecialty ? ` - ${appt.primarySpecialty}` : ""}
+                        </AppointmentMeta>
+                        <AppointmentDateRow>
+                          <CalendarDays size={14} />
+                          {formatAppointmentDateTime(appt.appointmentDate, appt.startTime)}
+                        </AppointmentDateRow>
+                      </div>
+                      {st === "COMPLETED" && (
+                        <AppointmentAction>
+                          <DetailLink
+                            type="button"
+                            onClick={() =>
+                              navigate(
+                                `/paciente/documentos?consulta=${appt.id}&paciente=${encodeURIComponent(appt.professionalName)}`,
+                              )
+                            }
+                          >
+                            <FileText size={14} />
+                            Ver documentos
+                          </DetailLink>
+                        </AppointmentAction>
+                      )}
+                    </AppointmentBody>
+                  </NextAppointmentContent>
+                </NextAppointmentCard>
+              );
+            })}
+          </NextAppointmentsList>
+        </div>
+      )}
 
       {selectedAppointment && (
         <Modal
