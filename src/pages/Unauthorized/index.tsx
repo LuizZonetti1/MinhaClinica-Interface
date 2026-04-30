@@ -13,13 +13,13 @@ export function Unauthorized() {
   const handleGoHome = () => {
     // Redireciona para a página inicial baseado no papel do usuário
     if (user?.role === "PATIENT") {
-      navigate("/patient/dashboard");
+      navigate("/paciente/dashboard");
     } else if (user?.role === "RECEPTIONIST") {
-      navigate("/reception");
+      navigate("/recepcao/dashboard");
     } else if (user?.role === "PROFESSIONAL") {
-      navigate("/professional/dashboard");
+      navigate("/profissional/dashboard");
     } else if (user?.role === "ADMIN") {
-      navigate("/admin");
+      navigate("/admin/dashboard");
     } else {
       navigate("/");
     }
