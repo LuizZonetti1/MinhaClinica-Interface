@@ -52,6 +52,7 @@ const DASHBOARD_STATUS_META: Record<AppointmentStatus, { label: string; variant:
   IN_PROGRESS: { label: "Em Atendimento", variant: "progress" },
   DONE: { label: "Concluído", variant: "done" },
   CANCELLED: { label: "Cancelado", variant: "cancelled" },
+  NO_SHOW: { label: "Não compareceu", variant: "cancelled" },
 };
 
 const mapAgendaStatusToDashboardStatus = (status: AgendaSlotStatus): AppointmentStatus => {
@@ -64,10 +65,14 @@ const mapAgendaStatusToDashboardStatus = (status: AgendaSlotStatus): Appointment
     case "IN_PROGRESS":
       return "IN_PROGRESS";
     case "COMPLETED":
+    case "COMPLETED_WITH_ADDENDUM":
       return "DONE";
     case "NO_SHOW":
+      return "NO_SHOW";
     case "CANCELLED":
     case "RESCHEDULED":
+      return "CANCELLED";
+    default:
       return "CANCELLED";
   }
 };

@@ -674,7 +674,7 @@ const PatientAppointmentsPage = () => {
                               type="button"
                               onClick={() =>
                                 navigate(
-                                  `/paciente/documentos?consulta=${appointment.id}&paciente=${encodeURIComponent(appointment.professionalName)}`,
+                                  `/paciente/documentos?consulta=${appointment.id}`,
                                 )
                               }
                             >

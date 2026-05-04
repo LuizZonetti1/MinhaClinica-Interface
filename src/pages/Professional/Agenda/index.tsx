@@ -64,6 +64,7 @@ const STATUS_META: Record<AgendaSlotStatus, { label: string; variant: StatusVari
   COMPLETED_WITH_ADDENDUM: { label: "Concluído c/ adendo", variant: "done" },
   NO_SHOW: { label: "Não compareceu", variant: "cancelled" },
   CANCELLED: { label: "Cancelado", variant: "cancelled" },
+  RESCHEDULED: { label: "Remarcado", variant: "pending" },
 };
 
 const APPOINTMENT_TYPE_LABELS: Record<string, string> = {

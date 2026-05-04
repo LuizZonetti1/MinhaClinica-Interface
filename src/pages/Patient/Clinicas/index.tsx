@@ -151,7 +151,7 @@ const PatientClinicsPage = () => {
                     placeholder="Buscar por nome da clínica ou cidade..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    iconLeft={<Search size={16} />}
+                    icon={<Search size={16} />}
                     fullWidth
                 />
             </SearchRow>

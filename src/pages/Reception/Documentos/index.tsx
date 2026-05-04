@@ -5,7 +5,6 @@ import {
   Eye,
   FileCheck2,
   FileHeart,
-  FileText,
   FlaskConical,
   HandHeart,
   ListChecks,
@@ -54,17 +53,17 @@ import type { ConsultaStatusVariant, DocStatusVariant } from "../../Professional
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const DOC_TYPE_LABEL: Record<string, string> = {
-  CLINICAL_REPORT: "Relatorio Clinico",
+  CLINICAL_REPORT: "Relatório Clínico",
   CERTIFICATE: "Atestado",
-  ATTENDANCE_DECLARATION: "Declaracao de Comparecimento",
+  ATTENDANCE_DECLARATION: "Declaração de Comparecimento",
   PRESCRIPTION: "Receita",
-  EXAM_REQUEST: "Solicitacao de Exame",
+  EXAM_REQUEST: "Solicitação de Exame",
   REFERRAL: "Encaminhamento",
   MEDICAL_REPORT: "Laudo",
   CONTROLLED_PRESCRIPTION: "Receita Controlada",
   CONSENT_FORM: "Termo de Consentimento",
-  TREATMENT_PLAN: "Plano Terapeutico",
-  BUDGET: "Orcamento",
+  TREATMENT_PLAN: "Plano Terapêutico",
+  BUDGET: "Orçamento",
 };
 
 const DOC_TYPE_ICON: Record<string, React.ReactNode> = {

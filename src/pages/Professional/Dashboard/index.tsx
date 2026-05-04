@@ -94,9 +94,11 @@ const STATUS_CONFIG: Record<AgendaSlotStatus, { label: string; variant: BadgeVar
   SCHEDULED: { label: "Pendente", variant: "scheduled" },
   WAITING: { label: "Aguardando", variant: "waiting" },
   IN_PROGRESS: { label: "Em Atendimento", variant: "progress" },
+  COMPLETED_WITH_ADDENDUM: { label: "Concluido com adendo", variant: "completed" },
   COMPLETED: { label: "Concluído", variant: "completed" },
   NO_SHOW: { label: "Não Compareceu", variant: "noshow" },
   CANCELLED: { label: "Cancelado", variant: "cancelled" },
+  RESCHEDULED: { label: "Remarcado", variant: "scheduled" },
 };
 
 const EMPTY_SUMMARY: ProfessionalDashboardSummary = {

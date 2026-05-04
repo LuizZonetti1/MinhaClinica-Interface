@@ -1,26 +1,17 @@
 import {
   ArrowLeft,
-  BadgeDollarSign,
-  ClipboardList,
   Eye,
-  FileCheck2,
-  FileHeart,
-  FlaskConical,
-  HandHeart,
-  ListChecks,
-  ReceiptText,
-  SendHorizonal,
-  ShieldCheck,
-  Stethoscope,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Button } from "../../../components/Button";
+import { useAuth } from "../../../contexts";
 import { getPatientAppointmentDetail } from "../../../services/patient-appointments.service";
 import { listClinicalDocuments } from "../../../services/clinical-documents.service";
 import type { ClinicalDocumentItem } from "../../../types/clinical-document";
 import { formatIsoDateToBr, formatIsoDateTimeToBr } from "../../../utils/dateParsers";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
+import { getClinicalDocTypeLabel } from "../../../utils/statusLabels";
 import { notifyError } from "../../../utils/toast";
 import {
   AppointmentInfoBar,
@@ -50,35 +41,6 @@ import type { DocStatusVariant } from "../../Professional/Documentos/styles";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const DOC_TYPE_LABEL: Record<string, string> = {
-  CLINICAL_REPORT: "Relatorio Clinico",
-  CERTIFICATE: "Atestado",
-  ATTENDANCE_DECLARATION: "Declaracao de Comparecimento",
-  PRESCRIPTION: "Receita",
-  EXAM_REQUEST: "Solicitacao de Exame",
-  REFERRAL: "Encaminhamento",
-  MEDICAL_REPORT: "Laudo",
-  CONTROLLED_PRESCRIPTION: "Receita Controlada",
-  CONSENT_FORM: "Termo de Consentimento",
-  TREATMENT_PLAN: "Plano Terapeutico",
-  BUDGET: "Orcamento",
-};
-
-const DOC_TYPE_ICON: Record<string, React.ReactNode> = {
-  CLINICAL_REPORT: <Stethoscope size={18} />,
-  CERTIFICATE: <FileCheck2 size={18} />,
-  ATTENDANCE_DECLARATION: <FileHeart size={18} />,
-  PRESCRIPTION: <ReceiptText size={18} />,
-  EXAM_REQUEST: <FlaskConical size={18} />,
-  REFERRAL: <SendHorizonal size={18} />,
-  MEDICAL_REPORT: <ClipboardList size={18} />,
-  CONTROLLED_PRESCRIPTION: <ShieldCheck size={18} />,
-  CONSENT_FORM: <HandHeart size={18} />,
-  TREATMENT_PLAN: <ListChecks size={18} />,
-  BUDGET: <BadgeDollarSign size={18} />,
-};
-void DOC_TYPE_ICON;
-
 const formatDocDate = (iso: string): string => {
   if (!iso) return "--/--/----";
   return formatIsoDateToBr(iso.split("T")[0], "--/--/----");
@@ -90,13 +52,12 @@ const formatDocDateTime = (iso: string): string =>
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 const PatientDocumentosPage = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const appointmentId = searchParams.get("consulta") ?? "";
 
-  const [patientName, setPatientName] = useState(
-    searchParams.get("paciente") || "Paciente",
-  );
+  const patientName = user?.name || searchParams.get("paciente") || "Paciente";
   const [appointmentDate, setAppointmentDate] = useState("");
   const [startTime, setStartTime] = useState("--:--");
   const [professionalName, setProfessionalName] = useState("");
@@ -204,7 +165,7 @@ const PatientDocumentosPage = () => {
 
                   return (
                     <DocsTableRow key={doc.id}>
-                      <DocsTableTd>{DOC_TYPE_LABEL[doc.type] ?? doc.type}</DocsTableTd>
+                      <DocsTableTd>{getClinicalDocTypeLabel(doc.type, doc.type)}</DocsTableTd>
                       <DocsTableTd>{formatDocDateTime(doc.createdAt)}</DocsTableTd>
                       <DocsTableTd>
                         <DocStatusBadge $variant={statusVariant}>{statusLabel}</DocStatusBadge>

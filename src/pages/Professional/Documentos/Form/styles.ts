@@ -206,7 +206,7 @@ export const FormTextarea = styled.textarea<{ $highlighted?: boolean }>`
   transition: border-color 0.2s;
 
   &:focus {
-    border-color: ${theme.colors.primary.main};
+    border-color: ${theme.colors.primary};
   }
 
   &:disabled {
@@ -222,7 +222,7 @@ export const FormTextarea = styled.textarea<{ $highlighted?: boolean }>`
   ${({ $highlighted }) =>
     $highlighted &&
     css`
-      border-left: 3px solid ${theme.colors.primary.main};
+      border-left: 3px solid ${theme.colors.primary};
       padding-left: 14px;
       background: #f8faff;
     `};
@@ -242,7 +242,7 @@ export const FormInput = styled.input`
   width: 100%;
 
   &:focus {
-    border-color: ${theme.colors.primary.main};
+    border-color: ${theme.colors.primary};
   }
 
   &:disabled {
@@ -271,7 +271,7 @@ export const FormSelect = styled.select`
   cursor: pointer;
 
   &:focus {
-    border-color: ${theme.colors.primary.main};
+    border-color: ${theme.colors.primary};
   }
 
   &:disabled {
@@ -379,13 +379,13 @@ export const DynamicListAddButton = styled.button`
   font-family: "Roboto", sans-serif;
   font-size: 13px;
   font-weight: 600;
-  color: ${theme.colors.primary.main};
+  color: ${theme.colors.primary};
   cursor: pointer;
   transition: all 0.15s;
 
   &:hover {
-    background: ${theme.colors.primary.main}08;
-    border-color: ${theme.colors.primary.main};
+    background: ${theme.colors.primary}08;
+    border-color: ${theme.colors.primary};
   }
 
   &:disabled {
@@ -409,6 +409,11 @@ export const FormFooterWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 6px;
+
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    left: 0;
+    padding: 10px 12px;
+  }
 `;
 
 export const AutosaveIndicator = styled.span`
@@ -455,7 +460,7 @@ export const CheckboxField = styled.label`
     width: 18px;
     height: 18px;
     margin-top: 2px;
-    accent-color: ${theme.colors.primary.main};
+    accent-color: ${theme.colors.primary};
     cursor: pointer;
     flex-shrink: 0;
   }

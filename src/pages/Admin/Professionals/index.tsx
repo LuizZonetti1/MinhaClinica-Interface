@@ -48,7 +48,6 @@ import {
   ProfessionalEmail,
   ProfessionalMeta,
   ProfessionalName,
-  RoleBadge,
   SearchField,
   StatusMessage,
   TabButton,
