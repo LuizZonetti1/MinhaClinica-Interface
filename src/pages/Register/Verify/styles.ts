@@ -131,3 +131,30 @@ export const ResendText = styled.p`
   color: ${theme.colors.text.link};
   margin: 0;
 `;
+
+export const WarningBox = styled.div`
+  display: flex;
+  gap: ${theme.spacing.sm};
+  padding: ${theme.spacing.md};
+  background-color: #FFF7ED;
+  border: 1px solid #FED7AA;
+  border-radius: ${theme.borderRadius.md};
+  width: 100%;
+
+  svg {
+    flex-shrink: 0;
+    color: #EA580C;
+    margin-top: 2px;
+    width: 16px;
+    height: 16px;
+  }
+`;
+
+export const WarningText = styled.p`
+  font-family: 'Roboto', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #9A3412;
+  margin: 0;
+`;

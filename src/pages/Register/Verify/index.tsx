@@ -1,4 +1,4 @@
-import { Clock, Loader, Mail } from "lucide-react";
+import { AlertTriangle, Clock, Loader, Mail } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
 import { AuthLayout } from "../../../components/AuthLayout";
@@ -17,6 +17,8 @@ import {
   ResendButton,
   ResendText,
   Title,
+  WarningBox,
+  WarningText,
 } from "./styles";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -28,9 +30,14 @@ const RegisterVerify = () => {
   const token = searchParams.get("token");
   const type = searchParams.get("type") ?? undefined;
 
+  const erro = searchParams.get("erro");
+  const linkDesativado = erro === "token_invalido";
+  const linkExpirado = erro === "token_expirado";
+  const hasLinkError = linkDesativado || linkExpirado;
+
   const [status] = useState<VerifyStatus>(token ? "redirecting" : "no-token");
   const [countdown, setCountdown] = useState(56);
-  const [canResend, setCanResend] = useState(false);
+  const [canResend, setCanResend] = useState(hasLinkError);
   const [resending, setResending] = useState(false);
 
   const email = localStorage.getItem("@minhaclinica:register_email") ?? "";
@@ -44,13 +51,14 @@ const RegisterVerify = () => {
 
   useEffect(() => {
     if (status !== "no-token") return;
+    if (canResend) return;
     if (countdown <= 0) {
       setCanResend(true);
       return;
     }
     const timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
     return () => clearTimeout(timer);
-  }, [countdown, status]);
+  }, [countdown, status, canResend]);
 
   const handleResend = async () => {
     if (!email.trim()) {
@@ -96,10 +104,24 @@ const RegisterVerify = () => {
           <Mail size={40} strokeWidth={1.5} />
         </EmailIcon>
         <Title>Verifique seu email</Title>
-        <Description>
-          Enviamos um link de verificacao para <strong>{email || "seu email"}</strong>. Clique no
-          link do email para confirmar seu cadastro.
-        </Description>
+
+        {hasLinkError && (
+          <WarningBox>
+            <AlertTriangle size={16} />
+            <WarningText>
+              {linkDesativado
+                ? "Este link foi desativado porque um novo email foi solicitado. Use o link mais recente ou solicite um novo abaixo."
+                : "Este link de verificacao expirou. Solicite um novo email abaixo."}
+            </WarningText>
+          </WarningBox>
+        )}
+
+        {!hasLinkError && (
+          <Description>
+            Enviamos um link de verificacao para <strong>{email || "seu email"}</strong>. Clique no
+            link do email para confirmar seu cadastro.
+          </Description>
+        )}
 
         <InfoBox>
           <Clock size={18} />
