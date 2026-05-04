@@ -313,20 +313,26 @@ export const concludeAppointment = async (
   const r = toRec(data) ?? {};
   const inner = toRec(r.data) ?? r;
   const appointment = toRec(inner.appointment) ?? inner;
-  const mapDocArray = (arr: unknown): Array<{ id: string; documentNumber?: string; type: string }> =>
-    Array.isArray(arr)
-      ? (arr as unknown[])
-        .map((item) => {
-          const rec = toRec(item);
-          if (!rec) return null;
-          return {
-            id: toStr(rec.id),
-            documentNumber: rec.documentNumber ? toStr(rec.documentNumber) : undefined,
-            type: toStr(rec.type),
-          };
-        })
-        .filter((x): x is { id: string; documentNumber?: string; type: string } => Boolean(x?.id))
-      : [];
+  const mapDocArray = (arr: unknown): Array<{ id: string; documentNumber?: string; type: string }> => {
+    if (!Array.isArray(arr)) return [];
+
+    return (arr as unknown[])
+      .map((item): { id: string; documentNumber?: string; type: string } | null => {
+        const rec = toRec(item);
+        if (!rec) return null;
+
+        const id = toStr(rec.id).trim();
+        const type = toStr(rec.type).trim();
+        if (!id || !type) return null;
+
+        return {
+          id,
+          documentNumber: rec.documentNumber ? toStr(rec.documentNumber) : undefined,
+          type,
+        };
+      })
+      .filter((item): item is { id: string; documentNumber?: string; type: string } => item !== null);
+  };
   return {
     status: toStr(appointment.status ?? inner.status ?? "COMPLETED"),
     sentDocuments: mapDocArray(inner.sentDocuments),

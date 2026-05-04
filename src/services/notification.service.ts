@@ -1,6 +1,6 @@
 import { api } from "../config/api";
 import type { NotificationItem, NotificationListResult } from "../types/notification";
-import { toBooleanValue, toRecord, toTrimmedStringValue } from "../utils/parsers";
+import { toRecord, toTrimmedStringValue } from "../utils/parsers";
 
 const BASE_PATH = "/notifications";
 
