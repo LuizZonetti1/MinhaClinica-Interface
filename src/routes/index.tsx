@@ -53,6 +53,8 @@ import RegisterClinicStart from "../pages/RegisterClinic/Start";
 import RegisterClinicVerify from "../pages/RegisterClinic/Verify";
 import RegisterProfessionalComplete from "../pages/RegisterProfessional/Complete";
 import RegisterReceptionComplete from "../pages/RegisterReception/Complete";
+import ForgotPasswordPage from "../pages/ForgotPassword";
+import ResetPasswordPage from "../pages/ResetPassword";
 import { Unauthorized } from "../pages/Unauthorized";
 import { UserRole } from "../types/enums";
 import { ClinicRegisterCompleteGuard } from "./ClinicRegisterCompleteGuard";
@@ -84,6 +86,8 @@ const AppRoutes = () => {
         {/* Public routes */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
         <Route path="/nao-autorizado" element={<Unauthorized />} />
 
         {/* Patient register */}
