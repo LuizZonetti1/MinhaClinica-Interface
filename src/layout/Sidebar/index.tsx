@@ -1,6 +1,5 @@
 import {
   BarChart2,
-  Bell,
   Building2,
   CalendarCheck2,
   CalendarDays,
@@ -17,6 +16,7 @@ import {
   UserPlus,
   Users,
   Wallet,
+  X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
@@ -28,13 +28,16 @@ import { getInitials } from "../../utils/formatters";
 import {
   Avatar,
   LogoIconWrapper,
+  LogoIdentity,
   LogoRow,
   LogoText,
   LogoutButton,
+  MobileCloseButton,
   Nav,
   NavItem,
   NotificationBadge,
   NotificationButton,
+  SidebarOverlay,
   SidebarWrapper,
   UserInfo,
   UserName,
@@ -42,6 +45,11 @@ import {
   UserRow,
   UserSection,
 } from "./styles";
+
+type SidebarProps = {
+  isMobileOpen?: boolean;
+  onCloseMobile?: () => void;
+};
 
 const ADMIN_NAV_LINKS: NavLink[] = [
   { label: "Início", path: "/admin/dashboard", icon: LayoutDashboard },
@@ -128,7 +136,7 @@ const getRoleLabel = (role: string) => {
   return labels[role] ?? role;
 };
 
-export const Sidebar = () => {
+export const Sidebar = ({ isMobileOpen = false, onCloseMobile }: SidebarProps) => {
   const { user, logout } = useAuth();
   const { unreadCount, openPanel, isPanelOpen } = useNotifications();
   const bellButtonRef = useRef<HTMLButtonElement>(null);
@@ -141,6 +149,7 @@ export const Sidebar = () => {
 
   const handleLogout = () => {
     logout();
+    onCloseMobile?.();
     navigate("/login");
   };
 
@@ -155,12 +164,18 @@ export const Sidebar = () => {
 
   return (
     <>
-      <SidebarWrapper>
+      <SidebarOverlay $visible={isMobileOpen} onClick={onCloseMobile} aria-label="Fechar menu" />
+      <SidebarWrapper $mobileOpen={isMobileOpen}>
         <LogoRow>
-          <LogoIconWrapper>
-            <Stethoscope size={18} />
-          </LogoIconWrapper>
-          <LogoText>Minha Clínica</LogoText>
+          <LogoIdentity>
+            <LogoIconWrapper>
+              <Stethoscope size={18} />
+            </LogoIconWrapper>
+            <LogoText>Minha Clínica</LogoText>
+          </LogoIdentity>
+          <MobileCloseButton type="button" onClick={onCloseMobile} aria-label="Fechar menu">
+            <X />
+          </MobileCloseButton>
         </LogoRow>
 
         <Nav>
@@ -172,7 +187,10 @@ export const Sidebar = () => {
                   key={link.path}
                   ref={bellButtonRef}
                   type="button"
-                  onClick={() => openPanel(bellButtonRef.current)}
+                  onClick={() => {
+                    openPanel(bellButtonRef.current);
+                    onCloseMobile?.();
+                  }}
                   className={isPanelOpen ? "active" : undefined}
                 >
                   <link.icon size={20} />
@@ -191,6 +209,7 @@ export const Sidebar = () => {
                 to={link.path}
                 end={link.path.endsWith("/dashboard")}
                 className={isForceActive ? () => "active" : undefined}
+                onClick={onCloseMobile}
               >
                 <link.icon size={20} />
                 {link.label}
@@ -202,25 +221,29 @@ export const Sidebar = () => {
         <UserSection>
           <UserRow
             type="button"
-            onClick={() => profilePath && navigate(profilePath)}
+            onClick={() => {
+              if (!profilePath) return;
+              onCloseMobile?.();
+              navigate(profilePath);
+            }}
             aria-label="Abrir perfil"
             disabled={!profilePath}
           >
             <Avatar>
               {shouldRenderAvatarImage ? (
-                <img
-                  src={avatarUrl}
-                  alt={`Foto de ${user?.name ?? "Usuário"}`}
-                  onError={() => setHasAvatarLoadError(true)}
-                />
+                  <img
+                    src={avatarUrl}
+                    alt={`Foto de ${user?.name ?? "Usuário"}`}
+                    onError={() => setHasAvatarLoadError(true)}
+                  />
               ) : (
                 <span>{initials}</span>
               )}
             </Avatar>
-            <UserInfo>
-              <UserName>{user?.name ?? "Usuário"}</UserName>
-              <UserRoleLabel>{roleLabel}</UserRoleLabel>
-            </UserInfo>
+              <UserInfo>
+                <UserName>{user?.name ?? "Usuário"}</UserName>
+                <UserRoleLabel>{roleLabel}</UserRoleLabel>
+              </UserInfo>
           </UserRow>
 
           <LogoutButton type="button" onClick={handleLogout}>

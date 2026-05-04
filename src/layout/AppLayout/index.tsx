@@ -4,6 +4,7 @@ import {
   Building2,
   ChevronRight,
   LogOut,
+  Menu,
   Moon,
   Pencil,
   Search,
@@ -31,6 +32,7 @@ import {
   HeaderRight,
   LayoutWrapper,
   MainContent,
+  MobileMenuButton,
   NotificationBadge,
   PageTitle,
   ProfileMenuActionButton,
@@ -44,6 +46,7 @@ import {
   ProfileMenuWrapper,
   SearchBox,
   ThemeToggleButton,
+  TopBarLeft,
   TopBar,
 } from "./styles";
 
@@ -361,6 +364,7 @@ export const AppLayout = () => {
   const [avatarUrl, setAvatarUrl] = useState<string>(normalizeAvatarUrl(user?.avatarUrl));
   const [hasAvatarLoadError, setHasAvatarLoadError] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isSidebarMobileOpen, setIsSidebarMobileOpen] = useState(false);
   const [staffRoleOrSpecialty, setStaffRoleOrSpecialty] = useState<string>("-");
   const [staffClinicName, setStaffClinicName] = useState<string>("-");
 
@@ -491,7 +495,19 @@ export const AppLayout = () => {
 
   useEffect(() => {
     setIsProfileMenuOpen(false);
+    setIsSidebarMobileOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!isSidebarMobileOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isSidebarMobileOpen]);
 
   const initials = useMemo(() => getInitials(user?.name ?? "U"), [user?.name]);
   const roleLabel = useMemo(() => getRoleLabel(user?.role), [user?.role]);
@@ -561,27 +577,40 @@ export const AppLayout = () => {
 
   return (
     <LayoutWrapper>
-      <Sidebar />
+      <Sidebar
+        isMobileOpen={isSidebarMobileOpen}
+        onCloseMobile={() => setIsSidebarMobileOpen(false)}
+      />
 
       <ContentArea>
         <TopBar>
-          <PageTitle>
-            {breadcrumb ? (
-              <Breadcrumb>
-                {breadcrumb.grandParent && (
-                  <>
-                    {renderCrumb(breadcrumb.grandParent, breadcrumb.grandParentPath)}
-                    <ChevronRight size={14} color={theme.colors.text.muted} />
-                  </>
-                )}
-                {renderCrumb(breadcrumb.parent, breadcrumb.parentPath)}
-                <ChevronRight size={14} color={theme.colors.text.muted} />
-                {renderCrumb(breadcrumb.current, breadcrumb.currentPath, true)}
-              </Breadcrumb>
-            ) : (
-              <BreadcrumbText $current>{title}</BreadcrumbText>
-            )}
-          </PageTitle>
+          <TopBarLeft>
+            <MobileMenuButton
+              type="button"
+              onClick={() => setIsSidebarMobileOpen(true)}
+              aria-label="Abrir menu"
+              title="Abrir menu"
+            >
+              <Menu />
+            </MobileMenuButton>
+            <PageTitle>
+              {breadcrumb ? (
+                <Breadcrumb>
+                  {breadcrumb.grandParent && (
+                    <>
+                      {renderCrumb(breadcrumb.grandParent, breadcrumb.grandParentPath)}
+                      <ChevronRight size={14} color={theme.colors.text.muted} />
+                    </>
+                  )}
+                  {renderCrumb(breadcrumb.parent, breadcrumb.parentPath)}
+                  <ChevronRight size={14} color={theme.colors.text.muted} />
+                  {renderCrumb(breadcrumb.current, breadcrumb.currentPath, true)}
+                </Breadcrumb>
+              ) : (
+                <BreadcrumbText $current>{title}</BreadcrumbText>
+              )}
+            </PageTitle>
+          </TopBarLeft>
           <HeaderRight>
             <ThemeToggleButton
               type="button"

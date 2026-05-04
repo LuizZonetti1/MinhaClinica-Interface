@@ -4,13 +4,15 @@ import { theme } from "../../themes/themes";
 
 export const LayoutWrapper = styled.div`
   display: flex;
-  height: 100vh;
+  height: 100dvh;
+  min-height: 100dvh;
   overflow: hidden;
   background-color: ${theme.colors.background};
 `;
 
 export const ContentArea = styled.div`
   flex: 1;
+  width: 100%;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -21,6 +23,7 @@ export const TopBar = styled.header`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding: 0 32px;
   height: 64px;
   background-color: ${theme.colors.background};
@@ -28,6 +31,52 @@ export const TopBar = styled.header`
   position: sticky;
   top: 0;
   z-index: 10;
+
+  @media (max-width: ${theme.breakpoints.desktop}) {
+    padding: 0 20px;
+  }
+
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    height: 56px;
+    padding: 0 12px;
+    gap: 8px;
+  }
+`;
+
+export const TopBarLeft = styled.div`
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+`;
+
+export const MobileMenuButton = styled.button`
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid ${theme.colors.border.light};
+  border-radius: ${theme.borderRadius.sm};
+  background-color: ${theme.colors.surface};
+  color: ${theme.colors.text.secondary};
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: ${theme.colors.surfaceMuted};
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    display: inline-flex;
+  }
 `;
 
 export const PageTitle = styled.div`
@@ -35,20 +84,44 @@ export const PageTitle = styled.div`
   font-size: 14px;
   font-weight: 500;
   color: ${theme.colors.text.primary};
+  min-width: 0;
+  overflow: hidden;
 `;
 
 export const Breadcrumb = styled.div`
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    gap: 6px;
+  }
 `;
 
 export const BreadcrumbText = styled.span<{ $current?: boolean }>`
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 240px;
   color: ${({ $current }) => ($current ? theme.colors.text.primary : theme.colors.text.muted)};
   font-weight: ${({ $current }) => ($current ? 600 : 400)};
+
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    max-width: 160px;
+  }
 `;
 
 export const BreadcrumbLink = styled(Link)<{ $current?: boolean }>`
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 240px;
   text-decoration: none;
   color: ${({ $current }) => ($current ? theme.colors.text.primary : theme.colors.text.muted)};
   font-weight: ${({ $current }) => ($current ? 600 : 400)};
@@ -57,12 +130,21 @@ export const BreadcrumbLink = styled(Link)<{ $current?: boolean }>`
   &:hover {
     color: ${theme.colors.text.link};
   }
+
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    max-width: 160px;
+  }
 `;
 
 export const HeaderRight = styled.div`
   display: flex;
   align-items: center;
   gap: 16px;
+  flex-shrink: 0;
+
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    gap: 8px;
+  }
 `;
 
 export const SearchBox = styled.div`
@@ -86,6 +168,14 @@ export const SearchBox = styled.div`
     font-family: "Roboto", sans-serif;
     font-size: 14px;
     color: ${theme.colors.text.disabled};
+  }
+
+  @media (max-width: ${theme.breakpoints.desktop}) {
+    min-width: 200px;
+  }
+
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    display: none;
   }
 `;
 
@@ -189,13 +279,17 @@ export const ProfileMenuCard = styled.div`
   position: absolute;
   top: calc(100% + 10px);
   right: 0;
-  width: 300px;
+  width: min(300px, calc(100vw - 24px));
   background-color: ${theme.colors.surface};
   border: 1px solid ${theme.colors.border.light};
   border-radius: ${theme.borderRadius.md};
   box-shadow: ${theme.shadows.lg};
   overflow: hidden;
   z-index: 20;
+
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    right: -6px;
+  }
 `;
 
 export const ProfileMenuHeader = styled.div`
@@ -326,4 +420,23 @@ export const ProfileMenuActionButton = styled.button<{ $danger?: boolean }>`
 export const MainContent = styled.main`
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
+
+  > * {
+    min-width: 0;
+  }
+
+  @media (max-width: ${theme.breakpoints.desktop}) {
+    > * {
+      padding-left: 24px !important;
+      padding-right: 24px !important;
+    }
+  }
+
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    > * {
+      padding-left: 16px !important;
+      padding-right: 16px !important;
+    }
+  }
 `;

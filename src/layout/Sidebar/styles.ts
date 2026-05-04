@@ -2,23 +2,84 @@ import { NavLink } from 'react-router';
 import styled from 'styled-components';
 import { theme } from '../../themes/themes';
 
-export const SidebarWrapper = styled.aside`
+export const SidebarWrapper = styled.aside<{ $mobileOpen: boolean }>`
   width: 256px;
   min-width: 256px;
-  height: 100vh;
+  height: 100dvh;
   background-color: ${theme.colors.dark};
   display: flex;
   flex-direction: column;
   position: sticky;
   top: 0;
   overflow-y: auto;
+  z-index: 20;
+
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: min(280px, 84vw);
+    min-width: 0;
+    transform: ${({ $mobileOpen }) => ($mobileOpen ? "translateX(0)" : "translateX(-100%)")};
+    transition: transform 0.2s ease;
+    box-shadow: ${theme.shadows.lg};
+  }
+`;
+
+export const SidebarOverlay = styled.button<{ $visible: boolean }>`
+  position: fixed;
+  inset: 0;
+  border: none;
+  background: rgba(15, 23, 42, 0.45);
+  cursor: pointer;
+  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
+  pointer-events: ${({ $visible }) => ($visible ? "auto" : "none")};
+  transition: opacity 0.2s ease;
+  z-index: 19;
+  display: none;
+
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    display: block;
+  }
+`;
+
+export const MobileCloseButton = styled.button`
+  display: none;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: ${theme.borderRadius.sm};
+  background: transparent;
+  color: ${theme.colors.text.inverse};
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    display: inline-flex;
+  }
 `;
 
 export const LogoRow = styled.div`
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
   padding: 28px 16px 20px;
+`;
+
+export const LogoIdentity = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 `;
 
 export const LogoIconWrapper = styled.div`
@@ -256,4 +317,3 @@ export const NotificationBadge = styled.span`
   color: #fff;
   pointer-events: none;
 `;
-
