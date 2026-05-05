@@ -2,12 +2,15 @@ import { ArrowLeft } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Button } from "../../../../components/Button";
+import DocumentAttachmentUpload from "../../../../components/DocumentAttachmentUpload";
 import {
   deleteClinicalDocument,
+  deleteDocumentAttachment,
   finalizeClinicalDocument,
   getClinicalDocument,
   updateClinicalDocument,
   createClinicalDocumentAddendum,
+  uploadDocumentAttachment,
 } from "../../../../services/clinical-documents.service";
 import type {
   AttendanceDeclarationContent,
@@ -678,6 +681,22 @@ const DocumentFormPage = () => {
       />
 
       {renderForm()}
+
+      {/* Anexos — disponíveis em qualquer status do documento */}
+      {!isAddendoMode && document && (
+        <DocumentAttachmentUpload
+          attachments={document.attachments ?? []}
+          canEdit
+          onUpload={async (file) => {
+            await uploadDocumentAttachment(appointmentId, documentId, file);
+            await loadDocument();
+          }}
+          onDelete={async (attachmentId) => {
+            await deleteDocumentAttachment(appointmentId, documentId, attachmentId);
+            await loadDocument();
+          }}
+        />
+      )}
 
       {!viewMode && !isFinalized && !isSentOrAddendum && (
         <DocumentFormFooter
