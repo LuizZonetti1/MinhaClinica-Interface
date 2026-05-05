@@ -2,6 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Button } from "../../../../components/Button";
+import DocumentAttachmentUpload from "../../../../components/DocumentAttachmentUpload";
 import { getClinicalDocument } from "../../../../services/clinical-documents.service";
 import type { ClinicalDocumentDetail } from "../../../../types/clinical-document";
 import { ClinicalDocumentType } from "../../../../types/clinical-document";
@@ -131,6 +132,14 @@ const PatientDocumentViewPage = () => {
           {renderBody()}
         </DocumentPrintLayout>
       </PatientScreenViewWrapper>
+
+      {/* Paciente só visualiza anexos — sem upload/delete */}
+      <DocumentAttachmentUpload
+        attachments={doc.attachments ?? []}
+        canEdit={false}
+        onUpload={async () => {}}
+        onDelete={async () => {}}
+      />
     </ViewPageWrapper>
   );
 };

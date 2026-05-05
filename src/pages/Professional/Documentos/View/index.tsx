@@ -2,9 +2,12 @@ import { ArrowLeft, Printer } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Button } from "../../../../components/Button";
+import DocumentAttachmentUpload from "../../../../components/DocumentAttachmentUpload";
 import {
+  deleteDocumentAttachment,
   getClinicalDocument,
   printAuditDocument,
+  uploadDocumentAttachment,
 } from "../../../../services/clinical-documents.service";
 import type { ClinicalDocumentDetail } from "../../../../types/clinical-document";
 import { ClinicalDocumentType } from "../../../../types/clinical-document";
@@ -167,6 +170,20 @@ const DocumentViewPage = () => {
       <DocumentPrintLayout doc={doc} patientSignature={needsPatientSignature}>
         {renderBody()}
       </DocumentPrintLayout>
+
+      {/* ── Attachments (not printed) ── */}
+      <DocumentAttachmentUpload
+        attachments={doc.attachments ?? []}
+        canEdit
+        onUpload={async (file) => {
+          await uploadDocumentAttachment(appointmentId, documentId, file);
+          await loadDocument();
+        }}
+        onDelete={async (attachmentId) => {
+          await deleteDocumentAttachment(appointmentId, documentId, attachmentId);
+          await loadDocument();
+        }}
+      />
     </ViewPageWrapper>
   );
 };
