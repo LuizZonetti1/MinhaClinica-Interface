@@ -1,7 +1,5 @@
 import {
-  Bell,
   CalendarDays,
-  CheckCircle,
   FileText,
   Settings,
   Stethoscope,
@@ -10,8 +8,7 @@ import {
   UserPlus,
   Users,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { type ReactNode, useEffect, useState } from "react";
 import { AlertItem } from "../../../components/AlertItem";
 import { ConsultationsChart } from "../../../components/ConsultationsChart";
 import QuickActions from "../../../components/QuickActions";
@@ -69,24 +66,6 @@ const buildStats = (data: DashboardSummary) => [
   },
 ];
 
-const ALERTS = [
-  {
-    type: "warning" as const,
-    icon: <Bell size={18} />,
-    message: "3 profissionais com agenda vazia esta semana.",
-  },
-  {
-    type: "success" as const,
-    icon: <CheckCircle size={18} />,
-    message: "Meta de consultas de Fevereiro atingida (280/250).",
-  },
-  {
-    type: "info" as const,
-    icon: <CalendarDays size={18} />,
-    message: "5 pacientes aguardando confirmação de consulta.",
-  },
-];
-
 const QUICK_ACCESS = [
   {
     icon: <Stethoscope size={20} />,
@@ -128,6 +107,56 @@ const toValidReferenceDate = (rawDate: string | null | undefined): Date => {
   const parsed = new Date(rawDate);
   if (Number.isNaN(parsed.getTime())) return new Date();
   return parsed;
+};
+
+type AlertEntry = {
+  type: "warning" | "success" | "info";
+  icon: ReactNode;
+  message: string;
+};
+
+const buildAlerts = (summary: DashboardSummary): AlertEntry[] => {
+  const now = new Date();
+  const alerts: AlertEntry[] = [];
+
+  // Alerta 1: consultas hoje
+  if (summary.appointmentsToday === 0) {
+    alerts.push({
+      type: "warning",
+      icon: <CalendarDays size={18} />,
+      message: "Nenhuma consulta agendada para hoje.",
+    });
+  } else {
+    const plural = summary.appointmentsToday !== 1;
+    alerts.push({
+      type: "info",
+      icon: <CalendarDays size={18} />,
+      message: `${summary.appointmentsToday} consulta${plural ? "s" : ""} agendada${plural ? "s" : ""} para hoje.`,
+    });
+  }
+
+  // Alerta 2: balanço mensal — exibido apenas a partir do dia 26 às 7h
+  if (now.getDate() >= 26 && now.getHours() >= 7) {
+    const refDate = toValidReferenceDate(summary.referenceDate);
+    const monthName = refDate.toLocaleDateString("pt-BR", { month: "long" });
+    const balanceFormatted = formatBalance(summary.monthlyBalance);
+
+    if (summary.monthlyBalance < 0) {
+      alerts.push({
+        type: "warning",
+        icon: <TrendingUp size={18} />,
+        message: `Balanço de ${monthName} negativo: ${balanceFormatted}.`,
+      });
+    } else {
+      alerts.push({
+        type: "success",
+        icon: <TrendingUp size={18} />,
+        message: `Balanço de ${monthName} positivo: ${balanceFormatted}.`,
+      });
+    }
+  }
+
+  return alerts;
 };
 
 const getLastSixMonthsAbbr = (referenceDate = new Date()) => {
@@ -204,9 +233,9 @@ const buildChartDataFromHistorical = (
 
 const AdminDashboard = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [stats, setStats] = useState<ReturnType<typeof buildStats>>([]);
   const [appointmentsToday, setAppointmentsToday] = useState<number | null>(null);
+  const [summaryData, setSummaryData] = useState<DashboardSummary | null>(null);
   const [chartData, setChartData] = useState<HistoricalItem[]>(() =>
     getLastSixMonthsAbbr().map((month) => ({ month, consultations: 0, revenue: 0 })),
   );
@@ -239,6 +268,7 @@ const AdminDashboard = () => {
         const summary = summaryResult.value;
         setStats(buildStats(summary));
         setAppointmentsToday(summary.appointmentsToday);
+        setSummaryData(summary);
 
         const referenceDate = toValidReferenceDate(summary.referenceDate);
         if (historicalResult.status === "fulfilled" && historicalResult.value.length > 0) {
@@ -292,19 +322,21 @@ const AdminDashboard = () => {
       </StatsGrid>
 
       {/* Alerts */}
-      <AlertsSection>
-        <SectionTitle>Alertas e Notificações</SectionTitle>
-        <AlertsList>
-          {ALERTS.map((alert) => (
-            <AlertItem
-              key={alert.message}
-              type={alert.type}
-              icon={alert.icon}
-              message={alert.message}
-            />
-          ))}
-        </AlertsList>
-      </AlertsSection>
+      {summaryData && (
+        <AlertsSection>
+          <SectionTitle>Alertas e Notificações</SectionTitle>
+          <AlertsList>
+            {buildAlerts(summaryData).map((alert) => (
+              <AlertItem
+                key={alert.message}
+                type={alert.type}
+                icon={alert.icon}
+                message={alert.message}
+              />
+            ))}
+          </AlertsList>
+        </AlertsSection>
+      )}
 
       {/* Chart */}
       <ChartCard>
