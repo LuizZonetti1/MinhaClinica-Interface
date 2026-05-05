@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "../../../components/Button";
 import { Modal } from "../../../components/Modal";
-import { QuickAccessCard } from "../../../components/QuickAccessCard";
+import QuickActions from "../../../components/QuickActions";
 import { Skeleton } from "../../../components/Skeleton";
 import { StatCard } from "../../../components/StatCard";
 import { useAuth } from "../../../contexts";
@@ -527,20 +527,7 @@ const PatientDashboard = () => {
         )}
       </div>
 
-      <QuickAccessSection>
-        <SectionTitle>Acesso Rapido</SectionTitle>
-        <QuickAccessGrid>
-          {QUICK_ACCESS.map((item) => (
-            <QuickAccessCard
-              key={item.label}
-              icon={item.icon}
-              label={item.label}
-              color={item.color}
-              onClick={() => navigate(item.path)}
-            />
-          ))}
-        </QuickAccessGrid>
-      </QuickAccessSection>
+      <QuickActions actions={QUICK_ACCESS} />
 
       {/* Consultas Anteriores */}
       {!loading && recentHistory.length > 0 && (

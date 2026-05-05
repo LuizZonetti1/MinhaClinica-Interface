@@ -9,8 +9,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
-import { QuickAccessCard } from "../../../components/QuickAccessCard";
+import QuickActions from "../../../components/QuickActions";
 import { StatCard } from "../../../components/StatCard";
 import { useAuth } from "../../../contexts";
 import { getReceptionDashboard, updateAppointmentStatus } from "../../../services/reception.service";
@@ -30,8 +29,6 @@ import {
   HeroSubtitle,
   HeroTitle,
   PageWrapper,
-  QuickAccessGrid,
-  QuickAccessSection,
   SectionTitle,
   StatsGrid,
   StatusBadge,
@@ -124,7 +121,6 @@ const EMPTY_SUMMARY: ReceptionDashboardSummary = {
 
 const ReceptionDashboard = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [dashData, setDashData] = useState<ReceptionDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [checkingInId, setCheckingInId] = useState<string | null>(null);
@@ -213,20 +209,7 @@ const ReceptionDashboard = () => {
       </StatsGrid>
 
       {/* Ações Rápidas */}
-      <QuickAccessSection>
-        <SectionTitle>Ações Rápidas</SectionTitle>
-        <QuickAccessGrid>
-          {QUICK_ACCESS.map((card) => (
-            <QuickAccessCard
-              key={card.label}
-              icon={card.icon}
-              label={card.label}
-              color={card.color}
-              onClick={() => navigate(card.path)}
-            />
-          ))}
-        </QuickAccessGrid>
-      </QuickAccessSection>
+      <QuickActions actions={QUICK_ACCESS} />
 
       {/* Pacientes de Hoje */}
       <div>

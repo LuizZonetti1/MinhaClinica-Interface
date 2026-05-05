@@ -1,7 +1,6 @@
 import { CalendarDays, CheckCircle, MessageSquare, User, Users } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
-import { QuickAccessCard } from "../../../components/QuickAccessCard";
+import QuickActions from "../../../components/QuickActions";
 import { StatCard } from "../../../components/StatCard";
 import { useAuth } from "../../../contexts";
 import { getProfessionalDashboard } from "../../../services/professional.service";
@@ -21,8 +20,6 @@ import {
   HeroSubtitle,
   HeroTitle,
   PageWrapper,
-  QuickAccessGrid,
-  QuickAccessSection,
   SectionTitle,
   StatsGrid,
   StatusBadge,
@@ -111,7 +108,6 @@ const EMPTY_SUMMARY: ProfessionalDashboardSummary = {
 
 const ProfessionalDashboard = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [dashData, setDashData] = useState<ProfessionalDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -213,20 +209,7 @@ const ProfessionalDashboard = () => {
       </div>
 
       {/* Acesso Rápido */}
-      <QuickAccessSection>
-        <SectionTitle>Acesso Rápido</SectionTitle>
-        <QuickAccessGrid>
-          {QUICK_ACCESS.map((card) => (
-            <QuickAccessCard
-              key={card.label}
-              icon={card.icon}
-              label={card.label}
-              color={card.color}
-              onClick={() => navigate(card.path)}
-            />
-          ))}
-        </QuickAccessGrid>
-      </QuickAccessSection>
+      <QuickActions actions={QUICK_ACCESS} />
     </PageWrapper>
   );
 };

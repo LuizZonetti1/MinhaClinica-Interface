@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { AlertItem } from "../../../components/AlertItem";
 import { ConsultationsChart } from "../../../components/ConsultationsChart";
-import { QuickAccessCard } from "../../../components/QuickAccessCard";
+import QuickActions from "../../../components/QuickActions";
 import { StatCard } from "../../../components/StatCard";
 import { useAuth } from "../../../contexts";
 import { getDashboardHistorical, getDashboardSummary } from "../../../services/admin.service";
@@ -30,8 +30,6 @@ import {
   HeroSubtitle,
   HeroTitle,
   PageWrapper,
-  QuickAccessGrid,
-  QuickAccessSection,
   SectionTitle,
   StatsGrid,
 } from "./styles";
@@ -315,20 +313,7 @@ const AdminDashboard = () => {
       </ChartCard>
 
       {/* Quick Access */}
-      <QuickAccessSection>
-        <SectionTitle>Acesso Rápido</SectionTitle>
-        <QuickAccessGrid>
-          {QUICK_ACCESS.map((item) => (
-            <QuickAccessCard
-              key={item.label}
-              icon={item.icon}
-              label={item.label}
-              color={item.color}
-              onClick={() => navigate(item.path)}
-            />
-          ))}
-        </QuickAccessGrid>
-      </QuickAccessSection>
+      <QuickActions actions={QUICK_ACCESS} />
     </PageWrapper>
   );
 };

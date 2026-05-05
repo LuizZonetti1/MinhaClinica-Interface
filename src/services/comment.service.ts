@@ -175,18 +175,8 @@ export const commentService = {
   },
 
   update: async (id: string, payload: UpdateCommentPayload): Promise<PatientComment> => {
-    try {
-      const response = await api.put<unknown>(`${BASE_PATH}/${id}`, payload);
-      return normalizeComment(response.data);
-    } catch (error) {
-      const statusCode = (error as { response?: { status?: number } })?.response?.status;
-      if (statusCode !== 404 && statusCode !== 405) {
-        throw error;
-      }
-
-      const response = await api.patch<unknown>(`${BASE_PATH}/${id}`, payload);
-      return normalizeComment(response.data);
-    }
+    const response = await api.patch<unknown>(`${BASE_PATH}/${id}`, payload);
+    return normalizeComment(response.data);
   },
 
   remove: async (id: string): Promise<void> => {
