@@ -211,16 +211,16 @@ const normalizeDocumentDetail = (payload: unknown): ClinicalDocumentDetail => {
     clinicInfo,
     attachments: Array.isArray(data.attachments)
       ? (data.attachments as RecordValue[]).map((a): DocumentAttachment => ({
-          id: toTrimmedStringValue(a.id, ""),
-          documentId: toTrimmedStringValue(a.documentId ?? a.document_id, ""),
-          fileName: toTrimmedStringValue(a.fileName ?? a.file_name, ""),
-          mimeType: toTrimmedStringValue(a.mimeType ?? a.mime_type, ""),
-          sizeBytes: typeof a.sizeBytes === "number" ? a.sizeBytes : 0,
-          caption: toTrimmedStringValue(a.caption, "") || null,
-          uploadedAt: toTrimmedStringValue(a.uploadedAt ?? a.uploaded_at, ""),
+        id: toTrimmedStringValue(a.id, ""),
+        documentId: toTrimmedStringValue(a.documentId ?? a.document_id, ""),
+        fileName: toTrimmedStringValue(a.fileName ?? a.file_name, ""),
+        mimeType: toTrimmedStringValue(a.mimeType ?? a.mime_type, ""),
+        sizeBytes: typeof a.sizeBytes === "number" ? a.sizeBytes : 0,
+        caption: toTrimmedStringValue(a.caption, "") || null,
+        uploadedAt: toTrimmedStringValue(a.uploadedAt ?? a.uploaded_at, ""),
         url: toTrimmedStringValue(a.url, "") ||
           (a.storedName ? `/uploads/documents/${String(a.storedName)}` : ""),
-        }))
+      }))
       : [],
   };
 };

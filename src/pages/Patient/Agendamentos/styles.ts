@@ -527,11 +527,11 @@ export const SlotButton = styled.button<{ $selected: boolean; $available: boolea
   border-radius: ${theme.borderRadius.sm};
   border: 1px solid
     ${({ $selected, $available }) =>
-      $selected
-        ? theme.colors.primary
-        : $available
-          ? theme.colors.border.default
-          : theme.colors.border.lighter};
+    $selected
+      ? theme.colors.primary
+      : $available
+        ? theme.colors.border.default
+        : theme.colors.border.lighter};
   background: ${({ $selected, $available }) =>
     $selected
       ? theme.colors.primary
