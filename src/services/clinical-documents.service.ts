@@ -23,6 +23,7 @@ import type {
   ClinicalDocumentsResult,
   ClinicalDocumentType,
   DocumentAppointmentContext,
+  DocumentAttachment,
   DocumentClinicInfo,
   DocumentContent,
   UpdateClinicalDocumentPayload,
@@ -208,6 +209,17 @@ const normalizeDocumentDetail = (payload: unknown): ClinicalDocumentDetail => {
     addendumAt,
     addendumAuthor,
     clinicInfo,
+    attachments: Array.isArray(data.attachments)
+      ? (data.attachments as RecordValue[]).map((a): DocumentAttachment => ({
+          id: toTrimmedStringValue(a.id, ""),
+          documentId: toTrimmedStringValue(a.documentId ?? a.document_id, ""),
+          fileName: toTrimmedStringValue(a.fileName ?? a.file_name, ""),
+          mimeType: toTrimmedStringValue(a.mimeType ?? a.mime_type, ""),
+          sizeBytes: typeof a.sizeBytes === "number" ? a.sizeBytes : 0,
+          uploadedAt: toTrimmedStringValue(a.uploadedAt ?? a.uploaded_at, ""),
+          url: toTrimmedStringValue(a.url, ""),
+        }))
+      : [],
   };
 };
 
@@ -250,4 +262,31 @@ export const printAuditDocument = async (
   documentId: string,
 ): Promise<void> => {
   await api.get(`/appointments/${appointmentId}/documents/${documentId}/print`);
+};
+
+// ─── Attachments ─────────────────────────────────────────────────────────────
+
+export const uploadDocumentAttachment = async (
+  appointmentId: string,
+  documentId: string,
+  file: File,
+): Promise<DocumentAttachment> => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const { data } = await api.post<DocumentAttachment>(
+    `/appointments/${appointmentId}/documents/${documentId}/attachments`,
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } },
+  );
+  return data;
+};
+
+export const deleteDocumentAttachment = async (
+  appointmentId: string,
+  documentId: string,
+  attachmentId: string,
+): Promise<void> => {
+  await api.delete(
+    `/appointments/${appointmentId}/documents/${documentId}/attachments/${attachmentId}`,
+  );
 };
