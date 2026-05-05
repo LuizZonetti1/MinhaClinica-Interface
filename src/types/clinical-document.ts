@@ -52,7 +52,7 @@ export interface DocumentAppointmentContext {
   appointmentDate: string; // YYYY-MM-DD
   startTime: string; // HH:mm
   professionalName: string;
-  councilRegistration: string; // "CRM 12345"
+  councilRegistration?: string; // "CRM 12345"
   appointmentStatus: string;
 }
 
@@ -221,6 +221,18 @@ export type DocumentContent =
   | TreatmentPlanContent
   | BudgetContent;
 
+// ─── Document attachment ──────────────────────────────────────────────────────
+
+export interface DocumentAttachment {
+  id: string;
+  documentId: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  uploadedAt: string; // ISO datetime
+  url: string;
+}
+
 // ─── Document detail (single doc with content) ───────────────────────────────
 
 export interface ClinicalDocumentDetail extends ClinicalDocumentItem {
@@ -239,6 +251,8 @@ export interface ClinicalDocumentDetail extends ClinicalDocumentItem {
   addendumAuthor?: string;
   /** Metadados da clinica para renderizacao */
   clinicInfo?: DocumentClinicInfo;
+  /** Arquivos anexados ao documento */
+  attachments?: DocumentAttachment[];
 }
 
 // ─── Payloads ─────────────────────────────────────────────────────────────────
@@ -258,4 +272,12 @@ export interface UpdateClinicalDocumentPayload {
 export interface ClinicalDocumentsResult {
   appointmentContext: DocumentAppointmentContext;
   documents: ClinicalDocumentItem[];
+}
+
+// ─── Session cache (usado nas páginas de documentos) ──────────────────────────
+
+export interface DocPageCache {
+  appointmentCtx: DocumentAppointmentContext;
+  documents: ClinicalDocumentItem[];
+  cachedAt: number;
 }
