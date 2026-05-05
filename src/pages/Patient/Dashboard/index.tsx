@@ -110,12 +110,18 @@ const shouldHideFromUpcoming = (appointment: PatientNextAppointment): boolean =>
 // ─── Recent history helpers ────────────────────────────────────────────────────
 
 const HIST_STATUS_ALIASES: Record<string, string> = {
-  DONE: "COMPLETED", FINISHED: "COMPLETED", CONCLUDED: "COMPLETED",
-  NOSHOW: "NO_SHOW", CANCELED: "CANCELLED",
+  DONE: "COMPLETED",
+  FINISHED: "COMPLETED",
+  CONCLUDED: "COMPLETED",
+  NOSHOW: "NO_SHOW",
+  CANCELED: "CANCELLED",
 };
 
 const normalizeHistSt = (status: string): string => {
-  const up = status.trim().toUpperCase().replace(/[\s-]+/g, "_");
+  const up = status
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_");
   return HIST_STATUS_ALIASES[up] ?? up;
 };
 
@@ -132,8 +138,10 @@ const isHistoricalAppt = (appt: PatientAppointmentListItem): boolean => {
 const histSortStamp = (appt: PatientAppointmentListItem): number => {
   const m = appt.appointmentDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (!m) return 0;
-  return Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])) +
-    (parseTimeToMinutes(appt.startTime) ?? 0) * 60_000;
+  return (
+    Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])) +
+    (parseTimeToMinutes(appt.startTime) ?? 0) * 60_000
+  );
 };
 
 const HIST_STATUS_META: Record<string, { label: string; variant: AppointmentStatusVariant }> = {
@@ -171,6 +179,10 @@ const mapStatusLabel = (status: string): string => {
       return "Em atendimento";
     case "COMPLETED":
       return "Concluída";
+    case "DONE":
+      return "Concluída";
+    case "RESCHEDULED":
+      return "Reagendada";
     case "NO_SHOW":
       return "Não compareceu";
     case "CANCELLED":
@@ -192,7 +204,10 @@ const mapStatusVariant = (status: string): AppointmentStatusVariant => {
     case "IN_PROGRESS":
       return "warning";
     case "COMPLETED":
+    case "DONE":
       return "neutral";
+    case "RESCHEDULED":
+      return "info";
     case "NO_SHOW":
     case "CANCELLED":
       return "danger";
@@ -540,7 +555,10 @@ const PatientDashboard = () => {
           <NextAppointmentsList>
             {recentHistory.map((appt, index) => {
               const st = normalizeHistSt(appt.status);
-              const meta = HIST_STATUS_META[st] ?? { label: st, variant: "info" as AppointmentStatusVariant };
+              const meta = HIST_STATUS_META[st] ?? {
+                label: st,
+                variant: "info" as AppointmentStatusVariant,
+              };
               return (
                 <NextAppointmentCard key={appt.id || `hist-${index}`}>
                   <AppointmentTopBar>

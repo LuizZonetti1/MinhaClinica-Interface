@@ -59,7 +59,10 @@ export const APPT_STATUS_ALIASES: Record<string, string> = {
 };
 
 export const normalizeApptStatus = (status: string): string => {
-  const normalized = status.trim().toUpperCase().replace(/[\s-]+/g, "_");
+  const normalized = status
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_");
   return APPT_STATUS_ALIASES[normalized] ?? normalized;
 };
 
@@ -155,4 +158,13 @@ export const getClinicalDocTypeLabel = (
   if (!value) return fallback;
   const key = normalizeEnumKey(value);
   return CLINICAL_DOC_TYPE_LABELS[key] ?? (value.trim() || fallback);
+};
+
+export const getClinicalDocStatusLabel = (
+  value: string | null | undefined,
+  fallback = "Status não informado",
+): string => {
+  if (!value) return fallback;
+  const key = normalizeEnumKey(value);
+  return CLINICAL_DOC_STATUS_LABELS[key] ?? (value.trim() || fallback);
 };
