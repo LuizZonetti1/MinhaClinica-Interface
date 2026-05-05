@@ -1,6 +1,5 @@
-import { Calendar, ChevronRight, Clock3, FileText, MapPin, Plus, RotateCcw, Search } from "lucide-react";
+import { Calendar, ChevronRight, Clock3, MapPin, Plus, RotateCcw, Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router";
 import { Button } from "../../../components/Button";
 import { Input } from "../../../components/Input";
 import { Modal } from "../../../components/Modal";
@@ -111,8 +110,6 @@ const STATUS_META: Record<string, { label: string; variant: AppointmentBadgeVari
   RESCHEDULED: { label: "Remarcado", variant: "rescheduled" },
   WAITING: { label: "Aguardando", variant: "waiting" },
   IN_PROGRESS: { label: "Em atendimento", variant: "progress" },
-  COMPLETED: { label: "Compareceu", variant: "completed" },
-  NO_SHOW: { label: "Não compareceu", variant: "cancelled" },
   CANCELLED: { label: "Cancelado", variant: "cancelled" },
 };
 
@@ -221,7 +218,6 @@ const getStatusMeta = (status: string) =>
   STATUS_META[normalizeAppointmentStatus(status)] ?? { label: status, variant: "default" as const };
 
 const PatientAppointmentsPage = () => {
-  const navigate = useNavigate();
   const todayIso = useMemo(() => formatDateToIsoDate(new Date()), []);
   const allClinicsCacheRef = useRef<PatientBookingClinicItem[] | null>(null);
 
@@ -453,10 +449,15 @@ const PatientAppointmentsPage = () => {
   }, [apptModalMode, reschedDate, selectedAppointment]);
 
   const visibleAppointments = useMemo(() => {
-    const query = searchTerm.trim().toLowerCase();
-    if (!query) return result.appointments;
+    const historicalStatuses = new Set(["COMPLETED", "NO_SHOW"]);
+    const active = result.appointments.filter(
+      (a) => !historicalStatuses.has(resolveDisplayStatus(a)),
+    );
 
-    return result.appointments.filter((appointment) => {
+    const query = searchTerm.trim().toLowerCase();
+    if (!query) return active;
+
+    return active.filter((appointment) => {
       const professional = appointment.professionalName.toLowerCase();
       const clinic = (appointment.clinicName ?? "").toLowerCase();
       const specialty = (appointment.primarySpecialty ?? "").toLowerCase();
@@ -629,76 +630,59 @@ const PatientAppointmentsPage = () => {
       {loading && <StatusMessage>Carregando agendamentos...</StatusMessage>}
       {!loading && errorMessage && <StatusMessage $error>{errorMessage}</StatusMessage>}
 
-      {!loading && !errorMessage && (
-        <>
-          {visibleAppointments.length === 0 ? (
-            <EmptyState>Nenhum agendamento encontrado para o filtro selecionado.</EmptyState>
-          ) : (
-            <AppointmentsList>
-              {visibleAppointments.map((appointment, index) => {
-                const displayStatus = resolveDisplayStatus(appointment);
-                const statusMeta = getStatusMeta(displayStatus);
-                return (
-                  <AppointmentCard
-                    key={appointment.id || `${appointment.appointmentDate}-${index}`}
-                  >
-                    <AppointmentTopBar>
-                      <StatusBadge $variant={statusMeta.variant}>{statusMeta.label}</StatusBadge>
-                      <CardCode>#{String(index + 1).padStart(4, "0")}</CardCode>
-                    </AppointmentTopBar>
+      {!loading &&
+        !errorMessage &&
+        (visibleAppointments.length === 0 ? (
+          <EmptyState>Nenhum agendamento encontrado para o filtro selecionado.</EmptyState>
+        ) : (
+          <AppointmentsList>
+            {visibleAppointments.map((appointment, index) => {
+              const displayStatus = resolveDisplayStatus(appointment);
+              const statusMeta = getStatusMeta(displayStatus);
+              return (
+                <AppointmentCard key={appointment.id || `${appointment.appointmentDate}-${index}`}>
+                  <AppointmentTopBar>
+                    <StatusBadge $variant={statusMeta.variant}>{statusMeta.label}</StatusBadge>
+                    <CardCode>#{String(index + 1).padStart(4, "0")}</CardCode>
+                  </AppointmentTopBar>
 
-                    <AppointmentBody>
-                      <ProfessionalBlock>
-                        <ProfessionalName>{appointment.professionalName}</ProfessionalName>
-                        <SpecialtyText>
-                          {appointment.primarySpecialty ?? "Especialidade nao informada"}
-                        </SpecialtyText>
-                        <ClinicText>
-                          <MapPin size={13} />
-                          {appointment.clinicName ?? "Clinica nao informada"}
-                        </ClinicText>
+                  <AppointmentBody>
+                    <ProfessionalBlock>
+                      <ProfessionalName>{appointment.professionalName}</ProfessionalName>
+                      <SpecialtyText>
+                        {appointment.primarySpecialty ?? "Especialidade nao informada"}
+                      </SpecialtyText>
+                      <ClinicText>
+                        <MapPin size={13} />
+                        {appointment.clinicName ?? "Clinica nao informada"}
+                      </ClinicText>
 
-                        <ActionRow>
-                          <ViewButton
-                            type="button"
-                            onClick={() => {
-                              setApptModalMode("view");
-                              setSelectedAppointment(appointment);
-                            }}
-                          >
-                            Ver detalhes
-                            <ChevronRight size={14} />
-                          </ViewButton>
-                          {displayStatus === "COMPLETED" && (
-                            <ViewButton
-                              type="button"
-                              onClick={() =>
-                                navigate(
-                                  `/paciente/documentos?consulta=${appointment.id}`,
-                                )
-                              }
-                            >
-                              <FileText size={14} />
-                              Ver documentos
-                            </ViewButton>
-                          )}
-                        </ActionRow>
-                      </ProfessionalBlock>
+                      <ActionRow>
+                        <ViewButton
+                          type="button"
+                          onClick={() => {
+                            setApptModalMode("view");
+                            setSelectedAppointment(appointment);
+                          }}
+                        >
+                          Ver detalhes
+                          <ChevronRight size={14} />
+                        </ViewButton>
+                      </ActionRow>
+                    </ProfessionalBlock>
 
-                      <DatePill>
-                        <Calendar size={14} />
-                        {formatDateBr(appointment.appointmentDate)}
-                        <Clock3 size={14} />
-                        {appointment.startTime}
-                      </DatePill>
-                    </AppointmentBody>
-                  </AppointmentCard>
-                );
-              })}
-            </AppointmentsList>
-          )}
-        </>
-      )}
+                    <DatePill>
+                      <Calendar size={14} />
+                      {formatDateBr(appointment.appointmentDate)}
+                      <Clock3 size={14} />
+                      {appointment.startTime}
+                    </DatePill>
+                  </AppointmentBody>
+                </AppointmentCard>
+              );
+            })}
+          </AppointmentsList>
+        ))}
 
       {selectedAppointment &&
         (() => {
