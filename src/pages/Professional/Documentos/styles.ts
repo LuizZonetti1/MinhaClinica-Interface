@@ -209,6 +209,11 @@ export const DocTypeDescription = styled.span`
 
 // ─── Documents table ──────────────────────────────────────────────────────────
 
+export const DocsTableWrapper = styled.div`
+  overflow-x: auto;
+  width: 100%;
+`;
+
 export const DocsTable = styled.table`
   width: 100%;
   border-collapse: collapse;
