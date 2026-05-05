@@ -249,6 +249,31 @@ export const ViewButton = styled.button`
   }
 `;
 
+export const ConfirmPresenceButton = styled.button`
+  height: 32px;
+  border: 1px solid #bbf7d0;
+  background: #f0fdf4;
+  color: #15803d;
+  border-radius: 8px;
+  padding: 0 12px;
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.06);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
 export const CancelButton = styled.button`
   height: 32px;
   border: 1px solid var(--mc-action-border, #fecaca);

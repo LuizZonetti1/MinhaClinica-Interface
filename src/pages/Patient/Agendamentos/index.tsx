@@ -1,4 +1,4 @@
-import { Calendar, ChevronRight, Clock3, MapPin, Plus, RotateCcw, Search } from "lucide-react";
+import { Calendar, CheckSquare, ChevronRight, Clock3, MapPin, Plus, RotateCcw, Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "../../../components/Button";
 import { Input } from "../../../components/Input";
@@ -8,6 +8,7 @@ import {
   listPatientAppointments,
   rescheduleAppointment,
 } from "../../../services/patient-appointments.service";
+import { confirmPatientAppointment } from "../../../services/patient-dashboard.service";
 import {
   createPatientBookingAppointment,
   getPatientBookingSlots,
@@ -33,6 +34,7 @@ import { hasNoShowWindowElapsedForDate } from "../../../utils/timeParsers";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import type { AppointmentBadgeVariant } from "./styles";
 import {
+  ConfirmPresenceButton,
   ActionRow,
   AppointmentBody,
   AppointmentCard,
@@ -258,6 +260,7 @@ const PatientAppointmentsPage = () => {
   const [reschedSelectedSlot, setReschedSelectedSlot] = useState("");
   const [reschedSubmitting, setReschedSubmitting] = useState(false);
   const [cancelSubmitting, setCancelSubmitting] = useState(false);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -589,6 +592,20 @@ const PatientAppointmentsPage = () => {
     }
   };
 
+  const handleConfirmPresence = async (appointmentId: string) => {
+    setConfirmingId(appointmentId);
+    try {
+      await confirmPatientAppointment(appointmentId);
+      const refreshed = await listPatientAppointments(FILTER_TO_STATUS[activeFilter]);
+      setResult(refreshed);
+      notifySuccess("Presença confirmada com sucesso.");
+    } catch (err: unknown) {
+      notifyError(getApiErrorMessage(err, "Não foi possível confirmar presença."));
+    } finally {
+      setConfirmingId(null);
+    }
+  };
+
   return (
     <PageWrapper>
       <TopRow>
@@ -668,6 +685,16 @@ const PatientAppointmentsPage = () => {
                           Ver detalhes
                           <ChevronRight size={14} />
                         </ViewButton>
+                        {["SCHEDULED", "CONFIRMED"].includes(displayStatus) && (
+                          <ConfirmPresenceButton
+                            type="button"
+                            disabled={confirmingId === appointment.id}
+                            onClick={() => void handleConfirmPresence(appointment.id)}
+                          >
+                            <CheckSquare size={14} />
+                            {confirmingId === appointment.id ? "Confirmando..." : "Confirmar presença"}
+                          </ConfirmPresenceButton>
+                        )}
                       </ActionRow>
                     </ProfessionalBlock>
 
