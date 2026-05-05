@@ -8,10 +8,6 @@ import {
   type CreateTransactionPayload,
   createTransaction,
   getTransactionsHistory,
-  type PaymentMethod,
-  type PaymentStatus,
-  type TransactionHistoryItem,
-  type TransactionType,
   type UpdateTransactionPayload,
   updateTransaction,
 } from "../../../services/reports.service";
@@ -24,6 +20,15 @@ import {
 } from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError, notifySuccess } from "../../../utils/toast";
+import type {
+  EditTransactionForm,
+  ReportPeriod,
+  TransactionEditModalProps,
+  TransactionFormState,
+  TransactionHistoryItem,
+  TransactionModalProps,
+  TransactionType,
+} from "../../../types/transactions";
 import {
   EmptyStateCell,
   FormField,
@@ -45,8 +50,6 @@ import {
   TransactionAmount,
   TransactionTypeBadge,
 } from "./styles";
-
-type ReportPeriod = "1m" | "3m" | "6m" | "12m";
 
 const PERIOD_OPTIONS: Array<{ label: string; value: ReportPeriod }> = [
   { label: "Último mês", value: "1m" },
@@ -102,17 +105,6 @@ const formatTransactionAmount = (amount: number, type: TransactionType) => {
   return type === "EXPENSE" ? `-${formatted}` : formatted;
 };
 
-type TransactionFormState = {
-  type: TransactionType;
-  title: string;
-  amount: string;
-  category: string;
-  paymentMethod: PaymentMethod | "";
-  paymentStatus: PaymentStatus;
-  referenceDate: string;
-  notes: string;
-};
-
 const EMPTY_FORM: TransactionFormState = {
   type: "INCOME",
   title: "",
@@ -122,25 +114,6 @@ const EMPTY_FORM: TransactionFormState = {
   paymentStatus: "PENDING",
   referenceDate: "",
   notes: "",
-};
-
-interface TransactionModalProps {
-  onClose: () => void;
-  onCreated: () => void;
-}
-
-interface TransactionEditModalProps {
-  transaction: TransactionHistoryItem;
-  onClose: () => void;
-  onUpdated: () => void;
-}
-
-type EditTransactionForm = {
-  type: TransactionType;
-  title: string;
-  amount: string;
-  paymentStatus: PaymentStatus;
-  referenceDate: string;
 };
 
 const TransactionModal = ({ onClose, onCreated }: TransactionModalProps) => {

@@ -24,16 +24,21 @@ import {
   downloadReportPdf,
   getReportData,
   getTransactionsHistory,
-  type PaymentMethod,
-  type PaymentStatus,
-  type TransactionHistoryItem,
-  type TransactionType,
   type UpdateTransactionPayload,
   updateTransaction,
 } from "../../../services/reports.service";
 import { theme } from "../../../themes/themes";
 import type { BarSeries } from "../../../types/components";
 import type { ReportData } from "../../../types/dashboard";
+import type {
+  EditTransactionForm,
+  ReportPeriod,
+  TransactionEditModalProps,
+  TransactionFormState,
+  TransactionHistoryItem,
+  TransactionModalProps,
+  TransactionType,
+} from "../../../types/transactions";
 import { toInputDate } from "../../../utils/dateParsers";
 import {
   formatCurrencyBRL,
@@ -87,7 +92,6 @@ import {
 const REVENUE_TREND_FIXED_PERIOD = "6m";
 
 type ActiveTab = "analytics" | "transactions";
-type ReportPeriod = "1m" | "3m" | "6m" | "12m";
 
 const TRANSACTION_TYPE_LABEL: Record<TransactionType, string> = {
   INCOME: "Entrada",
@@ -402,17 +406,6 @@ const FINANCIAL_SERIES: BarSeries[] = [
   { dataKey: "lucro", name: "Lucro", color: theme.colors.primary },
 ];
 
-type TransactionFormState = {
-  type: TransactionType;
-  title: string;
-  amount: string;
-  category: string;
-  paymentMethod: PaymentMethod | "";
-  paymentStatus: PaymentStatus;
-  referenceDate: string;
-  notes: string;
-};
-
 const EMPTY_FORM: TransactionFormState = {
   type: "INCOME",
   title: "",
@@ -422,25 +415,6 @@ const EMPTY_FORM: TransactionFormState = {
   paymentStatus: "PENDING",
   referenceDate: "",
   notes: "",
-};
-
-interface TransactionModalProps {
-  onClose: () => void;
-  onCreated: () => void;
-}
-
-interface TransactionEditModalProps {
-  transaction: TransactionHistoryItem;
-  onClose: () => void;
-  onUpdated: () => void;
-}
-
-type EditTransactionForm = {
-  type: TransactionType;
-  title: string;
-  amount: string;
-  paymentStatus: PaymentStatus;
-  referenceDate: string;
 };
 
 const TransactionModal = ({ onClose, onCreated }: TransactionModalProps) => {
