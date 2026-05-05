@@ -170,14 +170,16 @@ html {
 }
 
 body {
-  font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+  font-family:
+    "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Oxygen", "Ubuntu", "Cantarell",
+    "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--mc-color-background);
   color: var(--mc-text-primary);
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 /* ── Print styles ─────────────────────────────────────────────────────────── */
@@ -194,6 +196,16 @@ body {
   body {
     background: #fff !important;
     color: #111827 !important;
+  }
+
+  /* Reset CSS vars to light-mode values so documents print with correct colors */
+  :root {
+    --mc-color-surface: #ffffff;
+    --mc-color-surface-muted: #f1f5f9;
+    --mc-text-primary: #111827;
+    --mc-text-secondary: #4b5563;
+    --mc-text-muted: #6b7280;
+    --mc-border-light: #e5e7eb;
   }
 
   /* Ensure print layout fills the page */
