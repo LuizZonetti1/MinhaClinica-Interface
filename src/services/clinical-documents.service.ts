@@ -216,6 +216,7 @@ const normalizeDocumentDetail = (payload: unknown): ClinicalDocumentDetail => {
           fileName: toTrimmedStringValue(a.fileName ?? a.file_name, ""),
           mimeType: toTrimmedStringValue(a.mimeType ?? a.mime_type, ""),
           sizeBytes: typeof a.sizeBytes === "number" ? a.sizeBytes : 0,
+          caption: toTrimmedStringValue(a.caption, "") || null,
           uploadedAt: toTrimmedStringValue(a.uploadedAt ?? a.uploaded_at, ""),
           url: toTrimmedStringValue(a.url, ""),
         }))
@@ -289,4 +290,17 @@ export const deleteDocumentAttachment = async (
   await api.delete(
     `/appointments/${appointmentId}/documents/${documentId}/attachments/${attachmentId}`,
   );
+};
+
+export const updateDocumentAttachmentCaption = async (
+  appointmentId: string,
+  documentId: string,
+  attachmentId: string,
+  caption: string | null,
+): Promise<DocumentAttachment> => {
+  const { data } = await api.patch<DocumentAttachment>(
+    `/appointments/${appointmentId}/documents/${documentId}/attachments/${attachmentId}/caption`,
+    { caption },
+  );
+  return data;
 };

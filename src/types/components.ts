@@ -176,10 +176,12 @@ export interface AnnouncementModalProps {
 // ─── DocumentAttachmentUpload ─────────────────────────────────────────────────
 export interface DocumentAttachmentUploadProps {
   attachments: DocumentAttachment[];
-  /** Se false, apenas visualização (sem upload/delete) */
+  /** Se false, apenas visualização (sem upload/delete/caption) */
   canEdit?: boolean;
   onUpload: (file: File) => Promise<void>;
   onDelete: (attachmentId: string) => Promise<void>;
+  /** Chamado quando o usuário salva uma legenda (null = apagar legenda) */
+  onUpdateCaption?: (attachmentId: string, caption: string | null) => Promise<void>;
 }
 
 // ─── DocumentPrintLayout ──────────────────────────────────────────────────────

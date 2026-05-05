@@ -7,6 +7,7 @@ import {
   deleteDocumentAttachment,
   getClinicalDocument,
   printAuditDocument,
+  updateDocumentAttachmentCaption,
   uploadDocumentAttachment,
 } from "../../../../services/clinical-documents.service";
 import type { ClinicalDocumentDetail } from "../../../../types/clinical-document";
@@ -181,6 +182,10 @@ const DocumentViewPage = () => {
         }}
         onDelete={async (attachmentId) => {
           await deleteDocumentAttachment(appointmentId, documentId, attachmentId);
+          await loadDocument();
+        }}
+        onUpdateCaption={async (attachmentId, caption) => {
+          await updateDocumentAttachmentCaption(appointmentId, documentId, attachmentId, caption);
           await loadDocument();
         }}
       />

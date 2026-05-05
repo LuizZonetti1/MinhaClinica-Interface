@@ -229,6 +229,7 @@ export interface DocumentAttachment {
   fileName: string;
   mimeType: string;
   sizeBytes: number;
+  caption: string | null;
   uploadedAt: string; // ISO datetime
   url: string;
 }

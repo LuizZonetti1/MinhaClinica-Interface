@@ -174,3 +174,36 @@ export const AttachmentError = styled.p`
   font-size: 0.75rem;
   color: ${theme.colors.error};
 `;
+
+// ─── Caption ──────────────────────────────────────────────────────────────────
+
+export const AttachmentCaption = styled.span`
+  display: block;
+  margin-top: 2px;
+  font-size: 0.7rem;
+  font-style: italic;
+  color: ${theme.colors.text.muted};
+`;
+
+export const AttachmentCaptionEdit = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+`;
+
+export const AttachmentCaptionInput = styled.input`
+  flex: 1;
+  min-width: 0;
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border: 1px solid ${theme.colors.border.focus};
+  border-radius: 4px;
+  background: ${theme.colors.surface};
+  color: ${theme.colors.text.primary};
+  outline: none;
+
+  &:disabled {
+    opacity: 0.5;
+  }
+`;
