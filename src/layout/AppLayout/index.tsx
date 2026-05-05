@@ -357,7 +357,7 @@ export const AppLayout = () => {
   const navigate = useNavigate();
   const { user, setUser, logout } = useAuth();
   const { mode, toggleMode } = useThemeMode();
-  const { unreadCount, openPanel, markAllRead } = useNotifications();
+  const { unreadCount, openPanel } = useNotifications();
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const bellRef = useRef<HTMLDivElement>(null);
 
@@ -629,7 +629,6 @@ export const AppLayout = () => {
               role="button"
               tabIndex={0}
               onClick={() => openPanel(bellRef.current)}
-              onMouseEnter={() => unreadCount > 0 && markAllRead()}
               title="Notificações"
               aria-label="Abrir notificações"
             >

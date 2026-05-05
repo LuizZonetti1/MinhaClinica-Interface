@@ -11,7 +11,7 @@ import {
     UserCheck,
 } from "lucide-react";
 import type { ReactElement } from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { AnnouncementModal } from "../../../components/AnnouncementModal";
 import { useNotifications } from "../../../contexts";
 import type { NotificationItem, NotificationType } from "../../../types/notification";
@@ -79,9 +79,24 @@ function NotifRow({ item }: { item: NotificationItem }) {
     const { markRead } = useNotifications();
     const isUnread = !item.readAt;
     const { icon, color } = getIconConfig(item.type);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const handleMouseEnter = () => {
+        if (!isUnread) return;
+        timerRef.current = setTimeout(() => void markRead(item.id), 600);
+    };
+
+    const handleMouseLeave = () => {
+        if (timerRef.current) clearTimeout(timerRef.current);
+    };
 
     return (
-        <NotifCard $unread={isUnread} onClick={() => isUnread && markRead(item.id)}>
+        <NotifCard
+            $unread={isUnread}
+            onClick={() => isUnread && markRead(item.id)}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+        >
             <IconWrap $color={color}>{icon}</IconWrap>
             <CardContent>
                 <CardSubject $unread={isUnread}>{item.subject ?? item.type}</CardSubject>
