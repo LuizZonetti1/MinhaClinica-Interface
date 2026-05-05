@@ -1,5 +1,6 @@
 import {
   Bell,
+  Building2,
   CalendarDays,
   CalendarRange,
   CheckCircle,
@@ -98,6 +99,12 @@ const QUICK_ACCESS = [
     label: "Meu Perfil",
     color: "#16A34A",
     path: "/paciente/perfil",
+  },
+  {
+    icon: <Building2 size={20} />,
+    label: "Clínicas",
+    color: "#0891B2",
+    path: "/paciente/clinicas",
   },
 ];
 

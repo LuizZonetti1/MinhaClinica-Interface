@@ -6,6 +6,9 @@ import {
   CheckCircle,
   ClipboardCheck,
   Clock,
+  CreditCard,
+  History,
+  User,
   UserPlus,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -95,6 +98,24 @@ const QUICK_ACCESS = [
     label: "Check-in",
     color: "#EA580C",
     path: "/recepcao/checkin",
+  },
+  {
+    icon: <History size={20} />,
+    label: "Histórico",
+    color: "#7C3AED",
+    path: "/recepcao/historico",
+  },
+  {
+    icon: <CreditCard size={20} />,
+    label: "Transações",
+    color: "#0891B2",
+    path: "/recepcao/transacoes",
+  },
+  {
+    icon: <User size={20} />,
+    label: "Meu Perfil",
+    color: "#4B5563",
+    path: "/recepcao/perfil",
   },
 ];
 
