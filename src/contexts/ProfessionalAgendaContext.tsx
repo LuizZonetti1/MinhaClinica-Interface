@@ -19,6 +19,7 @@ type ProfessionalAgendaContextValue = {
   goToCurrentMonth: () => void;
   refreshMonth: () => Promise<void>;
   selectDate: (date: string) => void;
+  prefetchMonth: (monthKey: string) => Promise<ProfessionalMonthlyAgendaData>;
 };
 
 const ProfessionalAgendaContext = createContext<ProfessionalAgendaContextValue | undefined>(
@@ -46,6 +47,39 @@ const getTodayIso = (): string => {
 
 const isDateInMonth = (date: string, month: string): boolean => date.startsWith(`${month}-`);
 const NAVIGATION_MONTH_LIMIT = 6;
+
+const addDays = (date: Date, amount: number): Date => {
+  const next = new Date(date);
+  next.setDate(next.getDate() + amount);
+  return next;
+};
+
+const getWeekStart = (date: Date): Date => {
+  const d = parseLocalDate(toIsoDate(date));
+  const weekday = d.getDay();
+  const diff = weekday === 0 ? -6 : 1 - weekday;
+  return addDays(d, diff);
+};
+
+/**
+ * Returns the ISO date range for a given view and reference date.
+ * week  → Monday–Sunday of the week containing referenceDate
+ * month → first–last day of the month containing referenceDate
+ */
+export const getDateRange = (
+  view: "week" | "month",
+  referenceDate: string,
+): { start: string; end: string } => {
+  const ref = parseLocalDate(referenceDate);
+  if (view === "week") {
+    const start = getWeekStart(ref);
+    return { start: toIsoDate(start), end: toIsoDate(addDays(start, 6)) };
+  }
+  return {
+    start: toIsoDate(getMonthStart(ref)),
+    end: toIsoDate(getMonthEnd(ref)),
+  };
+};
 
 const getDefaultSelectedDate = (data: ProfessionalMonthlyAgendaData): string => {
   const today = getTodayIso();
@@ -164,6 +198,14 @@ export const ProfessionalAgendaProvider = ({ children }: { children: React.React
     await loadMonth(currentMonth, true);
   };
 
+  const prefetchMonth = async (monthKey: string): Promise<ProfessionalMonthlyAgendaData> => {
+    const cached = cacheRef.current.get(monthKey);
+    if (cached) return cached;
+    const fetched = await getProfessionalMonthlyAgenda(monthKey);
+    cacheRef.current.set(monthKey, fetched);
+    return fetched;
+  };
+
   const selectDate = (date: string) => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
     if (date < minAllowedDate || date > maxAllowedDate) return;
@@ -204,6 +246,7 @@ export const ProfessionalAgendaProvider = ({ children }: { children: React.React
         goToCurrentMonth,
         refreshMonth,
         selectDate,
+        prefetchMonth,
       }}
     >
       {children}
