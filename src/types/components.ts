@@ -1,4 +1,5 @@
-import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
+import type { ButtonHTMLAttributes, HTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
+import type { ClinicalDocumentDetail, DocumentAttachment } from "./clinical-document";
 import type { HistoricalItem } from "./dashboard";
 
 // ─── ActionIconButton ─────────────────────────────────────────────────────────
@@ -134,4 +135,57 @@ export interface TabsProps {
   activeTab: string;
   onTabChange: (tabId: string) => void;
   children: ReactNode;
+}
+
+// ─── Modal ────────────────────────────────────────────────────────────────────
+export type ModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: ReactNode;
+  actions?: ReactNode;
+};
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+export type SkeletonVariant = "rect" | "text" | "circle";
+
+export interface SkeletonProps extends HTMLAttributes<HTMLSpanElement> {
+  width?: number | string;
+  height?: number | string;
+  radius?: number | string;
+  variant?: SkeletonVariant;
+}
+
+// ─── AnnouncementModal ────────────────────────────────────────────────────────
+export type DestType = "TODOS" | "PERFIL" | "PARTICULAR";
+
+export interface UserResult {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  role: string;
+}
+
+export interface AnnouncementModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess?: (sent: number) => void;
+}
+
+// ─── DocumentAttachmentUpload ─────────────────────────────────────────────────
+export interface DocumentAttachmentUploadProps {
+  attachments: DocumentAttachment[];
+  /** Se false, apenas visualização (sem upload/delete) */
+  canEdit?: boolean;
+  onUpload: (file: File) => Promise<void>;
+  onDelete: (attachmentId: string) => Promise<void>;
+}
+
+// ─── DocumentPrintLayout ──────────────────────────────────────────────────────
+export interface DocumentPrintLayoutProps {
+  doc: ClinicalDocumentDetail;
+  children: ReactNode;
+  /** Mostra linha de assinatura do paciente no rodapé */
+  patientSignature?: boolean;
 }

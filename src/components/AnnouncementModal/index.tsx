@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
+import type { AnnouncementModalProps, DestType, UserResult } from "../../types/components";
 import { Modal } from "../Modal";
 import {
     searchNotificationUsers,
@@ -217,17 +218,7 @@ const SelectedUser = styled.div`
   }
 `;
 
-/* ─── Types ─────────────────────────────────────────────── */
-
-type DestType = "TODOS" | "PERFIL" | "PARTICULAR";
-
-interface UserResult {
-    id: string;
-    name: string;
-    email: string;
-    phone: string | null;
-    role: string;
-}
+/* ─── Component ─────────────────────────────────────────── */
 
 const ROLE_OPTIONS = [
     { value: "PATIENT", label: "Pacientes" },
@@ -244,12 +235,6 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 /* ─── Component ─────────────────────────────────────────── */
-
-interface AnnouncementModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onSuccess?: (sent: number) => void;
-}
 
 export function AnnouncementModal({ isOpen, onClose, onSuccess }: AnnouncementModalProps) {
     const [destType, setDestType] = useState<DestType>("TODOS");

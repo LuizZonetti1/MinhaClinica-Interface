@@ -1,14 +1,7 @@
 ﻿import { useEffect, useId, useRef } from "react";
-import type { MouseEvent, ReactNode } from "react";
+import type { MouseEvent } from "react";
+import type { ModalProps } from "../../types/components";
 import { Actions, CloseButton, Content, Dialog, Header, Overlay, Title } from "./styles";
-
-type ModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  title: string;
-  children: ReactNode;
-  actions?: ReactNode;
-};
 
 const FOCUSABLE_SELECTOR = [
   "button:not([disabled])",

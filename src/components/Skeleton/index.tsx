@@ -1,14 +1,8 @@
-import type { HTMLAttributes } from "react";
+import type { SkeletonProps, SkeletonVariant } from "../../types/components";
 import { SkeletonBlock } from "./styles";
 
-export type SkeletonVariant = "rect" | "text" | "circle";
-
-export interface SkeletonProps extends HTMLAttributes<HTMLSpanElement> {
-  width?: number | string;
-  height?: number | string;
-  radius?: number | string;
-  variant?: SkeletonVariant;
-}
+export type { SkeletonVariant };
+export type { SkeletonProps };
 
 export const Skeleton = ({
   width,
