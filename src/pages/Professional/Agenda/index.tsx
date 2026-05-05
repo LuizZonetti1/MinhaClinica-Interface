@@ -2,7 +2,7 @@ import { CalendarDays, ChevronLeft, ChevronRight, Clock3, FolderOpen } from "luc
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { Badge } from "../../../components/Badge";
-import { useProfessionalAgenda } from "../../../contexts";
+import { getDateRange, useProfessionalAgenda } from "../../../contexts";
 import type { AgendaSlotStatus, ProfessionalAgendaDay } from "../../../types/dashboard";
 import { formatDateToIsoDate } from "../../../utils/dateParsers";
 import { notifyError } from "../../../utils/toast";
@@ -210,16 +210,19 @@ const ProfessionalAgendaPage = () => {
     goToCurrentMonth,
     selectDate,
     refreshMonth,
+    prefetchMonth,
   } = useProfessionalAgenda();
 
   const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [secondaryMonthData, setSecondaryMonthData] =
+    useState<import("../../../types/dashboard").ProfessionalMonthlyAgendaData | null>(null);
   const todayIso = toIsoDate(new Date());
   const effectiveSelectedDate = selectedDate || todayIso;
 
   // Recarrega ao montar para refletir mudancas de status ao voltar de outra pagina
+  // biome-ignore lint/correctness/useExhaustiveDependencies: executado intencionalmente apenas na montagem
   useEffect(() => {
     void refreshMonth();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -227,6 +230,28 @@ const ProfessionalAgendaPage = () => {
       notifyError(errorMessage);
     }
   }, [errorMessage]);
+
+  // Pré-carrega o mês adjacente quando a semana cruza dois meses
+  useEffect(() => {
+    if (viewMode !== "week") {
+      setSecondaryMonthData(null);
+      return;
+    }
+    const { start, end } = getDateRange("week", effectiveSelectedDate);
+    const startMonth = start.substring(0, 7);
+    const endMonth = end.substring(0, 7);
+    if (startMonth === endMonth) {
+      setSecondaryMonthData(null);
+      return;
+    }
+    const primaryMonth = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}`;
+    const secondaryMonthKey = startMonth === primaryMonth ? endMonth : startMonth;
+    let cancelled = false;
+    prefetchMonth(secondaryMonthKey)
+      .then((d) => { if (!cancelled) setSecondaryMonthData(d); })
+      .catch(() => { /* silencioso — dados do mês primário ainda são exibidos */ });
+    return () => { cancelled = true; };
+  }, [viewMode, effectiveSelectedDate, currentMonth, prefetchMonth]);
 
   const highlightedDates = useMemo(() => {
     const dates = new Set<string>();
@@ -257,8 +282,12 @@ const ProfessionalAgendaPage = () => {
 
   const weekDays = useMemo(() => {
     const weekDates = buildWeekDates(effectiveSelectedDate);
+    const allDays = [
+      ...(data?.days ?? []),
+      ...(secondaryMonthData?.days ?? []),
+    ];
     const dayMap = new Map(
-      (data?.days ?? []).map((day) => [
+      allDays.map((day) => [
         day.date,
         {
           ...day,
@@ -268,7 +297,7 @@ const ProfessionalAgendaPage = () => {
     );
 
     return weekDates.map((date) => dayMap.get(date) ?? buildEmptyAgendaDay(date));
-  }, [data, effectiveSelectedDate]);
+  }, [data, secondaryMonthData, effectiveSelectedDate]);
 
   const navigationLabel = useMemo(() => {
     if (viewMode === "week") {
