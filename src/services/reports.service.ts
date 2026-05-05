@@ -1,52 +1,23 @@
 import { api } from "../config/api";
 import type { ReportData } from "../types/dashboard";
+import type {
+  CreateTransactionPayload,
+  PaymentMethod,
+  PaymentStatus,
+  TransactionHistoryItem,
+  TransactionType,
+  UpdateTransactionPayload,
+} from "../types/transactions";
 import { toRecord, toTrimmedStringValue } from "../utils/parsers";
 
-export type TransactionType = "INCOME" | "EXPENSE";
-export type PaymentMethod =
-  | "CASH"
-  | "DEBIT_CARD"
-  | "CREDIT_CARD"
-  | "PIX"
-  | "BANK_TRANSFER"
-  | "CHECK";
-export type PaymentStatus = "PENDING" | "PAID" | "CANCELLED" | "REFUNDED";
-
-export interface CreateTransactionPayload {
-  type: TransactionType;
-  title: string;
-  amount: number;
-  description?: string;
-  category?: string;
-  paymentMethod?: PaymentMethod;
-  paymentStatus?: PaymentStatus;
-  referenceDate?: string;
-  dueDate?: string | null;
-  notes?: string | null;
-}
-
-export interface UpdateTransactionPayload {
-  type?: TransactionType;
-  title?: string;
-  amount?: number;
-  description?: string;
-  category?: string;
-  paymentMethod?: PaymentMethod;
-  paymentStatus?: PaymentStatus;
-  referenceDate?: string;
-  dueDate?: string | null;
-  notes?: string | null;
-}
-
-export interface TransactionHistoryItem {
-  id: string;
-  name: string;
-  type: TransactionType;
-  title: string;
-  amount: number;
-  date: string;
-  paymentStatus: PaymentStatus;
-}
+export type {
+  CreateTransactionPayload,
+  PaymentMethod,
+  PaymentStatus,
+  TransactionHistoryItem,
+  TransactionType,
+  UpdateTransactionPayload,
+};
 
 const toNumber = (value: unknown): number => {
   if (typeof value === "number" && Number.isFinite(value)) return value;
