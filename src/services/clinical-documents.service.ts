@@ -218,7 +218,8 @@ const normalizeDocumentDetail = (payload: unknown): ClinicalDocumentDetail => {
           sizeBytes: typeof a.sizeBytes === "number" ? a.sizeBytes : 0,
           caption: toTrimmedStringValue(a.caption, "") || null,
           uploadedAt: toTrimmedStringValue(a.uploadedAt ?? a.uploaded_at, ""),
-          url: toTrimmedStringValue(a.url, ""),
+        url: toTrimmedStringValue(a.url, "") ||
+          (a.storedName ? `/uploads/documents/${String(a.storedName)}` : ""),
         }))
       : [],
   };

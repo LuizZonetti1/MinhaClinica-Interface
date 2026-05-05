@@ -167,7 +167,7 @@ const DocumentAttachmentUpload = ({
         <AttachmentList>
           {attachments.map((att) => {
             const isEditingThis = att.id in editingCaption;
-            const imgSrc = `${API_BASE}/uploads/documents/${att.url.split("/").pop()}`;
+            const imgSrc = att.url.startsWith("http") ? att.url : `${API_BASE}${att.url}`;
 
             // ── Imagem: card vertical com preview completo ──
             if (isImage(att.mimeType)) {
