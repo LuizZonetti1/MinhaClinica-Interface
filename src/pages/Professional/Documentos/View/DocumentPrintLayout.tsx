@@ -1,5 +1,5 @@
 import { GitCompareArrows } from "lucide-react";
-import type { ClinicalDocumentDetail } from "../../../../types/clinical-document";
+import type { DocumentPrintLayoutProps } from "../../../../types/components";
 import { formatIsoDateTimeToBr, formatIsoDateToBr } from "../../../../utils/dateParsers";
 import {
   AddendumBanner,
@@ -43,13 +43,6 @@ const DOC_TYPE_LABEL: Record<string, string> = {
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
-
-interface DocumentPrintLayoutProps {
-  doc: ClinicalDocumentDetail;
-  children: React.ReactNode;
-  /** Mostra linha de assinatura do paciente no rodape */
-  patientSignature?: boolean;
-}
 
 const DocumentPrintLayout = ({
   doc,

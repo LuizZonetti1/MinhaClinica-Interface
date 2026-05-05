@@ -35,7 +35,7 @@ import {
   deleteClinicalDocument,
   listClinicalDocuments,
 } from "../../../services/clinical-documents.service";
-import type { ClinicalDocumentItem, DocumentTypeCard } from "../../../types/clinical-document";
+import type { ClinicalDocumentItem, DocPageCache, DocumentAppointmentContext, DocumentTypeCard } from "../../../types/clinical-document";
 import { ClinicalDocumentType } from "../../../types/clinical-document";
 import { formatIsoDateToBr, formatIsoDateTimeToBr } from "../../../utils/dateParsers";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
@@ -245,12 +245,6 @@ const formatDocDate = (iso: string): string => {
 
 const DOC_CACHE_TTL = 2 * 60 * 1000;
 
-interface DocPageCache {
-  appointmentCtx: AppointmentCtx;
-  documents: ClinicalDocumentItem[];
-  cachedAt: number;
-}
-
 function getDocCache(id: string): DocPageCache | null {
   try {
     const raw = sessionStorage.getItem(`doc-page-${id}`);
@@ -266,7 +260,7 @@ function getDocCache(id: string): DocPageCache | null {
   }
 }
 
-function setDocCache(id: string, appointmentCtx: AppointmentCtx, documents: ClinicalDocumentItem[]) {
+function setDocCache(id: string, appointmentCtx: DocumentAppointmentContext, documents: ClinicalDocumentItem[]) {
   try {
     const entry: DocPageCache = { appointmentCtx, documents, cachedAt: Date.now() };
     sessionStorage.setItem(`doc-page-${id}`, JSON.stringify(entry));
@@ -281,22 +275,12 @@ function clearDocCache(id: string) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-interface AppointmentCtx {
-  appointmentId: string;
-  patientName: string;
-  appointmentDate: string;
-  startTime: string;
-  professionalName: string;
-  councilRegistration: string;
-  appointmentStatus: string;
-}
-
 const ProfessionalDocumentosPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const appointmentId = searchParams.get("consulta") ?? "";
 
-  const [appointmentCtx, setAppointmentCtx] = useState<AppointmentCtx>(() => {
+  const [appointmentCtx, setAppointmentCtx] = useState<DocumentAppointmentContext>(() => {
     const cached = getDocCache(appointmentId);
     if (cached) return cached.appointmentCtx;
     return {
@@ -355,7 +339,7 @@ const ProfessionalDocumentosPage = () => {
         }
       }
 
-      const newCtx: AppointmentCtx = {
+      const newCtx: DocumentAppointmentContext = {
         appointmentId,
         patientName: appt.patientName,
         appointmentDate: appt.scheduledAt.split("T")[0] ?? "",

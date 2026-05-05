@@ -19,7 +19,7 @@ import { useNavigate, useSearchParams } from "react-router";
 import { Button } from "../../../components/Button";
 import { getAppointmentById } from "../../../services/appointment.service";
 import { listClinicalDocuments } from "../../../services/clinical-documents.service";
-import type { ClinicalDocumentItem } from "../../../types/clinical-document";
+import type { ClinicalDocumentItem, DocumentAppointmentContext } from "../../../types/clinical-document";
 import { formatIsoDateToBr, formatIsoDateTimeToBr } from "../../../utils/dateParsers";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError } from "../../../utils/toast";
@@ -117,21 +117,12 @@ const formatDocDateTime = (iso: string): string =>
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-interface AppointmentCtx {
-  appointmentId: string;
-  patientName: string;
-  appointmentDate: string;
-  startTime: string;
-  professionalName: string;
-  appointmentStatus: string;
-}
-
 const ReceptionDocumentosPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const appointmentId = searchParams.get("consulta") ?? "";
 
-  const [appointmentCtx, setAppointmentCtx] = useState<AppointmentCtx>({
+  const [appointmentCtx, setAppointmentCtx] = useState<DocumentAppointmentContext>({
     appointmentId,
     patientName: searchParams.get("paciente") || "Paciente",
     appointmentDate: "",

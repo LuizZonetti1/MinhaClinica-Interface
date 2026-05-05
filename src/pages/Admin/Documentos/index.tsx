@@ -19,7 +19,7 @@ import { useNavigate, useSearchParams } from "react-router";
 import { Button } from "../../../components/Button";
 import { getAppointmentById } from "../../../services/appointment.service";
 import { listClinicalDocuments } from "../../../services/clinical-documents.service";
-import type { ClinicalDocumentItem } from "../../../types/clinical-document";
+import type { ClinicalDocumentItem, DocumentAppointmentContext } from "../../../types/clinical-document";
 import { formatIsoDateToBr, formatIsoDateTimeToBr } from "../../../utils/dateParsers";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError } from "../../../utils/toast";
@@ -35,6 +35,7 @@ import {
   DocsTableRow,
   DocsTableTd,
   DocsTableTh,
+  DocsTableWrapper,
   EmptyTableMessage,
   HeaderActions,
   InfoBarItem,
@@ -125,21 +126,12 @@ const formatDocDateTime = (iso: string): string =>
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-interface AppointmentCtx {
-  appointmentId: string;
-  patientName: string;
-  appointmentDate: string;
-  startTime: string;
-  professionalName: string;
-  appointmentStatus: string;
-}
-
 const AdminDocumentosPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const appointmentId = searchParams.get("consulta") ?? "";
 
-  const [appointmentCtx, setAppointmentCtx] = useState<AppointmentCtx>({
+  const [appointmentCtx, setAppointmentCtx] = useState<DocumentAppointmentContext>({
     appointmentId,
     patientName: searchParams.get("paciente") || "Paciente",
     appointmentDate: "",
@@ -234,81 +226,83 @@ const AdminDocumentosPage = () => {
       {!loading && (
         <div>
           <SectionTitle>Documentos</SectionTitle>
-          <DocsTable>
-            <DocsTableHead>
-              <tr>
-                <DocsTableTh>Tipo</DocsTableTh>
-                <DocsTableTh>Enviado em</DocsTableTh>
-                <DocsTableTh>Status</DocsTableTh>
-                <DocsTableTh>Ações</DocsTableTh>
-              </tr>
-            </DocsTableHead>
-            <DocsTableBody>
-              {documents.length === 0 ? (
+          <DocsTableWrapper>
+            <DocsTable>
+              <DocsTableHead>
                 <tr>
-                  <EmptyTableMessage colSpan={4}>
-                    Nenhum documento encontrado para esta consulta.
-                  </EmptyTableMessage>
+                  <DocsTableTh>Tipo</DocsTableTh>
+                  <DocsTableTh>Enviado em</DocsTableTh>
+                  <DocsTableTh>Status</DocsTableTh>
+                  <DocsTableTh>Ações</DocsTableTh>
                 </tr>
-              ) : (
-                documents.map((doc) => {
-                  const docStatus = doc.status.toUpperCase();
-                  const statusVariant: DocStatusVariant =
-                    docStatus === "FINALIZED"
-                      ? "finalized"
-                      : docStatus === "SENT"
-                        ? "sent"
-                        : docStatus === "ADDENDUM"
-                          ? "addendum"
-                          : "draft";
-                  const statusLabel =
-                    docStatus === "FINALIZED"
-                      ? "Finalizado"
-                      : docStatus === "SENT"
-                        ? "Enviado"
-                        : docStatus === "ADDENDUM"
-                          ? "Adendo"
-                          : "Rascunho";
+              </DocsTableHead>
+              <DocsTableBody>
+                {documents.length === 0 ? (
+                  <tr>
+                    <EmptyTableMessage colSpan={4}>
+                      Nenhum documento encontrado para esta consulta.
+                    </EmptyTableMessage>
+                  </tr>
+                ) : (
+                  documents.map((doc) => {
+                    const docStatus = doc.status.toUpperCase();
+                    const statusVariant: DocStatusVariant =
+                      docStatus === "FINALIZED"
+                        ? "finalized"
+                        : docStatus === "SENT"
+                          ? "sent"
+                          : docStatus === "ADDENDUM"
+                            ? "addendum"
+                            : "draft";
+                    const statusLabel =
+                      docStatus === "FINALIZED"
+                        ? "Finalizado"
+                        : docStatus === "SENT"
+                          ? "Enviado"
+                          : docStatus === "ADDENDUM"
+                            ? "Adendo"
+                            : "Rascunho";
 
-                  return (
-                    <DocsTableRow key={doc.id}>
-                      <DocsTableTd>{DOC_TYPE_LABEL[doc.type] ?? doc.type}</DocsTableTd>
-                      <DocsTableTd>{formatDocDateTime(doc.createdAt)}</DocsTableTd>
-                      <DocsTableTd>
-                        <DocStatusBadge $variant={statusVariant}>{statusLabel}</DocStatusBadge>
-                      </DocsTableTd>
-                      <DocsTableTd>
-                        <DocActionsCell>
-                          <DocActionBtn
-                            type="button"
-                            title="Visualizar"
-                            onClick={() =>
-                              navigate(
-                                `/admin/documentos/visualizar?consulta=${appointmentId}&documento=${doc.id}`,
-                              )
-                            }
-                          >
-                            <Eye size={14} />
-                          </DocActionBtn>
-                          <DocActionBtn
-                            type="button"
-                            title="Imprimir / PDF"
-                            onClick={() =>
-                              navigate(
-                                `/admin/documentos/visualizar?consulta=${appointmentId}&documento=${doc.id}&print=1`,
-                              )
-                            }
-                          >
-                            <Printer size={14} />
-                          </DocActionBtn>
-                        </DocActionsCell>
-                      </DocsTableTd>
-                    </DocsTableRow>
-                  );
-                })
-              )}
-            </DocsTableBody>
-          </DocsTable>
+                    return (
+                      <DocsTableRow key={doc.id}>
+                        <DocsTableTd>{DOC_TYPE_LABEL[doc.type] ?? doc.type}</DocsTableTd>
+                        <DocsTableTd>{formatDocDateTime(doc.createdAt)}</DocsTableTd>
+                        <DocsTableTd>
+                          <DocStatusBadge $variant={statusVariant}>{statusLabel}</DocStatusBadge>
+                        </DocsTableTd>
+                        <DocsTableTd>
+                          <DocActionsCell>
+                            <DocActionBtn
+                              type="button"
+                              title="Visualizar"
+                              onClick={() =>
+                                navigate(
+                                  `/admin/documentos/visualizar?consulta=${appointmentId}&documento=${doc.id}`,
+                                )
+                              }
+                            >
+                              <Eye size={14} />
+                            </DocActionBtn>
+                            <DocActionBtn
+                              type="button"
+                              title="Imprimir / PDF"
+                              onClick={() =>
+                                navigate(
+                                  `/admin/documentos/visualizar?consulta=${appointmentId}&documento=${doc.id}&print=1`,
+                                )
+                              }
+                            >
+                              <Printer size={14} />
+                            </DocActionBtn>
+                          </DocActionsCell>
+                        </DocsTableTd>
+                      </DocsTableRow>
+                    );
+                  })
+                )}
+              </DocsTableBody>
+            </DocsTable>
+          </DocsTableWrapper>
         </div>
       )}
     </PageWrapper>
