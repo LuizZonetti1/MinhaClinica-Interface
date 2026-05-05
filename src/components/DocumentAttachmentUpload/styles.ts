@@ -4,6 +4,12 @@ import styled, { css } from "styled-components";
 
 export const AttachmentSection = styled.div`
   margin-top: ${({ theme }) => theme.spacing.xl};
+  padding-top: ${({ theme }) => theme.spacing.xl};
+  border-top: 2px dashed ${({ theme }) => theme.colors.border.light};
+
+  @media print {
+    display: none;
+  }
 `;
 
 export const AttachmentSectionTitle = styled.h3`
