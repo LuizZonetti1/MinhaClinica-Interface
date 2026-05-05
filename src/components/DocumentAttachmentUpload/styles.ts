@@ -90,6 +90,7 @@ export const AttachmentItem = styled.li`
   background: ${theme.colors.surface};
 `;
 
+// Miniatura (usada apenas para não-imagens — mantida por compatibilidade)
 export const AttachmentThumb = styled.img`
   width: 40px;
   height: 40px;
@@ -97,6 +98,33 @@ export const AttachmentThumb = styled.img`
   border-radius: 4px;
   flex-shrink: 0;
   border: 1px solid ${theme.colors.border.light};
+`;
+
+// Preview de imagem em tamanho completo
+export const AttachmentImageFull = styled.img`
+  display: block;
+  width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+  border-radius: 6px 6px 0 0;
+  background: ${theme.colors.surfaceMuted};
+  cursor: zoom-in;
+`;
+
+// Card vertical para quando o anexo é uma imagem
+export const AttachmentItemImage = styled.li`
+  list-style: none;
+  border: 1px solid ${theme.colors.border.light};
+  border-radius: ${theme.borderRadius.sm};
+  background: ${theme.colors.surface};
+  overflow: hidden;
+`;
+
+export const AttachmentImageMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing.sm};
+  padding: ${theme.spacing.sm} ${theme.spacing.md};
 `;
 
 export const AttachmentFilePlaceholder = styled.div`
