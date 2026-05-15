@@ -72,7 +72,7 @@ const RegisterProfessionalComplete = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const tempToken = searchParams.get("tempToken");
+    const tempToken = new URLSearchParams(window.location.hash.slice(1)).get("tempToken");
     if (tempToken) {
       storeAuthToken(tempToken);
     }

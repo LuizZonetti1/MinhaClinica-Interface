@@ -38,7 +38,7 @@ const ClinicCompleteRedirect = () => {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    const tempToken = searchParams.get("tempToken");
+    const tempToken = new URLSearchParams(window.location.hash.slice(1)).get("tempToken");
 
     if (tempToken) {
       storeAuthToken(tempToken);

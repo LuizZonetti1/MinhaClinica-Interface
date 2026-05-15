@@ -8,7 +8,7 @@ import { getAuthToken } from "../utils/authStorage";
  */
 export const ClinicRegisterCompleteGuard = ({ children }: { children: React.ReactNode }) => {
   const hasTokenInStorage = Boolean(getAuthToken());
-  const hasTokenInUrl = new URLSearchParams(window.location.search).has("tempToken");
+  const hasTokenInUrl = new URLSearchParams(window.location.hash.slice(1)).has("tempToken");
 
   if (!hasTokenInStorage && !hasTokenInUrl) {
     return <Navigate to="/clinica/registro/inicial" replace />;
