@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 import { Button } from "../../../components/Button";
 import { Input } from "../../../components/Input";
 import { Stepper } from "../../../components/Stepper";
+import { useAuth } from "../../../contexts";
 import {
   createAppointment,
   getProfessionalSlots,
@@ -18,6 +19,7 @@ import {
   type PatientSearchResult,
 } from "../../../types/appointment";
 import type { Step } from "../../../types/components";
+import { UserRole } from "../../../types/enums";
 import { formatDateToIsoDate, formatIsoDateToBr } from "../../../utils/dateParsers";
 import { maskCPF } from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
@@ -146,6 +148,7 @@ const getConsultationTypeLabel = (value: AppointmentType): string =>
 
 const ReceptionMarcarConsultaPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   // ── View / Step ─────────────────────────────────────────────────────────────
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -378,7 +381,7 @@ const ReceptionMarcarConsultaPage = () => {
         notes: notes.trim() || undefined,
       });
       notifySuccess("Consulta agendada com sucesso!");
-      navigate("/recepcao/dashboard");
+      navigate(user?.role === UserRole.ADMIN ? "/admin/dashboard" : "/recepcao/dashboard");
     } catch (err) {
       const errorMessage = getApiErrorMessage(err, "Erro ao confirmar agendamento.");
       notifyError(errorMessage);
