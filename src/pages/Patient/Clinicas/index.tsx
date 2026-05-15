@@ -36,30 +36,13 @@ import {
     SkeletonGrid,
     SpecialtiesRow,
     SpecialtyChip,
+    SpecialtySelect,
     TitleBlock,
     TopRow,
     ViewProfessionalsBtn,
 } from "./styles";
 
 const MAX_VISIBLE_SPECIALTIES = 3;
-
-const normalizeSearch = (value: string): string =>
-    value
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .trim();
-
-const filterClinics = (clinics: ClinicDirectoryItem[], query: string): ClinicDirectoryItem[] => {
-    const q = normalizeSearch(query);
-    if (!q) return clinics;
-    return clinics.filter((clinic) => {
-        const haystack = normalizeSearch(
-            `${clinic.tradeName} ${clinic.city} ${clinic.state} ${clinic.neighborhood}`,
-        );
-        return haystack.includes(q);
-    });
-};
 
 const formatAddress = (clinic: ClinicDirectoryItem): string => {
     const parts: string[] = [];
@@ -74,58 +57,86 @@ const formatAddress = (clinic: ClinicDirectoryItem): string => {
 
 const PatientClinicsPage = () => {
     const navigate = useNavigate();
+    const availableSpecialtiesRef = useRef<string[]>([]);
     const allClinicsRef = useRef<ClinicDirectoryItem[] | null>(null);
 
     const [clinics, setClinics] = useState<ClinicDirectoryItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [logoErrors, setLogoErrors] = useState<Set<string>>(new Set());
-    const [searchQuery, setSearchQuery] = useState("");
+    const [availableSpecialties, setAvailableSpecialties] = useState<string[]>([]);
 
-    // Load all clinics once, then filter client-side — same pattern as PatientAgendamentos
+    const [searchName, setSearchName] = useState("");
+    const [searchCity, setSearchCity] = useState("");
+    const [searchSpecialty, setSearchSpecialty] = useState("");
+
+    // Load all clinics on mount to populate the specialty dropdown and initial list
     useEffect(() => {
         let mounted = true;
+        setLoading(true);
 
-        const loadClinics = async () => {
-            setLoading(true);
+        const capitalizeFirst = (s: string) =>
+            s.trim().charAt(0).toUpperCase() + s.trim().slice(1);
 
-            // Already cached
-            if (allClinicsRef.current) {
-                setClinics(filterClinics(allClinicsRef.current, searchQuery));
-                setLoading(false);
-                return;
-            }
+        const normalizeKey = (s: string) =>
+            s.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-            try {
-                const all = await searchClinicDirectory("");
+        searchClinicDirectory({})
+            .then((all) => {
                 if (!mounted) return;
+                // Deduplica por valor sem acento e sem diferença de case
+                const seen = new Map<string, string>();
+                for (const n of all.flatMap((c) => c.specialtyNames)) {
+                    const key = normalizeKey(n);
+                    if (!seen.has(key)) seen.set(key, capitalizeFirst(n));
+                }
+                const specialties = Array.from(seen.values()).sort((a, b) =>
+                    a.localeCompare(b, "pt-BR"),
+                );
+                availableSpecialtiesRef.current = specialties;
+                setAvailableSpecialties(specialties);
+                setClinics(all);
                 allClinicsRef.current = all;
-                setClinics(filterClinics(all, searchQuery));
-            } catch (error: unknown) {
+            })
+            .catch((error: unknown) => {
                 if (!mounted) return;
                 notifyError(getApiErrorMessage(error, "Não foi possível carregar as clínicas."));
-                setClinics([]);
-            } finally {
+            })
+            .finally(() => {
                 if (mounted) setLoading(false);
-            }
-        };
-
-        void loadClinics();
+            });
 
         return () => {
             mounted = false;
         };
-        // intentionally only on mount
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Filter client-side on every query change (after initial load)
+    // Filter client-side whenever any filter changes (avoids extra API calls and handles accent normalization)
     useEffect(() => {
-        if (!allClinicsRef.current) return;
-        const timer = window.setTimeout(() => {
-            setClinics(filterClinics(allClinicsRef.current ?? [], searchQuery));
-        }, 180);
-        return () => window.clearTimeout(timer);
-    }, [searchQuery]);
+        if (loading && allClinicsRef.current === null) return; // skip during initial load
+
+        const normalize = (s: string) =>
+            s.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+        const all = allClinicsRef.current ?? [];
+        const normName = normalize(searchName);
+        const normCity = normalize(searchCity);
+        const normSpecialty = normalize(searchSpecialty);
+
+        const filtered = all.filter((clinic) => {
+            const matchesName =
+                !normName ||
+                normalize(clinic.tradeName).includes(normName);
+            const matchesCity =
+                !normCity || (clinic.city ? normalize(clinic.city).includes(normCity) : false);
+            const matchesSpecialty =
+                !normSpecialty ||
+                clinic.specialtyNames.some((s) => normalize(s).includes(normSpecialty));
+            return matchesName && matchesCity && matchesSpecialty;
+        });
+
+        setClinics(filtered);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchName, searchCity, searchSpecialty]);
 
     const handleViewProfessionals = (clinic: ClinicDirectoryItem) => {
         navigate(`/paciente/clinicas/${clinic.id}/profissionais`, {
@@ -136,6 +147,8 @@ const PatientClinicsPage = () => {
     const handleLogoError = (clinicId: string) => {
         setLogoErrors((prev) => new Set(prev).add(clinicId));
     };
+
+    const hasFilters = searchName || searchCity || searchSpecialty;
 
     return (
         <PageWrapper>
@@ -148,12 +161,29 @@ const PatientClinicsPage = () => {
 
             <SearchRow>
                 <Input
-                    placeholder="Buscar por nome da clínica ou cidade..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Nome da clínica..."
+                    value={searchName}
+                    onChange={(e) => setSearchName(e.target.value)}
                     icon={<Search size={16} />}
                     fullWidth
                 />
+                <Input
+                    placeholder="Cidade..."
+                    value={searchCity}
+                    onChange={(e) => setSearchCity(e.target.value)}
+                    icon={<MapPin size={16} />}
+                    fullWidth
+                />
+                <SpecialtySelect
+                    value={searchSpecialty}
+                    onChange={(e) => setSearchSpecialty(e.target.value)}
+                    aria-label="Filtrar por especialidade"
+                >
+                    <option value="">Todas as especialidades</option>
+                    {availableSpecialties.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                    ))}
+                </SpecialtySelect>
             </SearchRow>
 
             {loading ? (
@@ -168,8 +198,8 @@ const PatientClinicsPage = () => {
             ) : clinics.length === 0 ? (
                 <EmptyState>
                     <Building2 size={36} strokeWidth={1.5} />
-                    {searchQuery
-                        ? `Nenhuma clínica encontrada para "${searchQuery}".`
+                    {hasFilters
+                        ? "Nenhuma clínica encontrada para os filtros aplicados."
                         : "Nenhuma clínica disponível no momento."}
                 </EmptyState>
             ) : (

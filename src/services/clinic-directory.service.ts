@@ -1,5 +1,6 @@
 import { api } from "../config/api";
 import type {
+    ClinicDirectoryFilters,
     ClinicDirectoryItem,
     ClinicProfessionalDirectoryItem,
     ClinicProfessionalSpecialty,
@@ -113,11 +114,14 @@ const normalizeProfessional = (value: unknown): ClinicProfessionalDirectoryItem 
 };
 
 export const searchClinicDirectory = async (
-    query: string,
+    filters: ClinicDirectoryFilters = {},
 ): Promise<ClinicDirectoryItem[]> => {
-    const { data } = await api.get<unknown>(BASE_PATH, {
-        params: { q: query },
-    });
+    const params: Record<string, string> = {};
+    if (filters.name?.trim()) params.name = filters.name.trim();
+    if (filters.city?.trim()) params.city = filters.city.trim();
+    if (filters.specialty?.trim()) params.specialty = filters.specialty.trim();
+
+    const { data } = await api.get<unknown>(BASE_PATH, { params });
 
     return readArray(data)
         .map(normalizeClinic)

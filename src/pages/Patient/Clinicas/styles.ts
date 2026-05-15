@@ -43,7 +43,42 @@ export const PageSubtitle = styled.p`
 
 export const SearchRow = styled.div`
   width: 100%;
-  max-width: 520px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+
+  > * {
+    flex: 1 1 180px;
+    min-width: 140px;
+    max-width: 340px;
+  }
+
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    flex-direction: column;
+    > * {
+      max-width: 100%;
+    }
+  }
+`;
+
+export const SpecialtySelect = styled.select`
+  height: 40px;
+  width: 100%;
+  padding: 0 12px;
+  border-radius: ${theme.borderRadius.sm};
+  border: 1px solid ${theme.colors.border.default};
+  background: ${theme.colors.surface};
+  color: ${theme.colors.text.primary};
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+
+  &:focus {
+    border-color: ${theme.colors.primary};
+    box-shadow: 0 0 0 2px ${theme.colors.primary}33;
+  }
 `;
 
 export const ClinicsGrid = styled.div`
