@@ -22,7 +22,10 @@ interface RoleGuardProps {
 export const RoleGuard = ({ allowedRoles }: RoleGuardProps) => {
   const { user } = useAuth();
 
-  if (!user || !allowedRoles.includes(user.role)) {
+  if (!user) return <Navigate to="/nao-autorizado" replace />;
+
+  const userRoles = user.roles ?? [user.role];
+  if (!userRoles.some((r) => allowedRoles.includes(r))) {
     return <Navigate to="/nao-autorizado" replace />;
   }
 

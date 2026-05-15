@@ -5,6 +5,7 @@ import type {
   UpdateProfilePayload,
   UserMeResponse,
 } from "../types/profile";
+import type { UserRole } from "../types/enums";
 
 const asRecord = (value: unknown): Record<string, unknown> | null => {
   if (typeof value === "object" && value !== null) return value as Record<string, unknown>;
@@ -216,4 +217,10 @@ export const updateProfilePassword = async (
     newPassword: payload.newPassword,
     confirmPassword: payload.confirmPassword,
   });
+};
+
+// PATCH /api/staff/me/roles
+export const updateUserRoles = async (roles: UserRole[]): Promise<{ token: string; roles: UserRole[] }> => {
+  const response = await api.patch<{ token: string; roles: UserRole[]; message: string }>("/staff/me/roles", { roles });
+  return { token: response.data.token, roles: response.data.roles };
 };

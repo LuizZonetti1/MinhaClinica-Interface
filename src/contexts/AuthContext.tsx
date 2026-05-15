@@ -1,11 +1,13 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { AuthContextData, AuthProviderProps, User } from "../types/auth";
 import type { UserRole } from "../types/enums";
+import { updateUserRoles } from "../services/profile.service";
 import {
   clearAuthStorage,
   clearStoredAuthUser,
   getAuthToken,
   getStoredAuthUser,
+  storeAuthToken,
   storeAuthUser,
 } from "../utils/authStorage";
 
@@ -56,6 +58,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const isProfessional = () => user?.role === "PROFESSIONAL";
   const isAdmin = () => user?.role === "ADMIN";
   const hasRole = (role: UserRole) => user?.role === role;
+  const hasAnyRole = (roles: UserRole[]) => {
+    if (!user) return false;
+    const userRoles = user.roles ?? [user.role];
+    return roles.some((r) => userRoles.includes(r));
+  };
+
+  const handleUpdateRoles = async (roles: UserRole[]): Promise<void> => {
+    const result = await updateUserRoles(roles);
+    // Atualiza token e user no storage com os novos roles
+    if (user) {
+      const updatedUser: User = { ...user, roles: result.roles };
+      storeAuthToken(result.token);
+      storeAuthUser(updatedUser);
+      setUser(updatedUser);
+    }
+  };
 
   return (
     <AuthContext.Provider
@@ -70,6 +88,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         isProfessional,
         isAdmin,
         hasRole,
+        hasAnyRole,
+        updateRoles: handleUpdateRoles,
       }}
     >
       {children}

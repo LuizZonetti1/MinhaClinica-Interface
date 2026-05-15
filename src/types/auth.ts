@@ -7,6 +7,7 @@ export interface User {
     name: string;
     email: string;
     role: UserRole;
+    roles?: UserRole[];
     avatarUrl?: string;
 }
 
@@ -21,6 +22,8 @@ export interface AuthContextData {
     isProfessional: () => boolean;
     isAdmin: () => boolean;
     hasRole: (role: UserRole) => boolean;
+    hasAnyRole: (roles: UserRole[]) => boolean;
+    updateRoles: (roles: UserRole[]) => Promise<void>;
 }
 
 export interface AuthProviderProps {
@@ -40,6 +43,7 @@ export interface LoginResponse {
         name: string;
         email: string;
         role: UserRole;
+        roles?: UserRole[];
         avatarUrl?: string;
         clinicId?: string;
         clinicName?: string;

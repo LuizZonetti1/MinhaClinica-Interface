@@ -111,6 +111,80 @@ const getRoleNavLinks = (role?: string): NavLink[] => {
   }
 };
 
+// Ordem de prioridade para resolver conflitos de label (ex: dois "Início")
+const ROLE_PRIORITY: string[] = [
+  UserRole.ADMIN,
+  UserRole.RECEPTIONIST,
+  UserRole.PROFESSIONAL,
+  UserRole.PATIENT,
+];
+
+// Caminhos redundantes: quando o role A está ativo, oculta esses paths do role B.
+// Evita mostrar links que já estão cobertos funcionalmente por outro papel.
+const FUNCTIONAL_EXCLUSIONS: Partial<Record<string, Partial<Record<string, string[]>>>> = {
+  [UserRole.ADMIN]: {
+    // ADMIN já tem "Pacientes" (gerencia tudo) e "Relatórios"
+    [UserRole.RECEPTIONIST]: [
+      "/recepcao/cadastrar-paciente", // coberto por /admin/paciente/dashboard
+      "/recepcao/historico",          // coberto por /admin/paciente/dashboard
+      "/recepcao/transacoes",         // coberto por /admin/relatorios
+    ],
+    // ADMIN já acessa histórico de pacientes via "Pacientes"
+    [UserRole.PATIENT]: [
+      "/paciente/historico",
+    ],
+  },
+  [UserRole.RECEPTIONIST]: {
+    // Recepcionista já tem histórico geral; o histórico do paciente é redundante
+    [UserRole.PATIENT]: [
+      "/paciente/historico",
+    ],
+  },
+};
+
+// Merge nav links de todos os roles ativos.
+// 1. Deduplicação por PATH e LABEL (ganha o de maior prioridade).
+// 2. Exclusão funcional: links já cobertos por um role de maior prioridade são omitidos.
+const getMergedNavLinks = (roles: string[]): NavLink[] => {
+  // Ordena roles pela hierarquia para que o de maior prioridade apareça primeiro
+  const sorted = [...roles].sort((a, b) => {
+    const ai = ROLE_PRIORITY.indexOf(a);
+    const bi = ROLE_PRIORITY.indexOf(b);
+    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+  });
+
+  // Constrói o conjunto de paths excluídos com base nas combinações ativas
+  const excludedPaths = new Set<string>();
+  for (const primaryRole of sorted) {
+    const exclusionsForPrimary = FUNCTIONAL_EXCLUSIONS[primaryRole];
+    if (!exclusionsForPrimary) continue;
+    for (const secondaryRole of sorted) {
+      const paths = exclusionsForPrimary[secondaryRole];
+      if (paths) {
+        for (const p of paths) excludedPaths.add(p);
+      }
+    }
+  }
+
+  const seenPaths = new Set<string>();
+  const seenLabels = new Set<string>();
+
+  const links = sorted
+    .flatMap((role) => getRoleNavLinks(role))
+    .filter((link) => {
+      if (excludedPaths.has(link.path)) return false;
+      if (seenPaths.has(link.path) || seenLabels.has(link.label)) return false;
+      seenPaths.add(link.path);
+      seenLabels.add(link.label);
+      return true;
+    });
+
+  // "Perfil" sempre por último, independente de quantos roles estão ativos
+  const perfil = links.find((l) => l.label === "Perfil");
+  const rest = links.filter((l) => l.label !== "Perfil");
+  return perfil ? [...rest, perfil] : rest;
+};
+
 const getProfilePathByRole = (role?: string): string | null => {
   switch (role) {
     case UserRole.ADMIN:
@@ -144,7 +218,7 @@ export const Sidebar = ({ isMobileOpen = false, onCloseMobile }: SidebarProps) =
   const { pathname } = useLocation();
   const [hasAvatarLoadError, setHasAvatarLoadError] = useState(false);
 
-  const navLinks = getRoleNavLinks(user?.role);
+  const navLinks = getMergedNavLinks(user?.roles ?? (user?.role ? [user.role] : []));
   const profilePath = getProfilePathByRole(user?.role);
 
   const handleLogout = () => {
@@ -231,19 +305,19 @@ export const Sidebar = ({ isMobileOpen = false, onCloseMobile }: SidebarProps) =
           >
             <Avatar>
               {shouldRenderAvatarImage ? (
-                  <img
-                    src={avatarUrl}
-                    alt={`Foto de ${user?.name ?? "Usuário"}`}
-                    onError={() => setHasAvatarLoadError(true)}
-                  />
+                <img
+                  src={avatarUrl}
+                  alt={`Foto de ${user?.name ?? "Usuário"}`}
+                  onError={() => setHasAvatarLoadError(true)}
+                />
               ) : (
                 <span>{initials}</span>
               )}
             </Avatar>
-              <UserInfo>
-                <UserName>{user?.name ?? "Usuário"}</UserName>
-                <UserRoleLabel>{roleLabel}</UserRoleLabel>
-              </UserInfo>
+            <UserInfo>
+              <UserName>{user?.name ?? "Usuário"}</UserName>
+              <UserRoleLabel>{roleLabel}</UserRoleLabel>
+            </UserInfo>
           </UserRow>
 
           <LogoutButton type="button" onClick={handleLogout}>
