@@ -218,8 +218,7 @@ const normalizeDocumentDetail = (payload: unknown): ClinicalDocumentDetail => {
         sizeBytes: typeof a.sizeBytes === "number" ? a.sizeBytes : 0,
         caption: toTrimmedStringValue(a.caption, "") || null,
         uploadedAt: toTrimmedStringValue(a.uploadedAt ?? a.uploaded_at, ""),
-        url: toTrimmedStringValue(a.url, "") ||
-          (a.storedName ? `/uploads/documents/${String(a.storedName)}` : ""),
+        url: toTrimmedStringValue(a.url, ""),
       }))
       : [],
   };
@@ -303,5 +302,10 @@ export const updateDocumentAttachmentCaption = async (
     `/appointments/${appointmentId}/documents/${documentId}/attachments/${attachmentId}/caption`,
     { caption },
   );
+  return data;
+};
+
+export const fetchAttachmentFile = async (url: string): Promise<Blob> => {
+  const { data } = await api.get<Blob>(url, { responseType: "blob" });
   return data;
 };

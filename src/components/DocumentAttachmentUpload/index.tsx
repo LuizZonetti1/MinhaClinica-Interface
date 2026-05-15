@@ -1,6 +1,7 @@
 import { Check, ExternalLink, File, Paperclip, Pencil, Trash2, UploadCloud, X } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { DocumentAttachmentUploadProps } from "../../types/components";
+import { fetchAttachmentFile } from "../../services/clinical-documents.service";
 import {
   AttachmentActions,
   AttachmentCaption,
@@ -54,6 +55,41 @@ const DocumentAttachmentUpload = ({
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [blobUrls, setBlobUrls] = useState<Record<string, string>>({});
+  const revokeListRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    // Revoke URLs from the previous render
+    const prev = revokeListRef.current;
+    revokeListRef.current = [];
+
+    const controller = new AbortController();
+
+    const loadBlobs = async () => {
+      const next: Record<string, string> = {};
+      for (const att of attachments) {
+        if (controller.signal.aborted) break;
+        if (!att.url || !att.url.startsWith("/appointments/")) continue;
+        try {
+          const blob = await fetchAttachmentFile(att.url);
+          if (controller.signal.aborted) break;
+          const objectUrl = URL.createObjectURL(blob);
+          revokeListRef.current.push(objectUrl);
+          next[att.id] = objectUrl;
+        } catch {
+          // silent — attachment will show broken state
+        }
+      }
+      if (!controller.signal.aborted) setBlobUrls(next);
+    };
+
+    void loadBlobs();
+
+    return () => {
+      controller.abort();
+      for (const url of prev) URL.revokeObjectURL(url);
+    };
+  }, [attachments]);
 
   // caption editing state: { [attachmentId]: draftText | null (not editing) }
   const [editingCaption, setEditingCaption] = useState<Record<string, string | null>>({});
@@ -167,7 +203,7 @@ const DocumentAttachmentUpload = ({
         <AttachmentList>
           {attachments.map((att) => {
             const isEditingThis = att.id in editingCaption;
-            const imgSrc = att.url.startsWith("http") ? att.url : `${API_BASE}${att.url}`;
+            const imgSrc = blobUrls[att.id] ?? (att.url.startsWith("http") ? att.url : `${API_BASE}${att.url}`);
 
             // ── Imagem: card vertical com preview completo ──
             if (isImage(att.mimeType)) {
