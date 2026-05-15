@@ -98,10 +98,10 @@ const ProfilePage = () => {
           profileResult.status === "fulfilled"
             ? profileResult.value
             : {
-                ...EMPTY_PROFILE,
-                fullName: user?.name ?? EMPTY_PROFILE.fullName,
-                email: user?.email ?? EMPTY_PROFILE.email,
-              };
+              ...EMPTY_PROFILE,
+              fullName: user?.name ?? EMPTY_PROFILE.fullName,
+              email: user?.email ?? EMPTY_PROFILE.email,
+            };
 
         if (profileResult.status === "rejected") {
           notifyError(

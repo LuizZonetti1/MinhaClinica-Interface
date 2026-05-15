@@ -113,11 +113,11 @@ const ProfessionalProfilePage = () => {
   const primarySpecialty = profile?.specialties.find((specialty) => specialty.isPrimary);
   const heroSubtitle = profile
     ? [
-        primarySpecialty?.name,
-        `${profile.professionalCouncil} ${profile.registrationNumber}/${profile.registrationState}`,
-      ]
-        .filter(Boolean)
-        .join(" - ")
+      primarySpecialty?.name,
+      `${profile.professionalCouncil} ${profile.registrationNumber}/${profile.registrationState}`,
+    ]
+      .filter(Boolean)
+      .join(" - ")
     : "";
 
   const formations = profile?.formations ? profile.formations.split("\n").filter(Boolean) : [];

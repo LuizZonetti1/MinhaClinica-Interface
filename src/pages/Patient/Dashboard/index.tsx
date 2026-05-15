@@ -56,8 +56,6 @@ import {
   NextAppointmentContent,
   NextAppointmentsList,
   PageWrapper,
-  QuickAccessGrid,
-  QuickAccessSection,
   SectionHeader,
   SectionTitle,
   StatsGrid,
