@@ -415,7 +415,7 @@ const ProfessionalAgendaPage = () => {
         </MonthNavGroup>
       </MonthNavRow>
 
-      {loading ? (
+      {loading && (viewMode !== "week" || !data) ? (
         <EmptyState>Carregando agenda...</EmptyState>
       ) : !data ? (
         <EmptyState>{errorMessage ?? "Não foi possível carregar sua agenda."}</EmptyState>
@@ -500,7 +500,8 @@ const ProfessionalAgendaPage = () => {
             {weekDays.map((day) => {
               const isToday = day.date === todayIso;
               const isSelected = day.date === effectiveSelectedDate;
-              const isOutsideCurrentMonth = !day.date.startsWith(`${data.referenceMonth}-`);
+              const currentMonthKey = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}`;
+              const isOutsideCurrentMonth = !day.date.startsWith(`${currentMonthKey}-`);
               const isWithinAllowedRange = day.date >= minAllowedDate && day.date <= maxAllowedDate;
               const dayBadgeVariant = !day.hasAppointments
                 ? "neutral"
