@@ -624,7 +624,7 @@ const ReceptionTransacoesPage = () => {
                       variant="outline"
                       icon={<Pencil size={14} />}
                       onClick={() => setEditingTransaction(transaction)}
-                      disabled={transaction.id.startsWith("tx-")}
+                      disabled={transaction.id.startsWith("tx-") || (!!transaction.createdById && transaction.createdById !== user?.id)}
                     >
                       Editar
                     </Button>

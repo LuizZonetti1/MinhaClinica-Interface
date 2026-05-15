@@ -48,6 +48,7 @@ export interface TransactionHistoryItem {
   amount: number;
   date: string;
   paymentStatus: PaymentStatus;
+  createdById?: string;
 }
 
 // ─── Filtros / período ────────────────────────────────────────────────────────

@@ -259,6 +259,7 @@ const normalizeTransactionList = (payload: unknown): TransactionHistoryItem[] =>
           "",
         ),
         paymentStatus,
+        createdById: readStringFromRecord(item, ["createdById", "createdBy", "userId"], "") || undefined,
       } satisfies TransactionHistoryItem;
     })
     .filter((item): item is TransactionHistoryItem => item !== null);
