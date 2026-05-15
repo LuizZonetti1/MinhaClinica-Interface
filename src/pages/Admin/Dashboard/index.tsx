@@ -1,5 +1,6 @@
 import {
   CalendarDays,
+  CheckCircle,
   FileText,
   Settings,
   Stethoscope,
@@ -15,20 +16,32 @@ import QuickActions from "../../../components/QuickActions";
 import { StatCard } from "../../../components/StatCard";
 import { useAuth } from "../../../contexts";
 import { getDashboardHistorical, getDashboardSummary } from "../../../services/admin.service";
+import { getReceptionDashboard, updateAppointmentStatus } from "../../../services/reception.service";
 import { theme } from "../../../themes/themes";
-import type { DashboardSummary, HistoricalItem } from "../../../types/dashboard";
+import type { AppointmentStatus, DashboardSummary, HistoricalItem, ReceptionDashboardData } from "../../../types/dashboard";
+import { UserRole } from "../../../types/enums";
 import { getFormattedDate, getGreeting } from "../../../utils/formatters";
 import {
   AlertsList,
   AlertsSection,
   ChartCard,
   ChartTitle,
+  CheckInButton,
+  EmptyStateCell,
   HeroBanner,
   HeroSubtitle,
   HeroTitle,
   PageWrapper,
   SectionTitle,
   StatsGrid,
+  StatusBadge,
+  TableCard,
+  TableCell,
+  TableElement,
+  TableHeaderCell,
+  TableHeaderRow,
+  TableRow,
+  TodayPatientsSection,
 } from "./styles";
 
 // ─── Static card config ───────────────────────────────────────────────────────
@@ -231,6 +244,18 @@ const buildChartDataFromHistorical = (
   });
 };
 
+const STATUS_CONFIG: Record<
+  AppointmentStatus,
+  { label: string; variant: "waiting" | "checkin" | "progress" | "done" | "cancelled" | "noshow" }
+> = {
+  WAITING: { label: "Aguardando", variant: "waiting" },
+  CHECKED_IN: { label: "Check-in OK", variant: "checkin" },
+  IN_PROGRESS: { label: "Em Atendimento", variant: "progress" },
+  DONE: { label: "Concluído", variant: "done" },
+  CANCELLED: { label: "Cancelado", variant: "cancelled" },
+  NO_SHOW: { label: "Não Compareceu", variant: "noshow" },
+};
+
 const AdminDashboard = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState<ReturnType<typeof buildStats>>([]);
@@ -239,6 +264,33 @@ const AdminDashboard = () => {
   const [chartData, setChartData] = useState<HistoricalItem[]>(() =>
     getLastSixMonthsAbbr().map((month) => ({ month, consultations: 0, revenue: 0 })),
   );
+  const [receptionData, setReceptionData] = useState<ReceptionDashboardData | null>(null);
+  const [checkingInId, setCheckingInId] = useState<string | null>(null);
+
+  const hasReceptionistRole = !!(user?.roles?.includes(UserRole.RECEPTIONIST));
+  const hasProfessionalRole = !!(user?.roles?.includes(UserRole.PROFESSIONAL));
+  const showTodayPatients = hasReceptionistRole || hasProfessionalRole;
+
+  const handleCheckin = async (id: string) => {
+    setCheckingInId(id);
+    try {
+      await updateAppointmentStatus(id, "WAITING");
+      setReceptionData((prev) =>
+        prev
+          ? {
+              ...prev,
+              appointments: prev.appointments.map((a) =>
+                a.id === id ? { ...a, status: "CHECKED_IN" as AppointmentStatus } : a,
+              ),
+            }
+          : prev,
+      );
+    } catch {
+      // silently fail
+    } finally {
+      setCheckingInId(null);
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -290,6 +342,18 @@ const AdminDashboard = () => {
       mounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!showTodayPatients) return;
+    let mounted = true;
+
+    getReceptionDashboard()
+      .then((data) => { if (mounted) setReceptionData(data); })
+      .catch(() => { /* silently fail — not critical */ });
+
+    return () => { mounted = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showTodayPatients]);
 
   const firstName = user?.name.split(" ").slice(0, 2).join(" ") ?? "Administrador";
   const greeting = getGreeting();
@@ -346,6 +410,63 @@ const AdminDashboard = () => {
 
       {/* Quick Access */}
       <QuickActions actions={QUICK_ACCESS} />
+
+      {/* Pacientes de Hoje — visível apenas quando RECEPTIONIST role ativo */}
+      {showTodayPatients && (
+        <TodayPatientsSection>
+          <SectionTitle>Pacientes de Hoje</SectionTitle>
+          <TableCard>
+            <TableElement>
+              <thead>
+                <TableHeaderRow>
+                  <TableHeaderCell>Hora</TableHeaderCell>
+                  <TableHeaderCell>Paciente</TableHeaderCell>
+                  <TableHeaderCell>Profissional</TableHeaderCell>
+                  <TableHeaderCell>Status</TableHeaderCell>
+                  {hasReceptionistRole && <TableHeaderCell>Ação</TableHeaderCell>}
+                </TableHeaderRow>
+              </thead>
+              <tbody>
+                {receptionData && receptionData.appointments.length > 0 ? (
+                  receptionData.appointments.map((appt) => {
+                    const config = STATUS_CONFIG[appt.status] ?? { label: appt.status, variant: "waiting" as const };
+                    return (
+                      <TableRow key={appt.id}>
+                        <TableCell>{appt.time}</TableCell>
+                        <TableCell>{appt.patientName}</TableCell>
+                        <TableCell>{appt.doctorName}</TableCell>
+                        <TableCell>
+                          <StatusBadge $variant={config.variant}>{config.label}</StatusBadge>
+                        </TableCell>
+                        {hasReceptionistRole && (
+                          <TableCell>
+                            {appt.status === "WAITING" ? (
+                              <CheckInButton
+                                type="button"
+                                disabled={checkingInId === appt.id}
+                                onClick={() => void handleCheckin(appt.id)}
+                              >
+                                <CheckCircle size={14} />
+                                {checkingInId === appt.id ? "Aguarde..." : "Check-in"}
+                              </CheckInButton>
+                            ) : null}
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <EmptyStateCell colSpan={hasReceptionistRole ? 5 : 4}>
+                      {receptionData ? "Nenhum paciente agendado para hoje." : "Carregando..."}
+                    </EmptyStateCell>
+                  </tr>
+                )}
+              </tbody>
+            </TableElement>
+          </TableCard>
+        </TodayPatientsSection>
+      )}
     </PageWrapper>
   );
 };
