@@ -52,6 +52,7 @@ export interface ProfessionalProfileData {
 export interface UpdateProfessionalProfilePayload {
   name?: string;
   phone?: string | null;
+  professionalCouncil?: string;
   registrationNumber?: string;
   registrationState?: string;
   defaultAppointmentDuration?: number;

@@ -3,13 +3,25 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "../../../components/Button";
 import { Input } from "../../../components/Input";
+import { Toggle } from "../../../components/Toggle";
 import { useAuth } from "../../../contexts";
 import {
   getProfile,
   updateProfile,
   updateProfilePassword,
 } from "../../../services/profile.service";
+import {
+  getProfessionalProfile,
+  updateProfessionalProfile,
+} from "../../../services/professional-profile.service";
 import type { ProfileData, UpdateProfilePayload } from "../../../types/profile";
+import type {
+  DayOfWeek,
+  ProfessionalProfileData,
+  UpdateProfessionalProfilePayload,
+  WorkingHour,
+} from "../../../types/professional-profile";
+import { UserRole } from "../../../types/enums";
 import { getInitials, maskPhoneInput, normalizePhoneDigits } from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError, notifySuccess } from "../../../utils/toast";
@@ -20,6 +32,13 @@ import {
   AvatarOverlay,
   AvatarUploadArea,
   AvatarWrapper,
+  DayItem,
+  DayItemHeader,
+  DayItemLabel,
+  DayList,
+  DayTimeGrid,
+  DayToggleLabel,
+  DayToggleRow,
   FormCard,
   FormCardTitle,
   FormGrid,
@@ -27,6 +46,18 @@ import {
   PageTitle,
   PageWrapper,
   PasswordRequirements,
+  RoleCheckboxDesc,
+  RoleCheckboxInfo,
+  RoleCheckboxItem,
+  RoleCheckboxLabel,
+  RoleCheckboxList,
+  RolesSaveRow,
+  RoleToggle,
+  SpecialtyTag,
+  SpecialtyTagRow,
+  StyledTextarea,
+  TextareaLabel,
+  TextareaWrapper,
 } from "./styles";
 
 type EditForm = {
@@ -42,6 +73,51 @@ type ProfileBase = {
   phone: string;
 };
 
+type DayFormItem = {
+  dayOfWeek: DayOfWeek;
+  isWorking: boolean;
+  startTime: string;
+  endTime: string;
+  lunchBreakStart: string;
+  lunchBreakEnd: string;
+};
+
+type ProfForm = {
+  professionalCouncil: string;
+  registrationNumber: string;
+  registrationState: string;
+  defaultAppointmentDuration: string;
+  bio: string;
+  formations: string;
+};
+
+const ALL_DAYS: DayOfWeek[] = [
+  "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY",
+];
+
+const DAY_LABELS: Record<DayOfWeek, string> = {
+  MONDAY: "Segunda-feira",
+  TUESDAY: "Terça-feira",
+  WEDNESDAY: "Quarta-feira",
+  THURSDAY: "Quinta-feira",
+  FRIDAY: "Sexta-feira",
+  SATURDAY: "Sábado",
+  SUNDAY: "Domingo",
+};
+
+const buildInitialHours = (apiHours: WorkingHour[]): DayFormItem[] =>
+  ALL_DAYS.map((day) => {
+    const existing = apiHours.find((h) => h.dayOfWeek === day);
+    return {
+      dayOfWeek: day,
+      isWorking: existing?.isWorking ?? false,
+      startTime: existing?.startTime ?? "08:00",
+      endTime: existing?.endTime ?? "18:00",
+      lunchBreakStart: existing?.lunchBreakStart ?? "",
+      lunchBreakEnd: existing?.lunchBreakEnd ?? "",
+    };
+  });
+
 const normalizeApiValue = (value: string, fallback = "") => (value === "-" ? fallback : value);
 
 const PASSWORD_REQUIREMENTS_MESSAGE =
@@ -51,7 +127,7 @@ const isPasswordStrong = (password: string) =>
   password.length >= 8 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /\d/.test(password);
 
 const EditProfilePage = () => {
-  const { user, setUser } = useAuth();
+  const { user, setUser, updateRoles } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -67,6 +143,30 @@ const EditProfilePage = () => {
     name: "",
     phone: "",
   });
+
+  // Multi-role state (ADMIN pode acumular PROFESSIONAL, RECEPTIONIST, PATIENT)
+  const EXTRA_ROLES: { role: UserRole; label: string; desc: string }[] = [
+    { role: UserRole.PROFESSIONAL, label: "Profissional", desc: "Acesso à agenda, documentos clínicos e comentários de pacientes." },
+    { role: UserRole.RECEPTIONIST, label: "Recepcionista", desc: "Acesso ao check-in, agendamentos e histórico de consultas." },
+    { role: UserRole.PATIENT, label: "Paciente", desc: "Acesso ao portal do paciente, agendamentos e clínicas." },
+  ];
+
+  const [selectedRoles, setSelectedRoles] = useState<UserRole[]>([UserRole.ADMIN]);
+  const [isSavingRoles, setIsSavingRoles] = useState(false);
+
+  // Estado do perfil profissional (visível somente se hasProfessionalRole)
+  const hasProfessionalRole = !!(user?.roles?.includes(UserRole.PROFESSIONAL));
+  const [profData, setProfData] = useState<ProfessionalProfileData | null>(null);
+  const [profForm, setProfForm] = useState<ProfForm>({
+    professionalCouncil: "",
+    registrationNumber: "",
+    registrationState: "",
+    defaultAppointmentDuration: "",
+    bio: "",
+    formations: "",
+  });
+  const [hours, setHours] = useState<DayFormItem[]>(buildInitialHours([]));
+  const [isSavingProf, setIsSavingProf] = useState(false);
 
   const [form, setForm] = useState<EditForm>({
     name: "",
@@ -110,6 +210,34 @@ const EditProfilePage = () => {
         });
       });
   }, [user?.email, user?.name]);
+
+  useEffect(() => {
+    if (user?.roles) {
+      setSelectedRoles(user.roles);
+    }
+  }, [user?.roles]);
+
+  useEffect(() => {
+    if (!hasProfessionalRole) return;
+    getProfessionalProfile()
+      .then((data) => {
+        setProfData(data);
+        setProfForm({
+          professionalCouncil: data.professionalCouncil ?? "",
+          registrationNumber: data.registrationNumber ?? "",
+          registrationState: data.registrationState ?? "",
+          defaultAppointmentDuration: data.defaultAppointmentDuration
+            ? String(data.defaultAppointmentDuration)
+            : "",
+          bio: data.bio ?? "",
+          formations: data.formations ?? "",
+        });
+        setHours(buildInitialHours(data.workingHours));
+      })
+      .catch(() => {
+        // silencioso: a seção simplesmente não pré-preenche
+      });
+  }, [hasProfessionalRole]);
 
   useEffect(() => {
     return () => {
@@ -165,6 +293,67 @@ const EditProfilePage = () => {
         name: latestName,
         avatarUrl: latestAvatar || undefined,
       });
+    }
+  };
+
+  const handleToggleRole = (role: UserRole) => {
+    if (role === UserRole.ADMIN) return; // role primário não pode ser removido
+    setSelectedRoles((prev) =>
+      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role],
+    );
+  };
+
+  const updateDay = (
+    day: DayOfWeek,
+    field: keyof Omit<DayFormItem, "dayOfWeek">,
+    value: string | boolean,
+  ) => {
+    setHours((prev) =>
+      prev.map((item) => (item.dayOfWeek === day ? { ...item, [field]: value } : item)),
+    );
+  };
+
+  const handleSaveProf = async () => {
+    if (isSavingProf) return;
+    setIsSavingProf(true);
+    try {
+      const payload: UpdateProfessionalProfilePayload = {
+        professionalCouncil: profForm.professionalCouncil.trim() || undefined,
+        registrationNumber: profForm.registrationNumber.trim() || undefined,
+        registrationState: profForm.registrationState.trim() || undefined,
+        defaultAppointmentDuration: profForm.defaultAppointmentDuration
+          ? Number(profForm.defaultAppointmentDuration)
+          : undefined,
+        bio: profForm.bio.trim() || null,
+        formations: profForm.formations.trim() || null,
+        workingHours: hours.map((item): WorkingHour => ({
+          dayOfWeek: item.dayOfWeek,
+          isWorking: item.isWorking,
+          startTime: item.startTime,
+          endTime: item.endTime,
+          lunchBreakStart: item.lunchBreakStart.trim() || null,
+          lunchBreakEnd: item.lunchBreakEnd.trim() || null,
+        })),
+      };
+      await updateProfessionalProfile(payload);
+      notifySuccess("Dados profissionais atualizados com sucesso.");
+    } catch (error: unknown) {
+      notifyError(getApiErrorMessage(error, "Não foi possível atualizar os dados profissionais."));
+    } finally {
+      setIsSavingProf(false);
+    }
+  };
+
+  const handleSaveRoles = async () => {
+    if (isSavingRoles) return;
+    setIsSavingRoles(true);
+    try {
+      await updateRoles(selectedRoles);
+      notifySuccess("Papéis atualizados com sucesso.");
+    } catch (error: unknown) {
+      notifyError(getApiErrorMessage(error, "Não foi possível atualizar os papéis."));
+    } finally {
+      setIsSavingRoles(false);
     }
   };
 
@@ -334,6 +523,39 @@ const EditProfilePage = () => {
         <PasswordRequirements>{PASSWORD_REQUIREMENTS_MESSAGE}.</PasswordRequirements>
       </FormCard>
 
+      <FormCard>
+        <FormCardTitle>Papéis de acesso</FormCardTitle>
+        <RoleCheckboxList>
+          {/* Role primário: sempre ativo e desabilitado */}
+          <RoleCheckboxItem $disabled>
+            <RoleToggle $checked $disabled />
+            <RoleCheckboxInfo>
+              <RoleCheckboxLabel>Proprietário (Admin)</RoleCheckboxLabel>
+              <RoleCheckboxDesc>Papel principal. Gerencia toda a clínica.</RoleCheckboxDesc>
+            </RoleCheckboxInfo>
+          </RoleCheckboxItem>
+          {/* Roles adicionais */}
+          {EXTRA_ROLES.map(({ role, label, desc }) => (
+            <RoleCheckboxItem key={role} onClick={() => handleToggleRole(role)}>
+              <RoleToggle $checked={selectedRoles.includes(role)} />
+              <RoleCheckboxInfo>
+                <RoleCheckboxLabel>{label}</RoleCheckboxLabel>
+                <RoleCheckboxDesc>{desc}</RoleCheckboxDesc>
+              </RoleCheckboxInfo>
+            </RoleCheckboxItem>
+          ))}
+        </RoleCheckboxList>
+        <RolesSaveRow>
+          <Button
+            icon={<Save size={16} />}
+            onClick={() => void handleSaveRoles()}
+            disabled={isSavingRoles}
+          >
+            {isSavingRoles ? "Salvando..." : "Salvar Papéis"}
+          </Button>
+        </RolesSaveRow>
+      </FormCard>
+
       <ActionRow>
         <Button variant="outline" onClick={() => navigate("/admin/perfil")} disabled={isSaving}>
           Cancelar
@@ -342,6 +564,164 @@ const EditProfilePage = () => {
           {isSaving ? "Salvando..." : "Salvar Alterações"}
         </Button>
       </ActionRow>
+
+      {hasProfessionalRole && (
+        <>
+          <FormCard>
+            <FormCardTitle>Dados Profissionais</FormCardTitle>
+
+            <FormGrid>
+              <Input
+                label="Conselho Profissional (ex: CRM, CRO)"
+                fullWidth
+                value={profForm.professionalCouncil}
+                onChange={(e) =>
+                  setProfForm((prev) => ({ ...prev, professionalCouncil: e.target.value }))
+                }
+                placeholder="CRM"
+                disabled={isSavingProf}
+              />
+              <Input
+                label="Número de Registro"
+                fullWidth
+                value={profForm.registrationNumber}
+                onChange={(e) =>
+                  setProfForm((prev) => ({ ...prev, registrationNumber: e.target.value }))
+                }
+                placeholder="123456"
+                disabled={isSavingProf}
+              />
+              <Input
+                label="Estado de Registro (UF)"
+                fullWidth
+                value={profForm.registrationState}
+                onChange={(e) =>
+                  setProfForm((prev) => ({ ...prev, registrationState: e.target.value.toUpperCase().slice(0, 2) }))
+                }
+                placeholder="SP"
+                disabled={isSavingProf}
+              />
+              <Input
+                label="Duração da Consulta (minutos)"
+                type="number"
+                fullWidth
+                value={profForm.defaultAppointmentDuration}
+                onChange={(e) =>
+                  setProfForm((prev) => ({ ...prev, defaultAppointmentDuration: e.target.value }))
+                }
+                placeholder="30"
+                disabled={isSavingProf}
+              />
+            </FormGrid>
+
+            <FullWidthField>
+              <Input
+                label="Especialidade principal"
+                fullWidth
+                value={
+                  profData?.specialties.find((s) => s.isPrimary)?.name ??
+                  profData?.specialties[0]?.name ??
+                  ""
+                }
+                placeholder="Nenhuma especialidade cadastrada"
+                disabled
+              />
+            </FullWidthField>
+
+            <TextareaWrapper>
+              <TextareaLabel>Bio</TextareaLabel>
+              <StyledTextarea
+                value={profForm.bio}
+                onChange={(e) => setProfForm((prev) => ({ ...prev, bio: e.target.value }))}
+                placeholder="Uma breve descrição sobre você e sua experiência..."
+                disabled={isSavingProf}
+              />
+            </TextareaWrapper>
+
+            <TextareaWrapper>
+              <TextareaLabel>Formações</TextareaLabel>
+              <StyledTextarea
+                value={profForm.formations}
+                onChange={(e) => setProfForm((prev) => ({ ...prev, formations: e.target.value }))}
+                placeholder="Graduação, especializações, residências..."
+                disabled={isSavingProf}
+              />
+            </TextareaWrapper>
+          </FormCard>
+
+          <FormCard>
+            <FormCardTitle>Horários de Atendimento</FormCardTitle>
+            <DayList>
+              {hours.map((day) => (
+                <DayItem key={day.dayOfWeek}>
+                  <DayItemHeader>
+                    <DayItemLabel>{DAY_LABELS[day.dayOfWeek]}</DayItemLabel>
+                    <DayToggleRow>
+                      <DayToggleLabel>{day.isWorking ? "Atendendo" : "Fechado"}</DayToggleLabel>
+                      <Toggle
+                        checked={day.isWorking}
+                        onChange={(value) => updateDay(day.dayOfWeek, "isWorking", value)}
+                        disabled={isSavingProf}
+                      />
+                    </DayToggleRow>
+                  </DayItemHeader>
+
+                  {day.isWorking && (
+                    <DayTimeGrid>
+                      <Input
+                        label="Início"
+                        type="time"
+                        fullWidth
+                        value={day.startTime}
+                        onChange={(e) => updateDay(day.dayOfWeek, "startTime", e.target.value)}
+                        disabled={isSavingProf}
+                      />
+                      <Input
+                        label="Término"
+                        type="time"
+                        fullWidth
+                        value={day.endTime}
+                        onChange={(e) => updateDay(day.dayOfWeek, "endTime", e.target.value)}
+                        disabled={isSavingProf}
+                      />
+                      <Input
+                        label="Início da pausa"
+                        type="time"
+                        fullWidth
+                        value={day.lunchBreakStart}
+                        onChange={(e) =>
+                          updateDay(day.dayOfWeek, "lunchBreakStart", e.target.value)
+                        }
+                        disabled={isSavingProf}
+                        placeholder="--:--"
+                      />
+                      <Input
+                        label="Fim da pausa"
+                        type="time"
+                        fullWidth
+                        value={day.lunchBreakEnd}
+                        onChange={(e) => updateDay(day.dayOfWeek, "lunchBreakEnd", e.target.value)}
+                        disabled={isSavingProf}
+                        placeholder="--:--"
+                      />
+                    </DayTimeGrid>
+                  )}
+                </DayItem>
+              ))}
+            </DayList>
+
+            <RolesSaveRow>
+              <Button
+                icon={<Save size={16} />}
+                onClick={() => void handleSaveProf()}
+                disabled={isSavingProf}
+              >
+                {isSavingProf ? "Salvando..." : "Salvar Dados Profissionais"}
+              </Button>
+            </RolesSaveRow>
+          </FormCard>
+        </>
+      )}
     </PageWrapper>
   );
 };

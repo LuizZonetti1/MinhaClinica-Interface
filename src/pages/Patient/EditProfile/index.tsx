@@ -29,6 +29,12 @@ import {
   PageTitle,
   PageWrapper,
   PasswordRequirements,
+  RoleCheckboxDesc,
+  RoleCheckboxInfo,
+  RoleCheckboxItem,
+  RoleCheckboxLabel,
+  RoleCheckboxList,
+  RoleToggle,
 } from "./styles";
 
 type EditForm = {
@@ -581,6 +587,19 @@ const PatientEditProfilePage = () => {
           />
         </FormGrid>
         <PasswordRequirements>{PASSWORD_REQUIREMENTS_MESSAGE}</PasswordRequirements>
+      </FormCard>
+
+      <FormCard>
+        <FormCardTitle>Papéis de acesso</FormCardTitle>
+        <RoleCheckboxList>
+          <RoleCheckboxItem $disabled>
+            <RoleToggle $checked $disabled />
+            <RoleCheckboxInfo>
+              <RoleCheckboxLabel>Paciente</RoleCheckboxLabel>
+              <RoleCheckboxDesc>Papel principal. Acesso ao portal do paciente, agendamentos e clínicas.</RoleCheckboxDesc>
+            </RoleCheckboxInfo>
+          </RoleCheckboxItem>
+        </RoleCheckboxList>
       </FormCard>
 
       <ActionRow>

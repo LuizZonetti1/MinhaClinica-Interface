@@ -14,6 +14,7 @@ import type {
   UpdateProfilePasswordPayload,
   UpdateProfilePayload,
 } from "../../../types/profile";
+import { UserRole } from "../../../types/enums";
 import { getInitials, maskPhoneInput, normalizePhoneDigits } from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError, notifySuccess } from "../../../utils/toast";
@@ -31,6 +32,13 @@ import {
   PageTitle,
   PageWrapper,
   PasswordRequirements,
+  RoleCheckboxDesc,
+  RoleCheckboxInfo,
+  RoleCheckboxItem,
+  RoleCheckboxLabel,
+  RoleCheckboxList,
+  RolesSaveRow,
+  RoleToggle,
 } from "./styles";
 
 type EditForm = {
@@ -55,7 +63,7 @@ const isPasswordStrong = (password: string) =>
   password.length >= 8 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /\d/.test(password);
 
 const ReceptionEditProfilePage = () => {
-  const { user, setUser } = useAuth();
+  const { user, setUser, updateRoles } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -71,6 +79,10 @@ const ReceptionEditProfilePage = () => {
     name: "",
     phone: "",
   });
+
+  // Multi-role: RECEPTIONIST pode acumular PATIENT
+  const [selectedRoles, setSelectedRoles] = useState<UserRole[]>([UserRole.RECEPTIONIST]);
+  const [isSavingRoles, setIsSavingRoles] = useState(false);
 
   const [form, setForm] = useState<EditForm>({
     name: "",
@@ -169,6 +181,32 @@ const ReceptionEditProfilePage = () => {
         name: latestName,
         avatarUrl: latestAvatar || undefined,
       });
+    }
+  };
+
+  // Sincroniza roles com user.roles ao carregar
+  useEffect(() => {
+    if (user?.roles) setSelectedRoles(user.roles);
+  }, [user?.roles]);
+
+  const handleTogglePatient = () => {
+    setSelectedRoles((prev) =>
+      prev.includes(UserRole.PATIENT)
+        ? prev.filter((r) => r !== UserRole.PATIENT)
+        : [...prev, UserRole.PATIENT],
+    );
+  };
+
+  const handleSaveRoles = async () => {
+    if (isSavingRoles) return;
+    setIsSavingRoles(true);
+    try {
+      await updateRoles(selectedRoles);
+      notifySuccess("Papéis atualizados com sucesso.");
+    } catch (error: unknown) {
+      notifyError(getApiErrorMessage(error, "Não foi possível atualizar os papéis."));
+    } finally {
+      setIsSavingRoles(false);
     }
   };
 
@@ -337,6 +375,35 @@ const ReceptionEditProfilePage = () => {
           />
         </FormGrid>
         <PasswordRequirements>{PASSWORD_REQUIREMENTS_MESSAGE}.</PasswordRequirements>
+      </FormCard>
+
+      <FormCard>
+        <FormCardTitle>Papéis de acesso</FormCardTitle>
+        <RoleCheckboxList>
+          <RoleCheckboxItem $disabled>
+            <RoleToggle $checked $disabled />
+            <RoleCheckboxInfo>
+              <RoleCheckboxLabel>Recepcionista</RoleCheckboxLabel>
+              <RoleCheckboxDesc>Papel principal. Acesso ao check-in e agendamentos.</RoleCheckboxDesc>
+            </RoleCheckboxInfo>
+          </RoleCheckboxItem>
+          <RoleCheckboxItem onClick={handleTogglePatient}>
+            <RoleToggle $checked={selectedRoles.includes(UserRole.PATIENT)} />
+            <RoleCheckboxInfo>
+              <RoleCheckboxLabel>Paciente</RoleCheckboxLabel>
+              <RoleCheckboxDesc>Acesso ao portal do paciente, agendamentos e clínicas.</RoleCheckboxDesc>
+            </RoleCheckboxInfo>
+          </RoleCheckboxItem>
+        </RoleCheckboxList>
+        <RolesSaveRow>
+          <Button
+            icon={<Save size={16} />}
+            onClick={() => void handleSaveRoles()}
+            disabled={isSavingRoles}
+          >
+            {isSavingRoles ? "Salvando..." : "Salvar Papéis"}
+          </Button>
+        </RolesSaveRow>
       </FormCard>
 
       <ActionRow>

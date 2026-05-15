@@ -17,6 +17,7 @@ import type {
   UpdateProfessionalProfilePayload,
   WorkingHour,
 } from "../../../types/professional-profile";
+import { UserRole } from "../../../types/enums";
 import { getInitials, maskPhoneInput, normalizePhoneDigits } from "../../../utils/formatters";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError, notifySuccess } from "../../../utils/toast";
@@ -41,6 +42,13 @@ import {
   PageTitle,
   PageWrapper,
   PasswordRequirements,
+  RoleCheckboxDesc,
+  RoleCheckboxInfo,
+  RoleCheckboxItem,
+  RoleCheckboxLabel,
+  RoleCheckboxList,
+  RolesSaveRow,
+  RoleToggle,
   StyledTextarea,
   TextareaLabel,
   TextareaWrapper,
@@ -147,7 +155,7 @@ const buildWorkingHoursPayload = (hours: DayFormItem[]): WorkingHour[] =>
   }));
 
 const ProfessionalEditProfilePage = () => {
-  const { user, setUser } = useAuth();
+  const { user, setUser, updateRoles } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -158,6 +166,10 @@ const ProfessionalEditProfilePage = () => {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState("");
   const [currentAvatarUrl, setCurrentAvatarUrl] = useState("");
+
+  // Multi-role: PROFESSIONAL pode acumular PATIENT
+  const [selectedRoles, setSelectedRoles] = useState<UserRole[]>([UserRole.PROFESSIONAL]);
+  const [isSavingRoles, setIsSavingRoles] = useState(false);
   const [email, setEmail] = useState("");
   const [primarySpecialty, setPrimarySpecialty] = useState("");
   const [form, setForm] = useState<ProfessionalFormState>({
@@ -290,6 +302,32 @@ const ProfessionalEditProfilePage = () => {
     setAvatarFile(file);
     setAvatarPreview(URL.createObjectURL(file));
     event.target.value = "";
+  };
+
+  // Sincroniza roles com user.roles ao carregar
+  useEffect(() => {
+    if (user?.roles) setSelectedRoles(user.roles);
+  }, [user?.roles]);
+
+  const handleTogglePatient = () => {
+    setSelectedRoles((prev) =>
+      prev.includes(UserRole.PATIENT)
+        ? prev.filter((r) => r !== UserRole.PATIENT)
+        : [...prev, UserRole.PATIENT],
+    );
+  };
+
+  const handleSaveRoles = async () => {
+    if (isSavingRoles) return;
+    setIsSavingRoles(true);
+    try {
+      await updateRoles(selectedRoles);
+      notifySuccess("Papéis atualizados com sucesso.");
+    } catch (error: unknown) {
+      notifyError(getApiErrorMessage(error, "Não foi possível atualizar os papéis."));
+    } finally {
+      setIsSavingRoles(false);
+    }
   };
 
   const handleSave = async () => {
@@ -655,6 +693,35 @@ const ProfessionalEditProfilePage = () => {
             </DayItem>
           ))}
         </DayList>
+      </FormCard>
+
+      <FormCard>
+        <FormCardTitle>Papéis de acesso</FormCardTitle>
+        <RoleCheckboxList>
+          <RoleCheckboxItem $disabled>
+            <RoleToggle $checked $disabled />
+            <RoleCheckboxInfo>
+              <RoleCheckboxLabel>Profissional</RoleCheckboxLabel>
+              <RoleCheckboxDesc>Papel principal. Acesso à agenda e documentos clínicos.</RoleCheckboxDesc>
+            </RoleCheckboxInfo>
+          </RoleCheckboxItem>
+          <RoleCheckboxItem onClick={handleTogglePatient}>
+            <RoleToggle $checked={selectedRoles.includes(UserRole.PATIENT)} />
+            <RoleCheckboxInfo>
+              <RoleCheckboxLabel>Paciente</RoleCheckboxLabel>
+              <RoleCheckboxDesc>Acesso ao portal do paciente, agendamentos e clínicas.</RoleCheckboxDesc>
+            </RoleCheckboxInfo>
+          </RoleCheckboxItem>
+        </RoleCheckboxList>
+        <RolesSaveRow>
+          <Button
+            icon={<Save size={16} />}
+            onClick={() => void handleSaveRoles()}
+            disabled={isSavingRoles}
+          >
+            {isSavingRoles ? "Salvando..." : "Salvar Papéis"}
+          </Button>
+        </RolesSaveRow>
       </FormCard>
 
       <ActionRow>

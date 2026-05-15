@@ -126,3 +126,183 @@ export const ActionRow = styled.div`
   gap: 12px;
   margin-top: 8px;
 `;
+
+// ─── Multi-role toggles ──────────────────────────────────────────────────────
+
+export const RoleCheckboxList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+`;
+
+export const RoleCheckboxItem = styled.label<{ $disabled?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 4px;
+  cursor: ${({ $disabled }) => ($disabled ? "not-allowed" : "pointer")};
+  opacity: ${({ $disabled }) => ($disabled ? 0.55 : 1)};
+  border-bottom: 1px solid ${theme.colors.border.lighter};
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+export const RoleToggle = styled.span<{ $checked?: boolean; $disabled?: boolean }>`
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  background: ${({ $checked }) => ($checked ? theme.colors.primary : "#d1d5db")};
+  transition: background 0.2s;
+  cursor: ${({ $disabled }) => ($disabled ? "not-allowed" : "pointer")};
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: ${({ $checked }) => ($checked ? "22px" : "2px")};
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    transition: left 0.2s;
+  }
+`;
+
+export const RoleCheckboxInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+`;
+
+export const RoleCheckboxLabel = styled.span`
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: ${theme.colors.text.primary};
+`;
+
+export const RoleCheckboxDesc = styled.span`
+  font-family: "Roboto", sans-serif;
+  font-size: 12px;
+  color: ${theme.colors.text.muted};
+`;
+
+export const RolesSaveRow = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+`;
+
+// ─── Seção de perfil profissional ─────────────────────────────────────────────
+
+export const TextareaWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+`;
+
+export const TextareaLabel = styled.label`
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: ${theme.colors.text.secondary};
+`;
+
+export const StyledTextarea = styled.textarea`
+  width: 100%;
+  min-height: 100px;
+  padding: 10px 14px;
+  border: 1px solid ${theme.colors.border?.light ?? "#e5e7eb"};
+  border-radius: 8px;
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  color: ${theme.colors.text.primary};
+  background: ${theme.colors.background?.card ?? "#ffffff"};
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: ${theme.colors.primary.main};
+  }
+
+  &::placeholder {
+    color: ${theme.colors.text.muted};
+  }
+`;
+
+export const SpecialtyTagRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+export const SpecialtyTag = styled.span`
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: ${theme.colors.primary.main}1a;
+  color: ${theme.colors.primary.main};
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+`;
+
+export const DayList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+export const DayItem = styled.div`
+  border: 1px solid ${theme.colors.border?.light ?? "#e5e7eb"};
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+export const DayItemHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+export const DayItemLabel = styled.span`
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: ${theme.colors.text.primary};
+`;
+
+export const DayToggleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+export const DayToggleLabel = styled.span`
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  color: ${theme.colors.text.muted};
+`;
+
+export const DayTimeGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+`;

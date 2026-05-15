@@ -126,3 +126,76 @@ export const ActionRow = styled.div`
   gap: 12px;
   margin-top: 8px;
 `;
+
+// ─── Multi-role toggles ──────────────────────────────────────────────────────
+
+export const RoleCheckboxList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+`;
+
+export const RoleCheckboxItem = styled.label<{ $disabled?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 4px;
+  cursor: ${({ $disabled }) => ($disabled ? "not-allowed" : "pointer")};
+  opacity: ${({ $disabled }) => ($disabled ? 0.55 : 1)};
+  border-bottom: 1px solid ${theme.colors.border.lighter};
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+export const RoleToggle = styled.span<{ $checked?: boolean; $disabled?: boolean }>`
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  background: ${({ $checked }) => ($checked ? theme.colors.primary : "#d1d5db")};
+  transition: background 0.2s;
+  cursor: ${({ $disabled }) => ($disabled ? "not-allowed" : "pointer")};
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: ${({ $checked }) => ($checked ? "22px" : "2px")};
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    transition: left 0.2s;
+  }
+`;
+
+export const RoleCheckboxInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+`;
+
+export const RoleCheckboxLabel = styled.span`
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: ${theme.colors.text.primary};
+`;
+
+export const RoleCheckboxDesc = styled.span`
+  font-family: "Roboto", sans-serif;
+  font-size: 12px;
+  color: ${theme.colors.text.muted};
+`;
+
+export const RolesSaveRow = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+`;
