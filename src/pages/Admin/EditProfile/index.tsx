@@ -89,6 +89,7 @@ type ProfForm = {
   defaultAppointmentDuration: string;
   bio: string;
   formations: string;
+  specialty: string;
 };
 
 const ALL_DAYS: DayOfWeek[] = [
@@ -164,6 +165,7 @@ const EditProfilePage = () => {
     defaultAppointmentDuration: "",
     bio: "",
     formations: "",
+    specialty: "",
   });
   const [hours, setHours] = useState<DayFormItem[]>(buildInitialHours([]));
   const [isSavingProf, setIsSavingProf] = useState(false);
@@ -231,6 +233,7 @@ const EditProfilePage = () => {
             : "",
           bio: data.bio ?? "",
           formations: data.formations ?? "",
+          specialty: data.specialties.find((s) => s.isPrimary)?.name ?? data.specialties[0]?.name ?? "",
         });
         setHours(buildInitialHours(data.workingHours));
       })
@@ -324,6 +327,7 @@ const EditProfilePage = () => {
         defaultAppointmentDuration: profForm.defaultAppointmentDuration
           ? Number(profForm.defaultAppointmentDuration)
           : undefined,
+        specialty: profForm.specialty.trim() || undefined,
         bio: profForm.bio.trim() || null,
         formations: profForm.formations.trim() || null,
         workingHours: hours.map((item): WorkingHour => ({
@@ -618,13 +622,10 @@ const EditProfilePage = () => {
               <Input
                 label="Especialidade principal"
                 fullWidth
-                value={
-                  profData?.specialties.find((s) => s.isPrimary)?.name ??
-                  profData?.specialties[0]?.name ??
-                  ""
-                }
-                placeholder="Nenhuma especialidade cadastrada"
-                disabled
+                value={profForm.specialty}
+                onChange={(e) => setProfForm((prev) => ({ ...prev, specialty: e.target.value }))}
+                placeholder="Ex: Cardiologia, Dermatologia..."
+                disabled={isSavingProf}
               />
             </FullWidthField>
 
