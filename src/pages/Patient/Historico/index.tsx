@@ -65,6 +65,7 @@ const FILTER_OPTIONS: Array<{ key: FilterKey; label: string }> = [
 
 const STATUS_META: Record<string, { label: string; variant: AppointmentBadgeVariant }> = {
   COMPLETED: { label: "Compareceu", variant: "completed" },
+  COMPLETED_WITH_ADDENDUM: { label: "Compareceu", variant: "completed" },
   NO_SHOW: { label: "Não compareceu", variant: "noshow" },
   CANCELLED: { label: "Cancelado", variant: "cancelled" },
   RESCHEDULED: { label: "Reagendado", variant: "rescheduled" },
@@ -115,7 +116,7 @@ const resolveDisplayStatus = (appointment: PatientAppointmentListItem): string =
 
 const isHistoricalAppointment = (appointment: PatientAppointmentListItem): boolean => {
   const displayStatus = resolveDisplayStatus(appointment);
-  if (["COMPLETED", "NO_SHOW", "CANCELLED", "RESCHEDULED"].includes(displayStatus)) return true;
+  if (["COMPLETED", "COMPLETED_WITH_ADDENDUM", "NO_SHOW", "CANCELLED", "RESCHEDULED"].includes(displayStatus)) return true;
 
   const now = getNowInTimeZone();
   if (appointment.appointmentDate < now.dateIso) return true;

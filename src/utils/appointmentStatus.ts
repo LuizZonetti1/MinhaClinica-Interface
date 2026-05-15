@@ -5,7 +5,12 @@
  */
 
 /** Status que pertencem ao Historico de Consultas */
-export const HISTORICAL_STATUSES = new Set(["COMPLETED", "NO_SHOW"]);
+export const HISTORICAL_STATUSES = new Set([
+  "COMPLETED",
+  "COMPLETED_WITH_ADDENDUM",
+  "CANCELLED",
+  "NO_SHOW",
+]);
 
 /** Status que pertencem a lista de Agendamentos ativos */
 export const ACTIVE_STATUSES = new Set([
@@ -14,7 +19,6 @@ export const ACTIVE_STATUSES = new Set([
   "WAITING",
   "IN_PROGRESS",
   "RESCHEDULED",
-  "CANCELLED",
 ]);
 
 export function isHistoricalStatus(status: string): boolean {

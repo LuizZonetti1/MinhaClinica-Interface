@@ -30,6 +30,7 @@ import {
   formatIsoDateToLongPtBr,
 } from "../../../utils/dateParsers";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
+import { isActiveStatus } from "../../../utils/appointmentStatus";
 import { hasNoShowWindowElapsedForDate } from "../../../utils/timeParsers";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import type { AppointmentBadgeVariant } from "./styles";
@@ -85,7 +86,7 @@ import {
   ViewButton,
 } from "./styles";
 
-type FilterKey = "ALL" | "CONFIRMED" | "PENDING" | "CANCELLED";
+type FilterKey = "ALL" | "CONFIRMED" | "PENDING";
 
 const EMPTY_RESULT: PatientAppointmentsListResult = {
   total: 0,
@@ -96,14 +97,12 @@ const FILTER_OPTIONS: Array<{ key: FilterKey; label: string }> = [
   { key: "ALL", label: "Todos" },
   { key: "CONFIRMED", label: "Confirmado" },
   { key: "PENDING", label: "Pendente" },
-  { key: "CANCELLED", label: "Cancelado" },
 ];
 
 const FILTER_TO_STATUS: Record<FilterKey, PatientAppointmentStatus | undefined> = {
   ALL: undefined,
   CONFIRMED: "CONFIRMED",
   PENDING: "SCHEDULED",
-  CANCELLED: "CANCELLED",
 };
 
 const STATUS_META: Record<string, { label: string; variant: AppointmentBadgeVariant }> = {
@@ -112,7 +111,10 @@ const STATUS_META: Record<string, { label: string; variant: AppointmentBadgeVari
   RESCHEDULED: { label: "Remarcado", variant: "rescheduled" },
   WAITING: { label: "Aguardando", variant: "waiting" },
   IN_PROGRESS: { label: "Em atendimento", variant: "progress" },
-  CANCELLED: { label: "Cancelado", variant: "cancelled" },
+  COMPLETED: { label: "Concluída", variant: "completed" },
+  COMPLETED_WITH_ADDENDUM: { label: "Concluída com adendo", variant: "completed" },
+  NO_SHOW: { label: "Não compareceu", variant: "noshow" },
+  CANCELLED: { label: "Cancelada", variant: "cancelled" },
 };
 
 const BOOKING_TYPE_OPTIONS: Array<{ value: PatientBookingAppointmentType; label: string }> = [
@@ -452,9 +454,8 @@ const PatientAppointmentsPage = () => {
   }, [apptModalMode, reschedDate, selectedAppointment]);
 
   const visibleAppointments = useMemo(() => {
-    const historicalStatuses = new Set(["COMPLETED", "NO_SHOW"]);
     const active = result.appointments.filter(
-      (a) => !historicalStatuses.has(resolveDisplayStatus(a)),
+      (a) => isActiveStatus(resolveDisplayStatus(a)),
     );
 
     const query = searchTerm.trim().toLowerCase();

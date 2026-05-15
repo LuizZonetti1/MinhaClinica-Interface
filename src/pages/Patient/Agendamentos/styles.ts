@@ -90,6 +90,7 @@ export type AppointmentBadgeVariant =
   | "pending"
   | "cancelled"
   | "completed"
+  | "noshow"
   | "waiting"
   | "progress"
   | "rescheduled"
@@ -125,6 +126,11 @@ const badgeVariantStyles: Record<AppointmentBadgeVariant, ReturnType<typeof css>
     color: var(--mc-status-progress-text, #1e40af);
     background: var(--mc-status-progress-bg, #dbeafe);
     border: 1px solid var(--mc-status-progress-border, #93c5fd);
+  `,
+  noshow: css`
+    color: var(--mc-status-noshow-text, #7c3aed);
+    background: var(--mc-status-noshow-bg, #f5f3ff);
+    border: 1px solid var(--mc-status-noshow-border, #ddd6fe);
   `,
   rescheduled: css`
     color: #5b21b6;

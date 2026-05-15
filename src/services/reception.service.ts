@@ -300,7 +300,7 @@ const normalizeStatus = (v: unknown): AppointmentStatus => {
     return "IN_PROGRESS";
   }
 
-  if (["DONE", "COMPLETED", "FINISHED", "CONCLUDED", "CONCLUIDO", "FINALIZADO"].includes(status)) {
+  if (["DONE", "COMPLETED", "FINISHED", "CONCLUDED", "CONCLUIDO", "FINALIZADO", "COMPLETED_WITH_ADDENDUM", "CONCLUIDO_COM_ADENDO"].includes(status)) {
     return "DONE";
   }
 
@@ -827,8 +827,10 @@ const VALID_SLOT_STATUSES = new Set<AgendaSlotStatus>([
   "WAITING",
   "IN_PROGRESS",
   "COMPLETED",
+  "COMPLETED_WITH_ADDENDUM",
   "NO_SHOW",
   "CANCELLED",
+  "RESCHEDULED",
 ]);
 
 const normalizeSlotStatus = (v: unknown): AgendaSlotStatus | null => {

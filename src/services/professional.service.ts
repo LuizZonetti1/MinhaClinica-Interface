@@ -249,8 +249,10 @@ const VALID_SLOT_STATUSES = new Set<AgendaSlotStatus>([
   "WAITING",
   "IN_PROGRESS",
   "COMPLETED",
+  "COMPLETED_WITH_ADDENDUM",
   "NO_SHOW",
   "CANCELLED",
+  "RESCHEDULED",
 ]);
 
 const normalizeSlotStatus = (value: unknown): AgendaSlotStatus => {
