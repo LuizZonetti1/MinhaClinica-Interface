@@ -73,6 +73,7 @@ const APPT_STATUS_LABELS: Record<string, string> = {
   IN_PROGRESS: "Em atendimento",
   DONE: "Conclída",
   COMPLETED: "Concluída",
+  COMPLETED_WITH_ADDENDUM: "Concluída c/ adendo",
   CANCELLED: "Cancelada",
   NO_SHOW: "Não compareceu",
   SCHEDULED: "Agendada",
@@ -237,7 +238,7 @@ const AppointmentItem = ({ appt, onStatusChange }: AppointmentItemProps) => {
         currentRawStatus={rawStatus}
         onStatusChange={onStatusChange}
       />
-      {(rawStatus === "COMPLETED" || rawStatus === "DONE") && appt.id && (
+      {(rawStatus === "COMPLETED" || rawStatus === "DONE" || rawStatus === "COMPLETED_WITH_ADDENDUM") && appt.id && (
         <ApptDocsButton
           type="button"
           title="Ver documentos"

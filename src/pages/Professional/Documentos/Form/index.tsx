@@ -8,6 +8,7 @@ import {
   deleteDocumentAttachment,
   finalizeClinicalDocument,
   getClinicalDocument,
+  listClinicalDocuments,
   updateClinicalDocument,
   createClinicalDocumentAddendum,
   updateDocumentAttachmentCaption,
@@ -22,6 +23,7 @@ import type {
   ClinicalReportContent,
   ConsentFormContent,
   ControlledPrescriptionContent,
+  DocumentAppointmentContext,
   DocumentContent,
   ExamRequestContent,
   MedicalReportContent,
@@ -31,6 +33,7 @@ import type {
   TreatmentPlanContent,
 } from "../../../../types/clinical-document";
 import { ClinicalDocumentType } from "../../../../types/clinical-document";
+import { getClinicalDocTypeLabel } from "../../../../utils/statusLabels";
 import { getApiErrorMessage } from "../../../../utils/getApiErrorMessage";
 import { notifyError, notifySuccess } from "../../../../utils/toast";
 import DocumentFixedFields from "./DocumentFixedFields";
@@ -159,20 +162,6 @@ const DEFAULT_CONTENT: Record<string, () => DocumentContent> = {
   }),
 };
 
-const DOC_TYPE_LABEL: Record<string, string> = {
-  CLINICAL_REPORT: "Relatorio Clinico",
-  CERTIFICATE: "Atestado",
-  ATTENDANCE_DECLARATION: "Declaracao de Comparecimento",
-  PRESCRIPTION: "Receita",
-  CONTROLLED_PRESCRIPTION: "Receita Controlada",
-  EXAM_REQUEST: "Solicitacao de Exame",
-  REFERRAL: "Encaminhamento",
-  MEDICAL_REPORT: "Laudo",
-  CONSENT_FORM: "Termo de Consentimento",
-  TREATMENT_PLAN: "Plano Terapeutico",
-  BUDGET: "Orcamento",
-};
-
 const AUTOSAVE_INTERVAL_MS = 30_000;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -238,6 +227,7 @@ const DocumentFormPage = () => {
   const [content, setContent] = useState<DocumentContent | null>(null);
   const [internalNotes, setInternalNotes] = useState("");
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
+  const [addendoContext, setAddendoContext] = useState<DocumentAppointmentContext | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -270,6 +260,15 @@ const DocumentFormPage = () => {
       }
       const defaultContent = DEFAULT_CONTENT[addendoTipo]();
       setContent(defaultContent);
+      // Buscar contexto da consulta para exibir dados do paciente no formulario
+      if (appointmentId) {
+        try {
+          const result = await listClinicalDocuments(appointmentId);
+          setAddendoContext(result.appointmentContext);
+        } catch {
+          // contexto nao critico, continua sem
+        }
+      }
       setLoading(false);
       return;
     }
@@ -462,7 +461,7 @@ const DocumentFormPage = () => {
       );
     }
 
-    const addendoTypeLabel = DOC_TYPE_LABEL[addendoTipo] ?? "Adendo";
+    const addendoTypeLabel = getClinicalDocTypeLabel(addendoTipo, "Adendo");
 
     return (
       <FormPageWrapper>
@@ -477,7 +476,7 @@ const DocumentFormPage = () => {
         </FormHeader>
 
         <DocumentFixedFields
-          appointmentContext={{
+          appointmentContext={addendoContext ?? {
             appointmentId,
             patientName: "",
             appointmentDate: "",
@@ -527,7 +526,7 @@ const DocumentFormPage = () => {
   const isFinalized = document.status === "FINALIZED";
   const isSentOrAddendum = document.status === "SENT" || document.status === "ADDENDUM";
   const disabled = viewMode || isFinalized || isSentOrAddendum;
-  const typeLabel = DOC_TYPE_LABEL[document.type] ?? "Documento";
+  const typeLabel = getClinicalDocTypeLabel(document.type, "Documento");
 
   // ── Type-specific form ──
   const renderForm = () => {

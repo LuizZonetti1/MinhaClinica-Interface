@@ -168,3 +168,18 @@ export const getClinicalDocStatusLabel = (
   const key = normalizeEnumKey(value);
   return CLINICAL_DOC_STATUS_LABELS[key] ?? (value.trim() || fallback);
 };
+
+export const getConsultaStatusLabel = (status: string, fallback = ""): string => {
+  switch (status.trim().toUpperCase()) {
+    case "IN_PROGRESS": return "Em andamento";
+    case "COMPLETED":
+    case "DONE": return "Concluído";
+    case "COMPLETED_WITH_ADDENDUM": return "Concluído com adendo";
+    case "SCHEDULED": return "Agendado";
+    case "CONFIRMED": return "Confirmado";
+    case "WAITING": return "Aguardando";
+    case "NO_SHOW": return "Não compareceu";
+    case "CANCELLED": return "Cancelado";
+    default: return fallback || status;
+  }
+};

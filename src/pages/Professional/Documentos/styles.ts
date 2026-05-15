@@ -90,24 +90,24 @@ export type ConsultaStatusVariant =
 
 const consultaStatusStyles: Record<ConsultaStatusVariant, ReturnType<typeof css>> = {
   inProgress: css`
-    color: #1e40af;
-    background: #dbeafe;
-    border: 1px solid #93c5fd;
+    color: var(--mc-status-progress-text, #1e40af);
+    background: var(--mc-status-progress-bg, #dbeafe);
+    border: 1px solid var(--mc-status-progress-border, #93c5fd);
   `,
   completed: css`
-    color: #166534;
-    background: #dcfce7;
-    border: 1px solid #86efac;
+    color: var(--mc-status-checkin-text, #166534);
+    background: var(--mc-status-checkin-bg, #dcfce7);
+    border: 1px solid var(--mc-status-checkin-border, #86efac);
   `,
   scheduled: css`
-    color: #92400e;
-    background: #fef3c7;
-    border: 1px solid #fcd34d;
+    color: var(--mc-status-waiting-text, #92400e);
+    background: var(--mc-status-waiting-bg, #fef3c7);
+    border: 1px solid var(--mc-status-waiting-border, #fcd34d);
   `,
   withAddendum: css`
-    color: #5b21b6;
-    background: #ede9fe;
-    border: 1px solid #c4b5fd;
+    color: var(--mc-status-addendum-text, #5b21b6);
+    background: var(--mc-status-addendum-bg, #ede9fe);
+    border: 1px solid var(--mc-status-addendum-border, #c4b5fd);
   `,
   default: css`
     color: ${theme.colors.text.secondary};
@@ -265,19 +265,19 @@ const docStatusStyles: Record<DocStatusVariant, ReturnType<typeof css>> = {
     border: 1px solid ${theme.colors.border.light};
   `,
   finalized: css`
-    color: #166534;
-    background: #dcfce7;
-    border: 1px solid #86efac;
+    color: var(--mc-status-checkin-text, #166534);
+    background: var(--mc-status-checkin-bg, #dcfce7);
+    border: 1px solid var(--mc-status-checkin-border, #86efac);
   `,
   sent: css`
-    color: #1e40af;
-    background: #dbeafe;
-    border: 1px solid #93c5fd;
+    color: var(--mc-status-progress-text, #1e40af);
+    background: var(--mc-status-progress-bg, #dbeafe);
+    border: 1px solid var(--mc-status-progress-border, #93c5fd);
   `,
   addendum: css`
-    color: #5b21b6;
-    background: #ede9fe;
-    border: 1px solid #c4b5fd;
+    color: var(--mc-status-addendum-text, #5b21b6);
+    background: var(--mc-status-addendum-bg, #ede9fe);
+    border: 1px solid var(--mc-status-addendum-border, #c4b5fd);
   `,
 };
 
@@ -305,14 +305,14 @@ export const DocActionBtn = styled.button<{ $danger?: boolean }>`
   width: 30px;
   height: 30px;
   border-radius: 8px;
-  border: 1px solid ${({ $danger }) => ($danger ? "#fca5a5" : theme.colors.border.light)};
-  background: ${({ $danger }) => ($danger ? "#fff1f2" : theme.colors.surface)};
+  border: 1px solid ${({ $danger }) => ($danger ? "var(--mc-status-cancelled-border, #fca5a5)" : theme.colors.border.light)};
+  background: ${({ $danger }) => ($danger ? "var(--mc-danger-surface, #fff1f2)" : theme.colors.surface)};
   color: ${({ $danger }) => ($danger ? theme.colors.error : theme.colors.text.secondary)};
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease;
 
   &:hover {
-    background: ${({ $danger }) => ($danger ? "#fee2e2" : theme.colors.surfaceMuted)};
+    background: ${({ $danger }) => ($danger ? "var(--mc-action-delete-bg, #fee2e2)" : theme.colors.surfaceMuted)};
     border-color: ${({ $danger }) => ($danger ? theme.colors.error : theme.colors.primary)};
     color: ${({ $danger }) => ($danger ? theme.colors.error : theme.colors.primary)};
   }

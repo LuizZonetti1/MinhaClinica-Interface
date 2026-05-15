@@ -22,6 +22,11 @@ import { listClinicalDocuments } from "../../../services/clinical-documents.serv
 import type { ClinicalDocumentItem, DocumentAppointmentContext } from "../../../types/clinical-document";
 import { formatIsoDateToBr, formatIsoDateTimeToBr } from "../../../utils/dateParsers";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
+import {
+  getClinicalDocStatusLabel,
+  getClinicalDocTypeLabel,
+  getConsultaStatusLabel,
+} from "../../../utils/statusLabels";
 import { notifyError } from "../../../utils/toast";
 import type { ConsultaStatusVariant, DocStatusVariant } from "../../Professional/Documentos/styles";
 import {
@@ -53,20 +58,6 @@ import {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const DOC_TYPE_LABEL: Record<string, string> = {
-  CLINICAL_REPORT: "Relatório Clínico",
-  CERTIFICATE: "Atestado",
-  ATTENDANCE_DECLARATION: "Declaração de Comparecimento",
-  PRESCRIPTION: "Receita",
-  EXAM_REQUEST: "Solicitação de Exame",
-  REFERRAL: "Encaminhamento",
-  MEDICAL_REPORT: "Laudo",
-  CONTROLLED_PRESCRIPTION: "Receita Controlada",
-  CONSENT_FORM: "Termo de Consentimento",
-  TREATMENT_PLAN: "Plano Terapêutico",
-  BUDGET: "Orçamento",
-};
-
 const DOC_TYPE_ICON: Record<string, React.ReactNode> = {
   CLINICAL_REPORT: <Stethoscope size={18} />,
   CERTIFICATE: <FileCheck2 size={18} />,
@@ -90,30 +81,6 @@ const resolveConsultaStatusVariant = (status: string): ConsultaStatusVariant => 
   if (s === "SCHEDULED" || s === "CONFIRMED") return "scheduled";
   if (s === "WAITING") return "inProgress";
   return "default";
-};
-
-const resolveConsultaStatusLabel = (status: string): string => {
-  switch (status.trim().toUpperCase()) {
-    case "IN_PROGRESS":
-      return "Em andamento";
-    case "COMPLETED":
-    case "DONE":
-      return "Concluído";
-    case "COMPLETED_WITH_ADDENDUM":
-      return "Concluído com adendo";
-    case "SCHEDULED":
-      return "Agendado";
-    case "CONFIRMED":
-      return "Confirmado";
-    case "WAITING":
-      return "Aguardando";
-    case "NO_SHOW":
-      return "Não compareceu";
-    case "CANCELLED":
-      return "Cancelado";
-    default:
-      return status;
-  }
 };
 
 const formatDocDate = (iso: string): string => {
@@ -214,7 +181,7 @@ const AdminDocumentosPage = () => {
           <InfoBarItem>
             <InfoBarLabel>Status da Consulta</InfoBarLabel>
             <InfoBarStatusBadge $variant={resolveConsultaStatusVariant(appointmentStatus)}>
-              {resolveConsultaStatusLabel(appointmentStatus)}
+              {getConsultaStatusLabel(appointmentStatus)}
             </InfoBarStatusBadge>
           </InfoBarItem>
         </AppointmentInfoBar>
@@ -254,18 +221,11 @@ const AdminDocumentosPage = () => {
                           : docStatus === "ADDENDUM"
                             ? "addendum"
                             : "draft";
-                    const statusLabel =
-                      docStatus === "FINALIZED"
-                        ? "Finalizado"
-                        : docStatus === "SENT"
-                          ? "Enviado"
-                          : docStatus === "ADDENDUM"
-                            ? "Adendo"
-                            : "Rascunho";
+                    const statusLabel = getClinicalDocStatusLabel(docStatus, "Rascunho");
 
                     return (
                       <DocsTableRow key={doc.id}>
-                        <DocsTableTd>{DOC_TYPE_LABEL[doc.type] ?? doc.type}</DocsTableTd>
+                        <DocsTableTd>{getClinicalDocTypeLabel(doc.type, doc.type)}</DocsTableTd>
                         <DocsTableTd>{formatDocDateTime(doc.createdAt)}</DocsTableTd>
                         <DocsTableTd>
                           <DocStatusBadge $variant={statusVariant}>{statusLabel}</DocStatusBadge>

@@ -39,6 +39,11 @@ import type { ClinicalDocumentItem, DocPageCache, DocumentAppointmentContext, Do
 import { ClinicalDocumentType } from "../../../types/clinical-document";
 import { formatIsoDateToBr, formatIsoDateTimeToBr } from "../../../utils/dateParsers";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
+import {
+  getClinicalDocStatusLabel,
+  getClinicalDocTypeLabel,
+  getConsultaStatusLabel,
+} from "../../../utils/statusLabels";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import type { ConsultaStatusVariant, DocStatusVariant } from "./styles";
 import {
@@ -169,20 +174,6 @@ const DOC_TYPE_ICON: Record<string, React.ReactNode> = {
   BUDGET: <BadgeDollarSign size={18} />,
 };
 
-const DOC_TYPE_LABEL: Record<string, string> = {
-  CLINICAL_REPORT: "Relatório Clínico",
-  CERTIFICATE: "Atestado",
-  ATTENDANCE_DECLARATION: "Declaração de Comparecimento",
-  PRESCRIPTION: "Receita",
-  EXAM_REQUEST: "Solicitação de Exame",
-  REFERRAL: "Encaminhamento",
-  MEDICAL_REPORT: "Laudo",
-  CONTROLLED_PRESCRIPTION: "Receita Controlada",
-  CONSENT_FORM: "Termo de Consentimento",
-  TREATMENT_PLAN: "Plano Terapêutico",
-  BUDGET: "Orçamento",
-};
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const formatDocDateTime = (iso: string): string =>
@@ -198,30 +189,6 @@ const resolveConsultaStatusVariant = (status: string): ConsultaStatusVariant => 
   return "default";
 };
 
-const resolveConsultaStatusLabel = (status: string): string => {
-  const normalized = status.trim().toUpperCase();
-  switch (normalized) {
-    case "IN_PROGRESS":
-      return "Em andamento";
-    case "COMPLETED":
-    case "DONE":
-      return "Concluído";
-    case "COMPLETED_WITH_ADDENDUM":
-      return "Concluído com adendo";
-    case "SCHEDULED":
-      return "Agendado";
-    case "CONFIRMED":
-      return "Confirmado";
-    case "WAITING":
-      return "Aguardando";
-    case "NO_SHOW":
-      return "Não compareceu";
-    case "CANCELLED":
-      return "Cancelado";
-    default:
-      return normalized;
-  }
-};
 
 /** Retorna true quando o status bloqueia criacao e edicao de documentos */
 const isAppointmentLocked = (status: string): boolean => {
@@ -371,7 +338,7 @@ const ProfessionalDocumentosPage = () => {
     setCreatingType(type);
     try {
       const doc = await createClinicalDocument(appointmentId, type);
-      notifySuccess(`${DOC_TYPE_LABEL[type] ?? "Documento"} criado com sucesso.`);
+      notifySuccess(`${getClinicalDocTypeLabel(type, "Documento")} criado com sucesso.`);
       navigate(`/profissional/documentos/formulario?consulta=${appointmentId}&documento=${doc.id}&novo=1`);
     } catch (err: unknown) {
       notifyError(getApiErrorMessage(err, "Nao foi possivel criar o documento."));
@@ -472,7 +439,7 @@ const ProfessionalDocumentosPage = () => {
             <ul style={{ paddingLeft: 18, margin: 0 }}>
               {draftDocs.map((d) => (
                 <li key={d.id} style={{ marginBottom: 4 }}>
-                  {DOC_TYPE_LABEL[d.type] ?? d.type}
+                  {getClinicalDocTypeLabel(d.type, d.type)}
                   {d.documentNumber ? ` — Doc. ${d.documentNumber}` : ""}
                 </li>
               ))}
@@ -555,7 +522,7 @@ const ProfessionalDocumentosPage = () => {
           <InfoBarItem>
             <InfoBarLabel>Status da Consulta</InfoBarLabel>
             <InfoBarStatusBadge $variant={resolveConsultaStatusVariant(appointmentStatus)}>
-              {resolveConsultaStatusLabel(appointmentStatus)}
+              {getConsultaStatusLabel(appointmentStatus)}
             </InfoBarStatusBadge>
           </InfoBarItem>
         </AppointmentInfoBar>
@@ -672,20 +639,13 @@ const ProfessionalDocumentosPage = () => {
                           : docStatus === "ADDENDUM"
                             ? "addendum"
                             : "draft";
-                    const statusLabel =
-                      docStatus === "FINALIZED"
-                        ? "Finalizado"
-                        : docStatus === "SENT"
-                          ? "Enviado"
-                          : docStatus === "ADDENDUM"
-                            ? "Adendo"
-                            : "Rascunho";
+                    const statusLabel = getClinicalDocStatusLabel(docStatus, "Rascunho");
                     const isEditable = docStatus === "DRAFT" && !locked;
                     const isDeletable = !locked && (docStatus === "DRAFT" || docStatus === "FINALIZED");
 
                     return (
                       <DocsTableRow key={doc.id}>
-                        <DocsTableTd>{DOC_TYPE_LABEL[doc.type] ?? doc.type}</DocsTableTd>
+                        <DocsTableTd>{getClinicalDocTypeLabel(doc.type, doc.type)}</DocsTableTd>
                         <DocsTableTd>{formatDocDateTime(doc.createdAt)}</DocsTableTd>
                         <DocsTableTd>
                           <DocStatusBadge $variant={statusVariant}>{statusLabel}</DocStatusBadge>

@@ -1,6 +1,7 @@
 import { GitCompareArrows } from "lucide-react";
 import type { DocumentPrintLayoutProps } from "../../../../types/components";
 import { formatIsoDateTimeToBr, formatIsoDateToBr } from "../../../../utils/dateParsers";
+import { getClinicalDocTypeLabel } from "../../../../utils/statusLabels";
 import {
   AddendumBanner,
   ClinicDetail,
@@ -26,21 +27,6 @@ import {
   SignatureLine,
 } from "./styles";
 
-// ─── Label map ────────────────────────────────────────────────────────────────
-
-const DOC_TYPE_LABEL: Record<string, string> = {
-  CLINICAL_REPORT: "Relatório Clínico",
-  CERTIFICATE: "Atestado",
-  ATTENDANCE_DECLARATION: "Declaração de Comparecimento",
-  PRESCRIPTION: "Receita",
-  CONTROLLED_PRESCRIPTION: "Receita Controlada",
-  EXAM_REQUEST: "Solicitação de Exame",
-  REFERRAL: "Encaminhamento",
-  MEDICAL_REPORT: "Laudo",
-  CONSENT_FORM: "Termo de Consentimento",
-  TREATMENT_PLAN: "Plano Terapêutico",
-  BUDGET: "Orçamento",
-};
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -75,7 +61,7 @@ const DocumentPrintLayout = ({
   if (addressLine) clinicDetails.push(addressLine);
 
   const isAddendum = doc.status === "ADDENDUM";
-  const typeLabel = DOC_TYPE_LABEL[doc.type] ?? doc.type;
+  const typeLabel = getClinicalDocTypeLabel(doc.type, doc.type);
 
   const appointmentDateFormatted = doc.appointmentContext.appointmentDate
     ? formatIsoDateToBr(doc.appointmentContext.appointmentDate)

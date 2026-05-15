@@ -101,9 +101,9 @@ export const StatusBadge = styled.span<{ $variant: "draft" | "finalized" }>`
   ${({ $variant }) =>
     $variant === "finalized"
       ? css`
-          color: #166534;
-          background: #dcfce7;
-          border: 1px solid #86efac;
+          color: var(--mc-status-checkin-text, #166534);
+          background: var(--mc-status-checkin-bg, #dcfce7);
+          border: 1px solid var(--mc-status-checkin-border, #86efac);
         `
       : css`
           color: ${theme.colors.text.secondary};
@@ -142,14 +142,14 @@ export const SectionBanner = styled.div<{ $variant?: "default" | "amber" }>`
   ${({ $variant }) =>
     $variant === "amber"
       ? css`
-          color: #92400e;
-          background: #fffbeb;
-          border: 1px solid #fcd34d;
+          color: var(--mc-banner-amber-text, #92400e);
+          background: var(--mc-banner-amber-bg, #fffbeb);
+          border: 1px solid var(--mc-banner-amber-border, #fcd34d);
         `
       : css`
-          color: #1e40af;
-          background: #eff6ff;
-          border: 1px solid #93c5fd;
+          color: var(--mc-banner-info-text, #1e40af);
+          background: var(--mc-banner-info-bg, #eff6ff);
+          border: 1px solid var(--mc-banner-info-border, #93c5fd);
         `};
 `;
 
@@ -224,7 +224,7 @@ export const FormTextarea = styled.textarea<{ $highlighted?: boolean }>`
     css`
       border-left: 3px solid ${theme.colors.primary};
       padding-left: 14px;
-      background: #f8faff;
+      background: var(--mc-highlighted-input-bg, #f8faff);
     `};
 `;
 
@@ -353,8 +353,8 @@ export const DynamicListRemoveBtn = styled.button`
   transition: all 0.15s;
 
   &:hover {
-    background: #fee2e2;
-    color: #dc2626;
+    background: var(--mc-action-delete-bg, #fee2e2);
+    color: var(--mc-action-delete-text, #dc2626);
   }
 
   &:disabled {
