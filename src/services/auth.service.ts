@@ -74,3 +74,9 @@ export const disable2FA = async (): Promise<{ message: string }> => {
   localStorage.removeItem(DEVICE_TOKEN_KEY);
   return data;
 };
+
+// POST /api/auth/2fa/resend  (reenviar código durante login)
+export const resend2FA = async (tempToken: string): Promise<{ message: string }> => {
+  const { data } = await api.post<{ message: string }>("/auth/2fa/resend", { tempToken });
+  return data;
+};
