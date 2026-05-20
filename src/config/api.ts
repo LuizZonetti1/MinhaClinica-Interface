@@ -16,6 +16,8 @@ const PUBLIC_ROUTES = [
     "/auth/login",
     "/auth/forgot-password",
     "/auth/reset-password",
+    "/auth/2fa/validate",
+    "/auth/2fa/resend",
 ];
 
 const isPublicRoute = (url?: string) =>
