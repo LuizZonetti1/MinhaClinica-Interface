@@ -1,7 +1,8 @@
-import { Building2, Pencil, Users } from "lucide-react";
+import { Building2, Pencil, Shield, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "../../../contexts";
+import { get2FAStatus } from "../../../services/auth.service";
 import { getProfessionalProfile } from "../../../services/professional-profile.service";
 import type { ProfessionalProfileData, WorkingHour } from "../../../types/professional-profile";
 import { formatPhoneNumber, getInitials } from "../../../utils/formatters";
@@ -90,6 +91,13 @@ const ProfessionalProfilePage = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<ProfessionalProfileData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    get2FAStatus()
+      .then((r) => setTwoFactorEnabled(r.enabled))
+      .catch(() => setTwoFactorEnabled(false));
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -255,6 +263,22 @@ const ProfessionalProfilePage = () => {
               Contato: {phone} - {profile.email}
             </p>
           )}
+
+          <ContentCard style={{ marginTop: 16 }}>
+            <Section>
+              <SectionTitle>
+                <Shield size={16} style={{ verticalAlign: "middle", marginRight: 6 }} />
+                Acesso e Seguranca
+              </SectionTitle>
+              <SectionDivider />
+              <SectionText>
+                Verificacao em dois fatores (2FA):{" "}
+                <strong>
+                  {twoFactorEnabled === null ? "-" : twoFactorEnabled ? "Ativado" : "Desativado"}
+                </strong>
+              </SectionText>
+            </Section>
+          </ContentCard>
         </>
       )}
     </PageWrapper>

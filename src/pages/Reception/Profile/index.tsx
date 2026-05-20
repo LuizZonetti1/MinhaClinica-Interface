@@ -1,7 +1,8 @@
-import { Briefcase, Mail, MapPin, Pencil, Phone, User } from "lucide-react";
+import { Briefcase, Mail, MapPin, Pencil, Phone, Shield, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "../../../contexts";
+import { get2FAStatus } from "../../../services/auth.service";
 import { getReceptionProfile } from "../../../services/reception.service";
 import type { ReceptionProfileData } from "../../../types/profile";
 import { formatPhoneNumber, getInitials } from "../../../utils/formatters";
@@ -44,6 +45,13 @@ const ReceptionProfilePage = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<ReceptionProfileData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    get2FAStatus()
+      .then((r) => setTwoFactorEnabled(r.enabled))
+      .catch(() => setTwoFactorEnabled(false));
+  }, []);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -142,6 +150,19 @@ const ReceptionProfilePage = () => {
               <InfoLabel>Cargo</InfoLabel>
             </InfoLeft>
             <InfoValue>{toDash(profileData.role)}</InfoValue>
+          </InfoRow>
+        </InfoCard>
+
+        <InfoCard>
+          <CardTitle>Acesso e Seguranca</CardTitle>
+          <InfoRow>
+            <InfoLeft>
+              <Shield size={16} />
+              <InfoLabel>2FA</InfoLabel>
+            </InfoLeft>
+            <InfoValue>
+              {twoFactorEnabled === null ? "-" : twoFactorEnabled ? "Ativado" : "Desativado"}
+            </InfoValue>
           </InfoRow>
         </InfoCard>
       </CardGrid>

@@ -6,6 +6,7 @@ import {
   NotebookPen,
   Pencil,
   Phone,
+  Shield,
   User,
   UserRoundCheck,
 } from "lucide-react";
@@ -13,6 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { Skeleton } from "../../../components/Skeleton";
 import { useAuth } from "../../../contexts";
+import { get2FAStatus } from "../../../services/auth.service";
 import { getPatientProfile } from "../../../services/patient-profile.service";
 import type { PatientProfileData } from "../../../types/patient-profile";
 import { formatIsoDateToBr } from "../../../utils/dateParsers";
@@ -89,6 +91,13 @@ const PatientProfilePage = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<PatientProfileData>(EMPTY_PROFILE);
   const [loading, setLoading] = useState(true);
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    get2FAStatus()
+      .then((r) => setTwoFactorEnabled(r.enabled))
+      .catch(() => setTwoFactorEnabled(false));
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -262,6 +271,19 @@ const PatientProfilePage = () => {
           <EmptyText>Nenhuma condicao ou alergia informada.</EmptyText>
         )}
       </FullWidthCard>
+
+      <InfoCard>
+        <CardTitle>Acesso e Seguranca</CardTitle>
+        <InfoRow>
+          <InfoLeft>
+            <Shield size={16} />
+            <InfoLabel>2FA</InfoLabel>
+          </InfoLeft>
+          <InfoValue>
+            {twoFactorEnabled === null ? "-" : twoFactorEnabled ? "Ativado" : "Desativado"}
+          </InfoValue>
+        </InfoRow>
+      </InfoCard>
     </PageWrapper>
   );
 };
