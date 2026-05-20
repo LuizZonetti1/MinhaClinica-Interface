@@ -34,11 +34,14 @@ export interface AuthProviderProps {
 export interface LoginPayload {
     email: string;
     password: string;
+    deviceToken?: string;
 }
 
 export interface LoginResponse {
-    token: string;
-    user: {
+    requires2FA: boolean;
+    // Quando requires2FA = false
+    token?: string;
+    user?: {
         id: string;
         name: string;
         email: string;
@@ -48,6 +51,8 @@ export interface LoginResponse {
         clinicId?: string;
         clinicName?: string;
     };
+    // Quando requires2FA = true
+    tempToken?: string;
 }
 
 export interface RegisterStartPayload {
@@ -108,5 +113,30 @@ export interface RegisterCompleteResponse {
         email: string;
         role: UserRole;
         avatarUrl?: string;
+    };
+}
+
+// ─── 2FA ──────────────────────────────────────────────────────────────────────
+export interface TwoFAStatusResponse {
+    enabled: boolean;
+    trustedDeviceCount: number;
+}
+
+export interface TwoFAValidatePayload {
+    tempToken: string;
+    code: string;
+}
+
+export interface TwoFAValidateResponse {
+    token: string;
+    deviceToken: string;
+    user: {
+        id: string;
+        name: string;
+        email: string;
+        role: UserRole;
+        roles?: UserRole[];
+        clinicId?: string;
+        clinicName?: string;
     };
 }

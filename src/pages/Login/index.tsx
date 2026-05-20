@@ -11,6 +11,7 @@ import { login } from "../../services/auth.service";
 import { isRememberMeEnabled } from "../../utils/authStorage";
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage";
 import { notifySuccess } from "../../utils/toast";
+import { TWO_FACTOR_REMEMBER_KEY, TWO_FACTOR_TEMP_KEY } from "../TwoFactor";
 import {
   Checkbox,
   CheckboxLabel,
@@ -45,7 +46,18 @@ const Login = () => {
     setLoading(true);
     try {
       const response = await login({ email, password }, rememberMe);
-      setUser(response.user);
+
+      if (response.requires2FA && response.tempToken) {
+        // Armazena o token temporário para a tela de 2FA
+        sessionStorage.setItem(TWO_FACTOR_TEMP_KEY, response.tempToken);
+        sessionStorage.setItem(TWO_FACTOR_REMEMBER_KEY, String(rememberMe));
+        navigate("/autenticacao/2fa", { replace: true });
+        return;
+      }
+
+      if (response.user) {
+        setUser(response.user);
+      }
       notifySuccess("Login realizado com sucesso.");
       navigate("/dashboard", { replace: true });
     } catch (err: unknown) {
