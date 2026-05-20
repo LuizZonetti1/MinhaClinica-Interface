@@ -185,13 +185,13 @@ export const StatusBadge = styled.span<{ $variant: TodayBadgeVariant }>`
 
   ${({ $variant }) => {
     switch ($variant) {
-      case "waiting":   return `color: var(--mc-status-waiting-text, #92400e); background: var(--mc-status-waiting-bg, #fef3c7); border: 1px solid var(--mc-status-waiting-border, #fcd34d);`;
-      case "checkin":   return `color: var(--mc-status-checkin-text, #166534); background: var(--mc-status-checkin-bg, #dcfce7); border: 1px solid var(--mc-status-checkin-border, #86efac);`;
-      case "progress":  return `color: var(--mc-status-progress-text, #1e40af); background: var(--mc-status-progress-bg, #dbeafe); border: 1px solid var(--mc-status-progress-border, #93c5fd);`;
-      case "done":      return `color: var(--mc-status-done-text, #374151); background: var(--mc-status-done-bg, #f3f4f6); border: 1px solid var(--mc-status-done-border, #d1d5db);`;
+      case "waiting": return `color: var(--mc-status-waiting-text, #92400e); background: var(--mc-status-waiting-bg, #fef3c7); border: 1px solid var(--mc-status-waiting-border, #fcd34d);`;
+      case "checkin": return `color: var(--mc-status-checkin-text, #166534); background: var(--mc-status-checkin-bg, #dcfce7); border: 1px solid var(--mc-status-checkin-border, #86efac);`;
+      case "progress": return `color: var(--mc-status-progress-text, #1e40af); background: var(--mc-status-progress-bg, #dbeafe); border: 1px solid var(--mc-status-progress-border, #93c5fd);`;
+      case "done": return `color: var(--mc-status-done-text, #374151); background: var(--mc-status-done-bg, #f3f4f6); border: 1px solid var(--mc-status-done-border, #d1d5db);`;
       case "cancelled": return `color: var(--mc-status-cancelled-text, #991b1b); background: var(--mc-status-cancelled-bg, #fee2e2); border: 1px solid var(--mc-status-cancelled-border, #fca5a5);`;
-      case "noshow":    return `color: #7c3aed; background: #f5f3ff; border: 1px solid #ddd6fe;`;
-      default:          return "";
+      case "noshow": return `color: #7c3aed; background: #f5f3ff; border: 1px solid #ddd6fe;`;
+      default: return "";
     }
   }}
 `;

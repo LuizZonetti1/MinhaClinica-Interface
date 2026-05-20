@@ -278,11 +278,11 @@ const AdminDashboard = () => {
       setReceptionData((prev) =>
         prev
           ? {
-              ...prev,
-              appointments: prev.appointments.map((a) =>
-                a.id === id ? { ...a, status: "CHECKED_IN" as AppointmentStatus } : a,
-              ),
-            }
+            ...prev,
+            appointments: prev.appointments.map((a) =>
+              a.id === id ? { ...a, status: "CHECKED_IN" as AppointmentStatus } : a,
+            ),
+          }
           : prev,
       );
     } catch {

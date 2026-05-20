@@ -1,4 +1,5 @@
 import { Camera, Eye, EyeOff, Save } from "lucide-react";
+import { TwoFactorCard } from "../../../components/TwoFactorCard";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "../../../components/Button";
@@ -601,6 +602,8 @@ const PatientEditProfilePage = () => {
           </RoleCheckboxItem>
         </RoleCheckboxList>
       </FormCard>
+
+      <TwoFactorCard />
 
       <ActionRow>
         <Button variant="outline" onClick={() => navigate("/paciente/perfil")} disabled={isSaving || loading}>

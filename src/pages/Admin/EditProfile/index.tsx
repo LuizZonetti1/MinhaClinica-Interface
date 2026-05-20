@@ -1,4 +1,5 @@
 import { Camera, Eye, EyeOff, Save } from "lucide-react";
+import { TwoFactorCard } from "../../../components/TwoFactorCard";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "../../../components/Button";
@@ -168,7 +169,6 @@ const EditProfilePage = () => {
     specialty: "",
   });
   const [hours, setHours] = useState<DayFormItem[]>(buildInitialHours([]));
-  const [isSavingProf, setIsSavingProf] = useState(false);
 
   const [form, setForm] = useState<EditForm>({
     name: "",
@@ -316,38 +316,6 @@ const EditProfilePage = () => {
     );
   };
 
-  const handleSaveProf = async () => {
-    if (isSavingProf) return;
-    setIsSavingProf(true);
-    try {
-      const payload: UpdateProfessionalProfilePayload = {
-        professionalCouncil: profForm.professionalCouncil.trim() || undefined,
-        registrationNumber: profForm.registrationNumber.trim() || undefined,
-        registrationState: profForm.registrationState.trim() || undefined,
-        defaultAppointmentDuration: profForm.defaultAppointmentDuration
-          ? Number(profForm.defaultAppointmentDuration)
-          : undefined,
-        specialty: profForm.specialty.trim() || undefined,
-        bio: profForm.bio.trim() || null,
-        formations: profForm.formations.trim() || null,
-        workingHours: hours.map((item): WorkingHour => ({
-          dayOfWeek: item.dayOfWeek,
-          isWorking: item.isWorking,
-          startTime: item.startTime,
-          endTime: item.endTime,
-          lunchBreakStart: item.lunchBreakStart.trim() || null,
-          lunchBreakEnd: item.lunchBreakEnd.trim() || null,
-        })),
-      };
-      await updateProfessionalProfile(payload);
-      notifySuccess("Dados profissionais atualizados com sucesso.");
-    } catch (error: unknown) {
-      notifyError(getApiErrorMessage(error, "Não foi possível atualizar os dados profissionais."));
-    } finally {
-      setIsSavingProf(false);
-    }
-  };
-
   const handleSaveRoles = async () => {
     if (isSavingRoles) return;
     setIsSavingRoles(true);
@@ -391,7 +359,7 @@ const EditProfilePage = () => {
       trimmedName !== baseProfile.name.trim() || normalizedPhone !== baseProfile.phone.trim();
     const hasAvatarChange = Boolean(avatarFile);
 
-    if (!profileChanged && !isChangingPassword && !hasAvatarChange) {
+    if (!profileChanged && !isChangingPassword && !hasAvatarChange && !hasProfessionalRole) {
       notifySuccess("Nenhuma alteração para salvar.");
       return;
     }
@@ -417,6 +385,29 @@ const EditProfilePage = () => {
 
       const latestProfile: ProfileData = await getProfile();
       applyLatestProfile(latestProfile, trimmedName, form.phone);
+
+      if (hasProfessionalRole) {
+        const profPayload: UpdateProfessionalProfilePayload = {
+          professionalCouncil: profForm.professionalCouncil.trim() || undefined,
+          registrationNumber: profForm.registrationNumber.trim() || undefined,
+          registrationState: profForm.registrationState.trim() || undefined,
+          defaultAppointmentDuration: profForm.defaultAppointmentDuration
+            ? Number(profForm.defaultAppointmentDuration)
+            : undefined,
+          specialty: profForm.specialty.trim() || undefined,
+          bio: profForm.bio.trim() || null,
+          formations: profForm.formations.trim() || null,
+          workingHours: hours.map((item): WorkingHour => ({
+            dayOfWeek: item.dayOfWeek,
+            isWorking: item.isWorking,
+            startTime: item.startTime,
+            endTime: item.endTime,
+            lunchBreakStart: item.lunchBreakStart.trim() || null,
+            lunchBreakEnd: item.lunchBreakEnd.trim() || null,
+          })),
+        };
+        await updateProfessionalProfile(profPayload);
+      }
 
       notifySuccess("Perfil atualizado com sucesso.");
       navigate("/admin/perfil");
@@ -560,15 +551,6 @@ const EditProfilePage = () => {
         </RolesSaveRow>
       </FormCard>
 
-      <ActionRow>
-        <Button variant="outline" onClick={() => navigate("/admin/perfil")} disabled={isSaving}>
-          Cancelar
-        </Button>
-        <Button icon={<Save size={16} />} onClick={() => void handleSave()} disabled={isSaving}>
-          {isSaving ? "Salvando..." : "Salvar Alterações"}
-        </Button>
-      </ActionRow>
-
       {hasProfessionalRole && (
         <>
           <FormCard>
@@ -583,7 +565,7 @@ const EditProfilePage = () => {
                   setProfForm((prev) => ({ ...prev, professionalCouncil: e.target.value }))
                 }
                 placeholder="CRM"
-                disabled={isSavingProf}
+                disabled={isSaving}
               />
               <Input
                 label="Número de Registro"
@@ -593,7 +575,7 @@ const EditProfilePage = () => {
                   setProfForm((prev) => ({ ...prev, registrationNumber: e.target.value }))
                 }
                 placeholder="123456"
-                disabled={isSavingProf}
+                disabled={isSaving}
               />
               <Input
                 label="Estado de Registro (UF)"
@@ -603,7 +585,7 @@ const EditProfilePage = () => {
                   setProfForm((prev) => ({ ...prev, registrationState: e.target.value.toUpperCase().slice(0, 2) }))
                 }
                 placeholder="SP"
-                disabled={isSavingProf}
+                disabled={isSaving}
               />
               <Input
                 label="Duração da Consulta (minutos)"
@@ -614,20 +596,9 @@ const EditProfilePage = () => {
                   setProfForm((prev) => ({ ...prev, defaultAppointmentDuration: e.target.value }))
                 }
                 placeholder="30"
-                disabled={isSavingProf}
+                disabled={isSaving}
               />
             </FormGrid>
-
-            <FullWidthField>
-              <Input
-                label="Especialidade principal"
-                fullWidth
-                value={profForm.specialty}
-                onChange={(e) => setProfForm((prev) => ({ ...prev, specialty: e.target.value }))}
-                placeholder="Ex: Cardiologia, Dermatologia..."
-                disabled={isSavingProf}
-              />
-            </FullWidthField>
 
             <TextareaWrapper>
               <TextareaLabel>Bio</TextareaLabel>
@@ -635,7 +606,7 @@ const EditProfilePage = () => {
                 value={profForm.bio}
                 onChange={(e) => setProfForm((prev) => ({ ...prev, bio: e.target.value }))}
                 placeholder="Uma breve descrição sobre você e sua experiência..."
-                disabled={isSavingProf}
+                disabled={isSaving}
               />
             </TextareaWrapper>
 
@@ -645,9 +616,20 @@ const EditProfilePage = () => {
                 value={profForm.formations}
                 onChange={(e) => setProfForm((prev) => ({ ...prev, formations: e.target.value }))}
                 placeholder="Graduação, especializações, residências..."
-                disabled={isSavingProf}
+                disabled={isSaving}
               />
             </TextareaWrapper>
+
+            <FullWidthField>
+              <Input
+                label="Especialidade principal"
+                fullWidth
+                value={profForm.specialty}
+                onChange={(e) => setProfForm((prev) => ({ ...prev, specialty: e.target.value }))}
+                placeholder="Ex: Cardiologia, Dermatologia..."
+                disabled={isSaving}
+              />
+            </FullWidthField>
           </FormCard>
 
           <FormCard>
@@ -662,7 +644,7 @@ const EditProfilePage = () => {
                       <Toggle
                         checked={day.isWorking}
                         onChange={(value) => updateDay(day.dayOfWeek, "isWorking", value)}
-                        disabled={isSavingProf}
+                        disabled={isSaving}
                       />
                     </DayToggleRow>
                   </DayItemHeader>
@@ -675,7 +657,7 @@ const EditProfilePage = () => {
                         fullWidth
                         value={day.startTime}
                         onChange={(e) => updateDay(day.dayOfWeek, "startTime", e.target.value)}
-                        disabled={isSavingProf}
+                        disabled={isSaving}
                       />
                       <Input
                         label="Término"
@@ -683,7 +665,7 @@ const EditProfilePage = () => {
                         fullWidth
                         value={day.endTime}
                         onChange={(e) => updateDay(day.dayOfWeek, "endTime", e.target.value)}
-                        disabled={isSavingProf}
+                        disabled={isSaving}
                       />
                       <Input
                         label="Início da pausa"
@@ -693,7 +675,7 @@ const EditProfilePage = () => {
                         onChange={(e) =>
                           updateDay(day.dayOfWeek, "lunchBreakStart", e.target.value)
                         }
-                        disabled={isSavingProf}
+                        disabled={isSaving}
                         placeholder="--:--"
                       />
                       <Input
@@ -702,7 +684,7 @@ const EditProfilePage = () => {
                         fullWidth
                         value={day.lunchBreakEnd}
                         onChange={(e) => updateDay(day.dayOfWeek, "lunchBreakEnd", e.target.value)}
-                        disabled={isSavingProf}
+                        disabled={isSaving}
                         placeholder="--:--"
                       />
                     </DayTimeGrid>
@@ -710,19 +692,20 @@ const EditProfilePage = () => {
                 </DayItem>
               ))}
             </DayList>
-
-            <RolesSaveRow>
-              <Button
-                icon={<Save size={16} />}
-                onClick={() => void handleSaveProf()}
-                disabled={isSavingProf}
-              >
-                {isSavingProf ? "Salvando..." : "Salvar Dados Profissionais"}
-              </Button>
-            </RolesSaveRow>
           </FormCard>
         </>
       )}
+
+      <TwoFactorCard />
+
+      <ActionRow>
+        <Button variant="outline" onClick={() => navigate("/admin/perfil")} disabled={isSaving}>
+          Cancelar
+        </Button>
+        <Button icon={<Save size={16} />} onClick={() => void handleSave()} disabled={isSaving}>
+          {isSaving ? "Salvando..." : "Salvar Alterações"}
+        </Button>
+      </ActionRow>
     </PageWrapper>
   );
 };

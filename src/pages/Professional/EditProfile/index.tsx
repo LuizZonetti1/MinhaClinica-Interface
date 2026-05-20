@@ -1,4 +1,5 @@
 import { Camera, Eye, EyeOff, Save } from "lucide-react";
+import { TwoFactorCard } from "../../../components/TwoFactorCard";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "../../../components/Button";
@@ -723,6 +724,8 @@ const ProfessionalEditProfilePage = () => {
           </Button>
         </RolesSaveRow>
       </FormCard>
+
+      <TwoFactorCard />
 
       <ActionRow>
         <Button
