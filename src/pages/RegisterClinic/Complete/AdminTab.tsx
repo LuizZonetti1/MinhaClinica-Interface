@@ -1,6 +1,7 @@
 import { Calendar, Lock, Phone, User } from "lucide-react";
 import { Input } from "../../../components/Input";
 import { maskCPF } from "../../../utils/formatters";
+import { handleEnterNavigation } from "../../../utils/enterNavigation";
 import { FieldGroup, Label, RadioButton, RadioGroup, RequirementsText, Row } from "./styles";
 
 const PASSWORD_REQUIREMENTS_TEXT =
@@ -37,6 +38,7 @@ export const AdminTab = ({ formData, onChange, cpfError, fieldErrors = {} }: Adm
           placeholder="000.000.000-00"
           value={formData.adminCpf}
           onChange={(e) => onChange("adminCpf", maskCPF(e.target.value))}
+          onKeyDown={handleEnterNavigation}
           icon={<User />}
           fullWidth
           required
@@ -49,6 +51,7 @@ export const AdminTab = ({ formData, onChange, cpfError, fieldErrors = {} }: Adm
           placeholder="(00) 00000-0000"
           value={formData.adminPhone}
           onChange={(e) => onChange("adminPhone", maskPhone(e.target.value))}
+          onKeyDown={handleEnterNavigation}
           icon={<Phone />}
           fullWidth
           required
@@ -63,6 +66,7 @@ export const AdminTab = ({ formData, onChange, cpfError, fieldErrors = {} }: Adm
           placeholder="Crie sua senha"
           value={formData.adminPassword}
           onChange={(e) => onChange("adminPassword", e.target.value)}
+          onKeyDown={handleEnterNavigation}
           icon={<Lock />}
           fullWidth
           required
@@ -75,6 +79,7 @@ export const AdminTab = ({ formData, onChange, cpfError, fieldErrors = {} }: Adm
           placeholder="Repita a senha"
           value={formData.adminConfirmPassword}
           onChange={(e) => onChange("adminConfirmPassword", e.target.value)}
+          onKeyDown={handleEnterNavigation}
           icon={<Lock />}
           fullWidth
           required

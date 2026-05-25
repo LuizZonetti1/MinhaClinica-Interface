@@ -11,6 +11,7 @@ import { useAuth } from "../../../contexts";
 import { professionalRegisterComplete } from "../../../services/professional.service";
 import { storeAuthToken } from "../../../utils/authStorage";
 import { maskCPF } from "../../../utils/formatters";
+import { handleEnterNavigation } from "../../../utils/enterNavigation";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import { stripCPF } from "../../../utils/validateCPF";
@@ -196,6 +197,7 @@ const RegisterProfessionalComplete = () => {
                 maxLength={14}
                 value={formData.cpf}
                 onChange={(event) => handleFieldChange("cpf", event.target.value)}
+                onKeyDown={handleEnterNavigation}
                 error={fieldErrors.cpf}
                 fullWidth
                 required
@@ -209,6 +211,7 @@ const RegisterProfessionalComplete = () => {
                 maxLength={15}
                 value={formData.phone}
                 onChange={(event) => handleFieldChange("phone", event.target.value)}
+                onKeyDown={handleEnterNavigation}
                 error={fieldErrors.phone}
                 fullWidth
                 required
@@ -223,6 +226,7 @@ const RegisterProfessionalComplete = () => {
                 icon={<Lock />}
                 value={formData.password}
                 onChange={(event) => handleFieldChange("password", event.target.value)}
+                onKeyDown={handleEnterNavigation}
                 error={fieldErrors.password}
                 rightIcon={showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 onRightIconClick={() => setShowPassword((prev) => !prev)}
@@ -236,6 +240,7 @@ const RegisterProfessionalComplete = () => {
                 icon={<Shield />}
                 value={formData.professionalCouncil}
                 onChange={(event) => handleFieldChange("professionalCouncil", event.target.value)}
+                onKeyDown={handleEnterNavigation}
                 error={fieldErrors.professionalCouncil}
                 fullWidth
                 required
@@ -251,6 +256,7 @@ const RegisterProfessionalComplete = () => {
                 maxLength={26}
                 value={formData.registrationNumber}
                 onChange={(event) => handleFieldChange("registrationNumber", event.target.value)}
+                onKeyDown={handleEnterNavigation}
                 error={fieldErrors.registrationNumber}
                 fullWidth
                 required
@@ -263,6 +269,7 @@ const RegisterProfessionalComplete = () => {
                 maxLength={2}
                 value={formData.registrationState}
                 onChange={(event) => handleFieldChange("registrationState", event.target.value)}
+                onKeyDown={handleEnterNavigation}
                 error={fieldErrors.registrationState}
                 fullWidth
                 required
@@ -277,6 +284,7 @@ const RegisterProfessionalComplete = () => {
                 inputMode="numeric"
                 value={formData.defaultAppointmentDuration}
                 onChange={(event) => handleFieldChange("defaultAppointmentDuration", event.target.value)}
+                onKeyDown={handleEnterNavigation}
                 error={fieldErrors.defaultAppointmentDuration}
                 fullWidth
               />
@@ -287,6 +295,7 @@ const RegisterProfessionalComplete = () => {
                 icon={<GraduationCap />}
                 value={formData.formations}
                 onChange={(event) => handleFieldChange("formations", event.target.value)}
+                onKeyDown={handleEnterNavigation}
                 error={fieldErrors.formations}
                 fullWidth
               />

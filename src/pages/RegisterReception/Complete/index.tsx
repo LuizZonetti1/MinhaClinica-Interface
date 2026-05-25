@@ -11,6 +11,7 @@ import { useAuth } from "../../../contexts";
 import { receptionRegisterComplete } from "../../../services/reception.service";
 import { storeAuthToken } from "../../../utils/authStorage";
 import { maskCPF } from "../../../utils/formatters";
+import { handleEnterNavigation } from "../../../utils/enterNavigation";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import { notifyError, notifySuccess } from "../../../utils/toast";
 import { stripCPF } from "../../../utils/validateCPF";
@@ -144,6 +145,7 @@ const RegisterReceptionComplete = () => {
                 maxLength={14}
                 value={formData.cpf}
                 onChange={(event) => handleFieldChange("cpf", event.target.value)}
+                onKeyDown={handleEnterNavigation}
                 error={fieldErrors.cpf}
                 fullWidth
                 required
@@ -157,6 +159,7 @@ const RegisterReceptionComplete = () => {
                 maxLength={15}
                 value={formData.phone}
                 onChange={(event) => handleFieldChange("phone", event.target.value)}
+                onKeyDown={handleEnterNavigation}
                 error={fieldErrors.phone}
                 fullWidth
                 required
@@ -170,6 +173,7 @@ const RegisterReceptionComplete = () => {
               icon={<Lock />}
               value={formData.password}
               onChange={(event) => handleFieldChange("password", event.target.value)}
+              onKeyDown={handleEnterNavigation}
               error={fieldErrors.password}
               rightIcon={showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               onRightIconClick={() => setShowPassword((prev) => !prev)}

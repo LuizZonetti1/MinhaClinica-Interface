@@ -1,5 +1,6 @@
 import { Phone } from "lucide-react";
 import { Input } from "../../../components/Input";
+import { handleEnterNavigation } from "../../../utils/enterNavigation";
 import { EmergencyBox, EmergencyTitle, FieldGroup, Label, Row, Select } from "./styles";
 
 interface MedicalInfoFormData {
@@ -47,6 +48,7 @@ export const MedicalInfoTab = ({ formData, onChange }: MedicalInfoTabProps) => {
         placeholder="Ex: penicilina, látex, dipirona... (ou 'Nenhuma')"
         value={formData.allergies}
         onChange={(e) => onChange("allergies", e.target.value)}
+        onKeyDown={handleEnterNavigation}
         fullWidth
       />
 
@@ -56,6 +58,7 @@ export const MedicalInfoTab = ({ formData, onChange }: MedicalInfoTabProps) => {
         placeholder="Ex: Losartana 50mg, Metformina... (ou 'Nenhum')"
         value={formData.medications}
         onChange={(e) => onChange("medications", e.target.value)}
+        onKeyDown={handleEnterNavigation}
         fullWidth
       />
 
@@ -65,6 +68,7 @@ export const MedicalInfoTab = ({ formData, onChange }: MedicalInfoTabProps) => {
         placeholder="Ex: diabetes, hipertensão, asma... (ou 'Nenhuma')"
         value={formData.conditions}
         onChange={(e) => onChange("conditions", e.target.value)}
+        onKeyDown={handleEnterNavigation}
         fullWidth
       />
 
@@ -80,6 +84,7 @@ export const MedicalInfoTab = ({ formData, onChange }: MedicalInfoTabProps) => {
             placeholder="Ex: João Silva — Pai"
             value={formData.emergencyName}
             onChange={(e) => onChange("emergencyName", e.target.value)}
+            onKeyDown={handleEnterNavigation}
             fullWidth
           />
 
@@ -89,6 +94,7 @@ export const MedicalInfoTab = ({ formData, onChange }: MedicalInfoTabProps) => {
             placeholder="(00) 00000-0000"
             value={formData.emergencyPhone}
             onChange={(e) => onChange("emergencyPhone", maskPhone(e.target.value))}
+            onKeyDown={handleEnterNavigation}
             icon={<Phone />}
             fullWidth
           />

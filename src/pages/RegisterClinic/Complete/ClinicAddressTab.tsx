@@ -1,5 +1,6 @@
 import { MapPin } from "lucide-react";
 import { Input } from "../../../components/Input";
+import { handleEnterNavigation } from "../../../utils/enterNavigation";
 import { FieldGroup, Label, Row, Select } from "./styles";
 
 const maskCEP = (value: string) =>
@@ -30,6 +31,7 @@ export const ClinicAddressTab = ({ formData, onChange }: ClinicAddressTabProps) 
         placeholder="00000-000"
         value={formData.zipCode}
         onChange={(e) => onChange("zipCode", maskCEP(e.target.value))}
+        onKeyDown={handleEnterNavigation}
         icon={<MapPin />}
         fullWidth
         required
@@ -41,6 +43,7 @@ export const ClinicAddressTab = ({ formData, onChange }: ClinicAddressTabProps) 
         placeholder="Rua, Avenida..."
         value={formData.street}
         onChange={(e) => onChange("street", e.target.value)}
+        onKeyDown={handleEnterNavigation}
         fullWidth
         required
       />
@@ -52,6 +55,7 @@ export const ClinicAddressTab = ({ formData, onChange }: ClinicAddressTabProps) 
           placeholder="123"
           value={formData.number}
           onChange={(e) => onChange("number", e.target.value)}
+          onKeyDown={handleEnterNavigation}
           fullWidth
           required
         />
@@ -62,6 +66,7 @@ export const ClinicAddressTab = ({ formData, onChange }: ClinicAddressTabProps) 
           placeholder="Sala, Andar, Bloco..."
           value={formData.complement}
           onChange={(e) => onChange("complement", e.target.value)}
+          onKeyDown={handleEnterNavigation}
           fullWidth
         />
       </Row>
@@ -72,6 +77,7 @@ export const ClinicAddressTab = ({ formData, onChange }: ClinicAddressTabProps) 
         placeholder="Nome do bairro"
         value={formData.neighborhood}
         onChange={(e) => onChange("neighborhood", e.target.value)}
+        onKeyDown={handleEnterNavigation}
         fullWidth
         required
       />
@@ -83,6 +89,7 @@ export const ClinicAddressTab = ({ formData, onChange }: ClinicAddressTabProps) 
           placeholder="São Paulo"
           value={formData.city}
           onChange={(e) => onChange("city", e.target.value)}
+          onKeyDown={handleEnterNavigation}
           fullWidth
           required
         />

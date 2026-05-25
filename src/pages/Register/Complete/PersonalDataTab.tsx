@@ -2,6 +2,7 @@ import { Calendar, Eye, EyeOff, Lock, Phone, User } from "lucide-react";
 import { useState } from "react";
 import { Input } from "../../../components/Input";
 import { maskCPF } from "../../../utils/formatters";
+import { handleEnterNavigation } from "../../../utils/enterNavigation";
 import { FieldGroup, Label, RadioButton, RadioGroup, RequirementsText, Row } from "./styles";
 
 interface PersonalDataTabProps {
@@ -43,6 +44,7 @@ export const PersonalDataTab = ({
           placeholder="000.000.000-00"
           value={formData.cpf}
           onChange={(e) => onChange("cpf", maskCPF(e.target.value))}
+          onKeyDown={handleEnterNavigation}
           icon={<User />}
           fullWidth
           required
@@ -55,6 +57,7 @@ export const PersonalDataTab = ({
           placeholder="(00) 00000-0000"
           value={formData.phone}
           onChange={(e) => onChange("phone", maskPhone(e.target.value))}
+          onKeyDown={handleEnterNavigation}
           icon={<Phone />}
           fullWidth
           required
@@ -68,6 +71,7 @@ export const PersonalDataTab = ({
           placeholder="Crie sua senha"
           value={formData.password}
           onChange={(e) => onChange("password", e.target.value)}
+          onKeyDown={handleEnterNavigation}
           icon={<Lock />}
           rightIcon={showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
           onRightIconClick={() => setShowPassword((previous) => !previous)}
@@ -81,6 +85,7 @@ export const PersonalDataTab = ({
           placeholder="Repita a senha"
           value={formData.confirmPassword}
           onChange={(e) => onChange("confirmPassword", e.target.value)}
+          onKeyDown={handleEnterNavigation}
           icon={<Lock />}
           rightIcon={showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
           onRightIconClick={() => setShowConfirmPassword((previous) => !previous)}
