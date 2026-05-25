@@ -1,6 +1,8 @@
-import { MapPin } from "lucide-react";
+import { Loader2, MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Input } from "../../../components/Input";
 import { handleEnterNavigation } from "../../../utils/enterNavigation";
+import { fetchCep } from "../../../utils/fetchCep";
 import { FieldGroup, Label, Row, Select } from "./styles";
 
 interface AddressTabProps {
@@ -15,6 +17,27 @@ const maskCEP = (value: string) =>
     .replace(/(\d{5})(\d{1,3})$/, "$1-$2");
 
 export const AddressTab = ({ formData, onChange }: AddressTabProps) => {
+  const [loadingCep, setLoadingCep] = useState(false);
+
+  useEffect(() => {
+    const digits = formData.cep.replace(/\D/g, "");
+    if (digits.length !== 8) return;
+
+    let cancelled = false;
+    setLoadingCep(true);
+    fetchCep(digits).then((address) => {
+      if (cancelled || !address) return;
+      if (address.street) onChange("street", address.street);
+      if (address.neighborhood) onChange("neighborhood", address.neighborhood);
+      if (address.city) onChange("city", address.city);
+      if (address.state) onChange("state", address.state);
+    }).finally(() => {
+      if (!cancelled) setLoadingCep(false);
+    });
+
+    return () => { cancelled = true; };
+  }, [formData.cep]);
+
   return (
     <FieldGroup>
       <Input
@@ -24,7 +47,7 @@ export const AddressTab = ({ formData, onChange }: AddressTabProps) => {
         value={formData.cep}
         onChange={(e) => onChange("cep", maskCEP(e.target.value))}
         onKeyDown={handleEnterNavigation}
-        icon={<MapPin />}
+        icon={loadingCep ? <Loader2 size={16} className="animate-spin" /> : <MapPin />}
         fullWidth
       />
 
@@ -35,6 +58,7 @@ export const AddressTab = ({ formData, onChange }: AddressTabProps) => {
         value={formData.street}
         onChange={(e) => onChange("street", e.target.value)}
         onKeyDown={handleEnterNavigation}
+        disabled={loadingCep}
         fullWidth
       />
 
@@ -67,6 +91,7 @@ export const AddressTab = ({ formData, onChange }: AddressTabProps) => {
         value={formData.neighborhood}
         onChange={(e) => onChange("neighborhood", e.target.value)}
         onKeyDown={handleEnterNavigation}
+        disabled={loadingCep}
         fullWidth
       />
 
@@ -78,6 +103,7 @@ export const AddressTab = ({ formData, onChange }: AddressTabProps) => {
           value={formData.city}
           onChange={(e) => onChange("city", e.target.value)}
           onKeyDown={handleEnterNavigation}
+          disabled={loadingCep}
           fullWidth
         />
 
