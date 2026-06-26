@@ -16,6 +16,7 @@ import {
   UserPlus,
   Users,
 } from "lucide-react";
+import { Link } from "react-router";
 import { useNavigate } from "react-router";
 import {
   ButtonLogin,
@@ -203,6 +204,7 @@ const PATIENT_STEPS: ReadonlyArray<Step> = [
 
 const Home = () => {
   const navigate = useNavigate();
+  const currentYear = new Date().getFullYear();
 
   const handleLoginClick = () => {
     navigate("/login");
@@ -387,33 +389,54 @@ const Home = () => {
 
           <FooterColumn>
             <FooterTitle>Produto</FooterTitle>
-            <FooterLink>Funcionalidades</FooterLink>
-            <FooterLink>Preços</FooterLink>
-            <FooterLink>Integrações</FooterLink>
-            <FooterLink>Segurança</FooterLink>
+            <FooterLink as={Link} to="/funcionalidades">
+              Funcionalidades
+            </FooterLink>
+            <FooterLink as={Link} to="/precos">
+              Preços
+            </FooterLink>
+            <FooterLink as={Link} to="/integracoes">
+              Integrações
+            </FooterLink>
+            <FooterLink as={Link} to="/seguranca">
+              Segurança
+            </FooterLink>
           </FooterColumn>
 
           <FooterColumn>
             <FooterTitle>Recursos</FooterTitle>
-            <FooterLink>Central de Ajuda</FooterLink>
-            <FooterLink>Blog</FooterLink>
-            <FooterLink>Suporte</FooterLink>
-            <FooterLink>Documentação API</FooterLink>
+            <FooterLink as={Link} to="/ajuda">
+              Central de Ajuda
+            </FooterLink>
+            <FooterLink as={Link} to="/blog">
+              Blog
+            </FooterLink>
+            <FooterLink as={Link} to="/suporte">
+              Suporte
+            </FooterLink>
           </FooterColumn>
 
           <FooterColumn>
             <FooterTitle>Empresa</FooterTitle>
-            <FooterLink>Sobre Nós</FooterLink>
-            <FooterLink>Contato</FooterLink>
-            <FooterLink>Privacidade</FooterLink>
-            <FooterLink>Termos de Uso</FooterLink>
+            <FooterLink as={Link} to="/sobre">
+              Sobre Nós
+            </FooterLink>
+            <FooterLink as={Link} to="/contato">
+              Contato
+            </FooterLink>
+            <FooterLink as={Link} to="/privacidade">
+              Privacidade
+            </FooterLink>
+            <FooterLink as={Link} to="/termos">
+              Termos de Uso
+            </FooterLink>
           </FooterColumn>
         </FooterContent>
 
         <FooterDivider />
 
         <FooterBottom>
-          <p>© 2026 Minha Clínica. Todos os direitos reservados.</p>
+          <p>© {currentYear} Minha Clínica. Todos os direitos reservados.</p>
         </FooterBottom>
       </Footer>
     </Container>

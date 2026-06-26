@@ -11,6 +11,17 @@ import ReportsPage from "../pages/Admin/Reports";
 import SettingsPage from "../pages/Admin/Settings";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
+import FuncionalidadesPage from "../pages/Public/Funcionalidades";
+import PrecosPage from "../pages/Public/Precos";
+import IntegracoesPage from "../pages/Public/Integracoes";
+import SegurancaPage from "../pages/Public/Seguranca";
+import AjudaPage from "../pages/Public/Ajuda";
+import BlogPage from "../pages/Public/Blog";
+import SuportePage from "../pages/Public/Suporte";
+import SobrePage from "../pages/Public/Sobre";
+import ContatoPage from "../pages/Public/Contato";
+import PrivacidadePage from "../pages/Public/Privacidade";
+import TermosPage from "../pages/Public/Termos";
 import PatientAccess from "../pages/Patient/Access";
 import PatientAppointmentsPage from "../pages/Patient/Agendamentos";
 import PatientClinicsPage from "../pages/Patient/Clinicas";
@@ -87,6 +98,17 @@ const AppRoutes = () => {
         {/* Public routes */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/funcionalidades" element={<FuncionalidadesPage />} />
+        <Route path="/precos" element={<PrecosPage />} />
+        <Route path="/integracoes" element={<IntegracoesPage />} />
+        <Route path="/seguranca" element={<SegurancaPage />} />
+        <Route path="/ajuda" element={<AjudaPage />} />
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/suporte" element={<SuportePage />} />
+        <Route path="/sobre" element={<SobrePage />} />
+        <Route path="/contato" element={<ContatoPage />} />
+        <Route path="/privacidade" element={<PrivacidadePage />} />
+        <Route path="/termos" element={<TermosPage />} />
         <Route path="/autenticacao/2fa" element={<TwoFactorValidation />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
