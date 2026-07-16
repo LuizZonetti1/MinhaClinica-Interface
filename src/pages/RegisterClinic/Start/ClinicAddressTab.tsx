@@ -1,5 +1,7 @@
-import { MapPin } from "lucide-react";
+import { Loader2, MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Input } from "../../../components/Input";
+import { fetchCep } from "../../../utils/fetchCep";
 import { FieldGroup, Label, Row, Select } from "./styles";
 
 const maskCEP = (value: string) =>
@@ -22,6 +24,27 @@ interface ClinicAddressTabProps {
 }
 
 export const ClinicAddressTab = ({ formData, onChange }: ClinicAddressTabProps) => {
+  const [loadingCep, setLoadingCep] = useState(false);
+
+  useEffect(() => {
+    const digits = formData.zipCode.replace(/\D/g, "");
+    if (digits.length !== 8) return;
+
+    let cancelled = false;
+    setLoadingCep(true);
+    fetchCep(digits).then((address) => {
+      if (cancelled || !address) return;
+      if (address.street) onChange("street", address.street);
+      if (address.neighborhood) onChange("neighborhood", address.neighborhood);
+      if (address.city) onChange("city", address.city);
+      if (address.state) onChange("state", address.state);
+    }).finally(() => {
+      if (!cancelled) setLoadingCep(false);
+    });
+
+    return () => { cancelled = true; };
+  }, [formData.zipCode]);
+
   return (
     <FieldGroup>
       <Input
@@ -30,7 +53,7 @@ export const ClinicAddressTab = ({ formData, onChange }: ClinicAddressTabProps) 
         placeholder="00000-000"
         value={formData.zipCode}
         onChange={(e) => onChange("zipCode", maskCEP(e.target.value))}
-        icon={<MapPin />}
+        icon={loadingCep ? <Loader2 size={16} className="animate-spin" /> : <MapPin />}
         fullWidth
         required
       />
@@ -41,6 +64,7 @@ export const ClinicAddressTab = ({ formData, onChange }: ClinicAddressTabProps) 
         placeholder="Rua, Avenida..."
         value={formData.street}
         onChange={(e) => onChange("street", e.target.value)}
+        disabled={loadingCep}
         fullWidth
         required
       />
@@ -72,6 +96,7 @@ export const ClinicAddressTab = ({ formData, onChange }: ClinicAddressTabProps) 
         placeholder="Nome do bairro"
         value={formData.neighborhood}
         onChange={(e) => onChange("neighborhood", e.target.value)}
+        disabled={loadingCep}
         fullWidth
         required
       />
@@ -83,6 +108,7 @@ export const ClinicAddressTab = ({ formData, onChange }: ClinicAddressTabProps) 
           placeholder="São Paulo"
           value={formData.city}
           onChange={(e) => onChange("city", e.target.value)}
+          disabled={loadingCep}
           fullWidth
           required
         />
